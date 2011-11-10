@@ -1,0 +1,8 @@
+Running configuration file .DS_Store at 19:39:53.
+Running configuration file config_06_21_2011_ch1_wt16_dt1_wx32_dx8.m at 19:39:53.
+Running configuration file .DS_Store at 19:40:29.
+Running configuration file 2011-07-10.txt at 19:40:29.
+Running configuration file config_06_21_2011_ch1_wt16_dt1_wx32_dx8.m at 19:40:29.
+Running configuration file .DS_Store at 19:40:42.
+Running configuration file 2011-07-10.txt at 19:40:42.
+Running configuration file config_06_21_2011_ch1_wt16_dt1_wx32_dx8.m at 19:40:42.
