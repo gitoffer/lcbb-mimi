@@ -1,3 +1,4 @@
+flat = @(x) x(:);
 
 %%
 num_var = 20;
@@ -31,7 +32,7 @@ end
 linkaxes(h)
 figure
 [foo,bar] = meshgrid(R,1:num_var);
-pcolor(foo,bar,Cvv),colorbar
+pcolor(foo,bar,Cvv),caxis([-1 1]); colorbar
 xlabel('Distance (R)')
 ylabel('Power')
 
@@ -45,9 +46,9 @@ x = -20:1:20;
 zA = [0];
 
 [W0,X,Y] = power_law(1,pi/4,1,x);
-W1 = source_sink_swirl(10i*i,zA);
+W1 = source_sink_swirl(i,zA);
 
-W = W0 + W1;
+W = W0;
 contour(X,Y,imag(W)),axis equal;
 [Vx,Vy] = velocity_from_potential(W);
 figure,quiver(Vx,Vy,0),axis equal
