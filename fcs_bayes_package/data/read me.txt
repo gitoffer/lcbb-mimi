@@ -1,0 +1,30 @@
+Wohland 2001 paper FCS simulation
+varying kapa (transmission efficiencty to vary noise level in intensity trace)
+
+Curve number corresponds to kapa value:
+kapa =
+
+  Files 1 through 10
+
+    0.0001    0.0002    0.0003    0.0004    0.0006    0.0010    0.0016    0.0025    0.0040    0.0063
+
+  Files 11 through 16
+
+    0.0100    0.0158    0.0251    0.0398    0.0631    0.1000
+
+Other parameters
+
+D1= 270 D2 = 3.3 um^2/sec
+33M steps
+
+% rendering intensity parameters
+f.PSF = 'GLB'; % two options for PSF : 'GLB', 'Gaussian'
+f.w0 = 0.261; 
+f.P = 100*10^(-6); %Laser power (watt)
+f.lamda = 0.5145; % wavelength (um)
+f.Qfluo = 0.98; % quantum yield of fluorephoe
+f.Qdet = 0.25; % 0.25, quantum efficiency of detection device (PMT)
+f.kapa = 0.01; % 0.01, energy loss in optical devices
+f.absorp_cross_sect = 2.2*10^-20; % m^2
+E_pho = 6.626*10^-34 * 3*10^8 /(f.lamda*10^-6); % Joule
+    
