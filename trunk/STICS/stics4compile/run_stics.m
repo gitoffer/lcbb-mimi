@@ -1,7 +1,7 @@
 function run_stics(config_file,num_workers)
 
 %%%%%%%%%%%%%%%%%% Run Configuration file %%%%%%%%%%%
-cd('~/Desktop/MATLAB Library/STICS/Configuration files/To be run');
+cd('~/Desktop/Configuration files/To be run');
 eval(config_file)
 stics_opt = SticsOptions(um_per_px,sec_per_frame,dt,wt,dx,dy,wx,wy,...
     corrTimeLim,origial_dimensions,crop,ch,bayes);
@@ -37,7 +37,8 @@ models = {
 photobleaching = 0;
 weighted_fit = 1;
 psf_size = .4;
-bayes_opt = BayesOptions(models,photobleaching,weighted_fit,psf_size);
+window = 200;
+bayes_opt = BayesOptions(models,photobleaching,weighted_fit,psf_size,window);
 
 %%%%%% STICS calculations (Variables redeclared for parloop)
 T = numel(t);
@@ -69,4 +70,9 @@ save(io.sticsSaveName)
 if num_workers > 1
     eval('matlabpool close')
 end
+
+cd('~/Desktop/Configuration files/To be run');
+movefile(config_file,'..');
+cd('~/Desktop/MATLAB Library/STICS/stics4compile');
+
 end
