@@ -12,7 +12,7 @@ if ~exist('channels','var')
 end
 
 im0 = imread(filename);
-im = zeros([size(im0),num_frames,channels]);
+% im = zeros([size(im0),num_frames,channels]);
 
 for j=1:channels
     for i = 1:num_frames

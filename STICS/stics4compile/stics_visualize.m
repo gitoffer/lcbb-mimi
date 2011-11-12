@@ -1,11 +1,11 @@
 
 %% STICS movie
 
-sticsLoadName = '~/Desktop/Mimi/Data/05-26-2011/SqhGFPGap43_Maximumintensityprojection_gauss1_ch1_wt16_wx16_dt1/stics_ch1_wt16_wx16_dt1';
+% sticsLoadName = '~/Desktop/Mimi/Data/05-26-2011/SqhGFPGap43_Maximumintensityprojection_gauss1_ch1_wt16_wx16_dt1/stics_ch1_wt16_wx16_dt1';
 sticsLoadName = io.sticsSaveName;
 load(sticsLoadName);
 
-F = stics_movie(imcrop,o,stics_img,200);
+F = stics_movie(imcropped,o,stics_img,200);
 movie2avi(F,[io.sticsSaveName])
 
 %% EDGE STICS movie
