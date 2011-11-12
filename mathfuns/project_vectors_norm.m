@@ -3,5 +3,5 @@ function dist = project_vectors_norm(xi,Xj)
 %different vectors.
 
 N = size(Xj,1);
-dist = sum(xi(ones(1,N),:).*Xj,2)./norm(xi);
+dist = sum(xi(ones(1,N),:).*Xj,2)./norm(xi).^2;
 end
