@@ -47,7 +47,6 @@ switch model_name
         
         %D
         b0(3) = (G000-max(flat(corr(:,:,2))))/(t(2)-t(1));
-        b0(2) = G_inf;
         lb = [0 -Inf 0];
         ub = [Inf Inf Inf];
         

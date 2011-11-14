@@ -9,30 +9,31 @@ VERBOSE = 2;
 %% Bead simulation parameters
 % The 'ground truth' used to generate the bead images
 
+clear opt
 J = 10; % Number of different sampling of a parameter sweep
 for i = 1:J
     opt(i) = struct( ...
         ...%%%%%%%% parameters for Brownian dynamics simulation %%%%%%%%%%%%%%%%
         'n_dims', 2 ...      %  number of dimensions in which the simulation is conducted
-        , 'sim_box_size_um',  [2 2 0].^8 ...  % the simulated box is of this size. See code below for actual default value (should be box_size_px*um_per_px)
+        , 'sim_box_size_um',  [2 2 0].^7.*.1 ...  % the simulated box is of this size. See code below for actual default value (should be box_size_px*um_per_px)
         , 'num_frames',     32 ...			% number of frames in the stack produced by the code
-        , 'density',        3 ...              % density of the particles, in um^-o.n_dims
+        , 'density',        100 ...              % density of the particles, in um^-o.n_dims
         , 'um_per_px',      .1 ...			% resolution, microns per pixel
         , 'sec_per_frame',  .1 ...		% seconds per frame
         ...
-        , 'diff_coeff',    0.1*(i-1) ...              	% diffusion coefficient in micron^2/sec
+        , 'diff_coeff',    2+i*.1 ...              	% diffusion coefficient in micron^2/sec
         , 'u_convection',  [0 0 0] + [0 0 0] ...        	% convection velocity in microns/sec
         , 'make_gradient' , 0 ...
         ...
         ...%%%%%%%% parameters for image generation %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        , 'box_size_px',    [2 2 0].^6 ...  	% size of the images.
+        , 'box_size_px',    [2 2 0].^7 ...  	% size of the images.
         , 'psf_type', 'g' ...            	% only gaussian psf ('g') is currently supported
         , 'psf_sigma_um',   [0.4 0.4 0.7] ...  	% standard deviation of the psf in microns, indepedent for all three directions
         , 'renderer', 'points_from_nodes' ...  	%   'lines_from_bonds' or 'points_from_nodes'.
         ...
         , 'signal_level',      200 ...                %signal level above background
-        , 'signal_background', 100 ...  % relative to signal at beads of 1.0
-        , 'counting_noise_factor', 5 ...		% counting noise  factor (noise = sqrt(o.counting_noise_factor*imageFinal).*randn(im_dims)  1.327
+        , 'signal_background', 0 ...  % relative to signal at beads of 1.0
+        , 'counting_noise_factor', 0 ...		% counting noise  factor (noise = sqrt(o.counting_noise_factor*imageFinal).*randn(im_dims)  1.327
         , 'dk_background',     100 ...   % dark background average 189.462
         , 'dk_noise',          10 ...         % dark noise rms(std)%7.265
         ...
@@ -47,12 +48,12 @@ for i = 1:J
         , 'num_runs', 5 ...
         );
     opt(i).speed = sqrt(sum([opt(i).u_convection].^2));
-    opt(i).Pe = dot(opt(i).u_convection,opt(i).psf_sigma_um)/opt(i).diff_coeff;
+    opt(i).Pe = dot(abs(opt(i).u_convection),opt(i).psf_sigma_um)/opt(i).diff_coeff;
     opt(i).snr = opt(i).signal_level /...
         sqrt(opt(i).counting_noise_factor*opt(i).signal_background + opt(i).dk_noise*opt(i).dk_noise);
 end
 
-%% Run test
+ %% Run test
 % Perform Bayesian model selection and parameter fitting
 
 % matlabpool open 4
@@ -86,7 +87,7 @@ end
 %% Parse the information into an array.
 % Useful because we assume each STICS window will have the same
 % information, so we can average across them
-
+clear OUTPUT
 for j = 1:J
     for k = 1:K
         foo = stics_img{j,k};
