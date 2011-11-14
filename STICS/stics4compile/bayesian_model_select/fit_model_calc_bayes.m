@@ -117,7 +117,7 @@ end
 if rcond(full(J'*J)) < 1e-8
     log_model_likelihood = -Inf;
     if VERBOSE > 1
-        'Covariance matrix is singular'
+        display('Covariance matrix is singular');
         display(['Assigning likelihooods to ' model_name ' as ' num2str(log_model_likelihood)])
     end
 else
