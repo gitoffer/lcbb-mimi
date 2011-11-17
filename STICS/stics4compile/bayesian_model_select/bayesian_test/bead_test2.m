@@ -1,4 +1,4 @@
-function [stics_img,o] = bead_test2(opt)
+function [stics_img,o] = bead_test2(opt,play,bayes_opt,showsurf)
 
 [logs,~,~] = BD_simul8tr( [],opt);
 [im,~] = image_generator(logs,opt);
@@ -6,11 +6,12 @@ while any(isnan(im))
     [logs,~,~] = BD_simul8tr( [],opt);
     [im,~] = image_generator(logs,opt);
 end
-
-% imsequence_play(im);
+if play
+    imsequence_play(im);
+end
 
 %% STICS options
-o = SticsOptions(opt.um_per_px,opt.sec_per_frame,32,32,32,32,32,32,opt.corrTimeLimit,1,1,1,1);
+o = SticsOptions(opt.um_per_px,opt.sec_per_frame,32,32,64,64,64,64,opt.corrTimeLimit,1,1,1,1);
 
 %% STICS analysis
 
@@ -22,16 +23,7 @@ t = tbegin : o.dt : tend;
 
 %%%%%%
 
-models = {
-    'mixed_model', ...
-    'diffusion_model', ...
-    'flow_model', ...
-    'noise_model' ...
-    };
-photobleaching = 0;
-weighted_fit = 1;
-psf_size = .4;
-bayes_opt = BayesOptions(models,photobleaching,weighted_fit,psf_size,100);
+models = bayes_opt.model_list;
 
 [X,Y] = size(Xf);
 m = numel(models);
@@ -55,11 +47,11 @@ end
 for i = 1: numel(t)
     imser = im(:,:,t(i)-ceil(o.wt/2)+1:t(i)-ceil(o.wt/2)+o.wt);
     if o.bayes
-        [B Xf Yf] = stics_image_bayes(imser, o, bayes_opt, o.corrTimeLim,'off');
+        [B Xf Yf] = stics_image_bayes(imser, o, bayes_opt, o.corrTimeLim,showsurf);
         stics_img(i,:,:,:)=B;
         %         B;
     else
-        [v Xf Yf] = stics_image(imser, o, o.corrTimeLim,'off');
+        [v Xf Yf] = stics_image(imser, o, o.corrTimeLim,showsurf);
         stics_img{i} = v;
     end
 end

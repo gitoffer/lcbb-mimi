@@ -24,15 +24,19 @@ G_inf = params(2);
 D = params(3);
 vx = params(4);
 vy = params(5);
+% epx = params(6);
+% epy = params(7);
+% s = params(8);
+epx = 0;epy = 0;
 
 s = constants(1);
 um_per_px = constants(2);
 sec_per_frame = constants(3);
 
 % Photobleaching
-if numel(params) == 6
+if numel(params) == 9
     pb_flag = 1;
-    lambda = params(6);
+    lambda = params(9);
 else
     pb_flag = 0;
 end
@@ -62,7 +66,7 @@ Y = Y(:,:,ones(1,l));
 Vx = vx(ones(1,n),ones(1,m),ones(1,l));
 Vy = vy(ones(1,n),ones(1,m),ones(1,l));
 
-G = G000.*exp(-((X+Vx.*T).^2 + (Y+Vy.*T).^2)/s^2./(1+T/tD))./(1+T/tD);
+G = G000.*exp(-((X+Vx.*T-epx).^2 + (Y+Vy.*T-epy).^2)/s^2./(1+T/tD))./(1+T/tD);
 if pb_flag, G = G.*exp(-T/lambda); end
 
 G = G + G_inf*ones(n,m,l);

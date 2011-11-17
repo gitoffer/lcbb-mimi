@@ -22,6 +22,10 @@ G000 = params(1);
 G_inf = params(2);
 vx = params(3);
 vy = params(4);
+% epx = params(5);
+% epy = params(6);
+% s = params(7);
+epx = 0;epy = 0;
 
 % Constants of imaging conditions
 s = constants(1);
@@ -30,9 +34,9 @@ sec_per_frame = constants(3);
 
 % If photobleaching time-scale is supplied, will multiply G by an overall
 % exponential decay
-if numel(params) == 5
+if numel(params) == 8
     pb_flag = 1;
-    lambda = params(5);
+    lambda = params(8);
 else
     pb_flag = 0;
 end
@@ -59,7 +63,7 @@ Y = Y(:,:,ones(1,l));
 Vx = vx(ones(1,n),ones(1,m),ones(1,numel(t)));
 Vy = vy(ones(1,n),ones(1,m),ones(1,numel(t)));
 
-G = G000.*exp(-((X+Vx.*T).^2 + (Y + Vy.*T).^2)/s^2);
+G = G000.*exp(-((X+Vx.*T-epx).^2 + (Y + Vy.*T-epy).^2)/s^2);
 if pb_flag, G = G.*exp(-T/lambda); end
 
 % % Caculate G(eta,psi,tau) for all tau

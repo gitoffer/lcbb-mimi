@@ -20,15 +20,19 @@ function G = diffusion_model(params,coords,constants)
 G000 = params(1);
 G_inf = params(2);
 D = params(3);
+% epx = params(4);
+% epy = params(5);
+% s = params(6);
+epx = 0;epy = 0;
 
 s = constants(1);
 um_per_px = constants(2);
 sec_per_frame = constants(3);
 
 % Photobleaching
-if numel(params) == 6
+if numel(params) == 7
     pb_flag = 1;
-    lambda = params(6);
+    lambda = params(7);
 else
     pb_flag = 0;
 end
@@ -46,6 +50,7 @@ n = coords(1); m = coords(2); t0 = coords(3); l = coords(4);
 t = t0:l;
 t = t'*sec_per_frame;
 T = zeros(n,m,l);
+
 for i = 1:l
     T(:,:,i) = t(ones(1,n)*i,ones(1,m));
 end
@@ -55,8 +60,21 @@ end
 X = X(:,:,ones(1,l));
 Y = Y(:,:,ones(1,l));
 
-G = G000.*exp(-((X).^2 + (Y).^2)/s^2./(1+T/tD))./(1+T/tD);
+G = G000.*exp(-((X-epx).^2 + (Y-epy).^2)/s^2./(1+T/tD))./(1+T/tD);
 if pb_flag, G = G.*exp(-T/lambda); end
+
+% G = zeros(n,m,l);
+% for i = 1:n
+%     X = (i - floor(n/2))*um_per_px;
+%     for j = 1:m
+%         Y = (j-floor(m/2))*um_per_px;
+%         G(i,j,:) = G000...
+%             .*exp(-((X-epx).^2+(Y-epy).^2)./s^2./(1+t/tD))./(1+t/tD);
+%         if pb_flag
+%             G(i,j,:) = G(i,j,:).*exp(-t./lambda);
+%         end
+%     end
+% end
 
 G = G + G_inf*ones(n,m,l);
 

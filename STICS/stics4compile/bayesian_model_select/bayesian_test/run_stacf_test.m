@@ -1,30 +1,32 @@
 %%
-N = 10;
+N = 100;
 for i = 1:10
     
     lsq_opt = optimset('Jacobian','off','Display','off');
     
-    d = 1*i;
+    G000 = 10^(i-5);
+    G_inf = 0;
+    D = .5;
     psf = 1;
-    params = [1 0 d 1 1];
+    params = [G000 G_inf D .1 -.2 .1 .1 psf];
     constants = [psf .1 .1];
     xdata = [30 30 1 9];
     f = 'mixed_model';
-    noise_level = 1;
+    noise_level = G000/10;
     
     G_th = feval(f,params,xdata,constants);
 %     G_th = G_th(:,:,2:end);
     
-    %     [X,Y] = meshgrid(-10:1:10,-10:1:10);
-    %     figure(201)
-    %     mesh(X,Y,G_th(:,:,1));
-    %     axis equal
-    %     xlabel('\eta')
-    %     ylabel('\xi')
-    %     zlabel('G(\eta,\xi,\tau)')
-    %     title(['STICS Correlation function for ' f ' at \tau = 0']);
-    %     display(['The real model is ' f ' and noise level set at ' num2str(noise_level)])
-    %
+        [X,Y] = meshgrid(-14:1:15,-14:1:15);
+        figure(201)
+        mesh(X,Y,G_th(:,:,1));
+        axis equal
+        xlabel('\eta')
+        ylabel('\xi')
+        zlabel('G(\eta,\xi,\tau)')
+        title(['STICS Correlation function for ' f ' at \tau = 0']);
+        display(['The real model is ' f ' and noise level set at ' num2str(noise_level)])
+    
     o = SticsOptions(.1,.1,32,32,32,32,32,32,10,1,1,1,1);
     models = {
         'mixed_model', ...
@@ -44,8 +46,10 @@ end
 
 %% Visualize the outcome
 figure;
+xaxis = 10*((1:10)-5);
 hold on;
-plot([output_array(:,1).model_probability],'g-');
-plot([output_array(:,2).model_probability],'r-')
-plot([output_array(:,3).model_probability],'b-')
-plot([output_array(:,4).model_probability],'k-')
+plot(xaxis,[output_array(:,1).model_probability],'g-');
+plot(xaxis,[output_array(:,2).model_probability],'r-')
+plot(xaxis,[output_array(:,3).model_probability],'b-')
+plot(xaxis,[output_array(:,4).model_probability],'k-')
+legend('Mixed','diffusion','flow','noise')
