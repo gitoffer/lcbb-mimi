@@ -22,7 +22,7 @@ for i = 1:J
         , 'sec_per_frame',  .1 ...		% seconds per frame
         ...
         , 'diff_coeff',    (0.05*(11-i)) ...              	% diffusion coefficient in micron^2/sec
-        , 'u_convection',  [1 1 0] + 0*[.5 .5 0] ...        	% convection velocity in microns/sec
+        , 'u_convection',  [0 0 0] + 0*[.5 .5 0] ...        	% convection velocity in microns/sec
         , 'make_gradient' , 0 ...
         ...
         ...%%%%%%%% parameters for image generation %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,14 +63,14 @@ models = {
 photobleaching = 0;
 weighted_fit = 1;
 psf_size = .5;
-window = 10;
+window = 200;
 bayes_opt = BayesOptions(models,photobleaching,weighted_fit,psf_size,window);
 
 %% Run test
 % Perform Bayesian model selection and parameter fitting
 
 % matlabpool open 4
-K = 10; % Different independent simulations and fittings
+K = 1; % Different independent simulations and fittings
 num_mov = 1;
 stics_img = cell(J,K);
 

@@ -1,6 +1,6 @@
 function o = fit_model_calc_bayes(observed_data,observed_var,in,lsq_opt,stics_o,bayes_o)
 
-VERBOSE = 0;
+VERBOSE = 2;
 flat = @(x) x(:);
 
 %FIT_MODEL_CALC_BAYES
@@ -49,7 +49,7 @@ if weighted_regression
         fit_weights = 1./observed_var;
 %         observed_data = observed_data.*fit_weights;
         %         fw = @(x,xdata) fit_weights.*f(x,xdata,s);
-        [b,~,residual,~,~,~,J] = lsqcurvefit(...
+        [b,~,~,~,~,~,J] = lsqcurvefit(...
             @(x,xdata) f(x,xdata,constants).*fit_weights,...
             b0,xdata,observed_data.*fit_weights,lb,ub,lsq_opt);
     catch err
@@ -123,7 +123,7 @@ mse = resnorm*n/(n-p);
 % For weighted regression, need to correct the weighted statistics by the
 % weight
 if weighted_regression
-    mse = sum(flat(residual.^2.*fit_weights))./sum(flat(fit_weights)).*n./(n-p);
+    mse = sum(flat(residual.^2.*fit_weights))./sum(fit_weights(:)).*n./(n-p);
 end
 
 if rcond(full(J'*J)) < 1e-8
