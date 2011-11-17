@@ -48,8 +48,4 @@ end
 
 Cvv(1) = 1;
 R = [0 R];
-%Add in the 0 distance terms
-% Cvv = [1 Cvv];
-% R = [0 R];
-
 end
