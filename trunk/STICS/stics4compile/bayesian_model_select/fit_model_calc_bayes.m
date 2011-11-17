@@ -47,31 +47,37 @@ window = bayes_o.prior_window;
 if weighted_regression
     try
         fit_weights = 1./observed_var;
-        observed_data = observed_data.*fit_weights;
+%         observed_data = observed_data.*fit_weights;
         %         fw = @(x,xdata) fit_weights.*f(x,xdata,s);
         [b,~,residual,~,~,~,J] = lsqcurvefit(...
             @(x,xdata) f(x,xdata,constants).*fit_weights,...
-            b0,xdata,observed_data,lb,ub,lsq_opt);
+            b0,xdata,observed_data.*fit_weights,lb,ub,lsq_opt);
     catch err
         if (strcmp(err.identifier,'optim:snls:InvalidUserFunction'))
             switch model_name
                 case 'diffusion_model'
                     b = nan(1,3);
-                case'convection_model'
+                case 'flow_model'
                     b = nan(1,4);
                 case 'mixed_model'
                     b = nan(1,5);
                 case 'noise_model'
                     b = nan(1,2);
             end
-            o = BayesModels(model_name,b,-Inf);
+            o.model_name = model_name;
+            o.params = b;
+            o.log_likelihood = -Inf;
+            o.model_probability = NaN;
+            o.D = NaN;
+            o.vx = NaN;
+            o.vy = NaN;
             return
         else
             rethrow(err)
         end
     end
-    residual = reshape(residual,size(observed_data));
-    residual = residual./fit_weights;
+%     residual = reshape(residual,size(observed_data));
+    residual = f(b,xdata,constants) - observed_data;
     resnorm = norm(flat(residual));
 else % not weighted regression
     try
@@ -83,14 +89,20 @@ else % not weighted regression
             switch model_name
                 case 'diffusion_model'
                     b = nan(1,3);
-                case'convection_model'
+                case 'flow_model'
                     b = nan(1,4);
                 case 'mixed_model'
                     b = nan(1,5);
                 case 'noise_model'
                     b = nan(1,2);
             end
-            o = BayesModels(model_name,b,-Inf);
+            o.model_name = model_name;
+            o.params = b;
+            o.log_likelihood = -Inf;
+            o.model_probability = NaN;
+            o.D = NaN;
+            o.vx = NaN;
+            o.vy = NaN;
             return
         else
             rethrow(err)
@@ -159,6 +171,7 @@ else
         display(['Assigning likelihooods to ' model_name ' as ' num2str(log_model_likelihood)])
     end
 end
+
 o.model_name = model_name;
 o.params = b;
 o.log_likelihood = log_model_likelihood;
@@ -168,4 +181,5 @@ o.vx = NaN;
 o.vy = NaN;
 % o = BayesModels(model_name,b,log_model_likelihood);
 
+o
 end

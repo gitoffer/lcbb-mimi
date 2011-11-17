@@ -21,13 +21,14 @@ imgser_fluct = zeros(X,Y,num_frame);
 for i = 1:num_frame
     imgser_fluct(:,:,i) = imgser(:,:,i) - SeriesMean(i);
 end
+% imgser_flut = imgser;
 
 for tau = 0 : TauLimit-1
     lagcorr = zeros(X,Y,(num_frame-tau));
     for pair=1:(num_frame-tau) % old: pair=1:(size(imgser,3)-tau)
         lagcorr(:,:,pair) = fftshift(real(ifft2(fft2(imgser_fluct(:,:,pair)).*conj(fft2(imgser_fluct(:,:,(pair+tau)))))));
         % normalize
-        lagcorr(:,:,pair) = lagcorr(:,:,pair)/SeriesMean(pair)/SeriesMean(pair+tau);
+        lagcorr(:,:,pair) = lagcorr(:,:,pair)/SeriesMean(pair)/SeriesMean(pair+tau)./numel(SeriesMean(pair));
     end
     STCorr(:,:,(tau+1)) = mean(lagcorr,3);
     ST_std(:,:,(tau+1)) = std(lagcorr,0,3);

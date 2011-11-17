@@ -1,4 +1,4 @@
-function output = bayes_stics(STCorr,STVar,stics_opt,bayes_opt)
+function output = bayes_stics(STCorr,STVar,stics_opt,bayes_opt,play)
 %BAYES_STICS Compute bayesian probabilities given STICS correlation and
 %STIC variance.
 %
@@ -15,13 +15,14 @@ function output = bayes_stics(STCorr,STVar,stics_opt,bayes_opt)
 
 % Get rid of tau = 0
 STCorr = STCorr(:,:,2:end);
+% STCorr = STCorr./max(STCorr(:));
 STVar = STVar(:,:,2:end);
 
-bg = estimate_background(STCorr);
+% bg = estimate_background(STCorr);
 
-for t = 1:size(STCorr,3)
-    STCorr(:,:,t) = STCorr(:,:,t) - bg(t);
-end
+% for t = 1:size(STCorr,3)
+%     STCorr(:,:,t) = STCorr(:,:,t) - bg(t);
+% end
 
 %% Check image size to pass to Bayes
 xdata(1) = size(STCorr,1); %X direction
@@ -36,7 +37,7 @@ models = bayes_opt.model_list;
 num_models = numel(models);
 clear output
 % output(num_models,1) = BayesModels;
-tic
+
 [output(1,num_models).model_name,...
     output(1,num_models).params, ...
     output(1,num_models).log_likelihood,...
@@ -62,5 +63,5 @@ end
 
 output = assign_probability(output);
 output = get_physical_params(output);
-toc
+
 end

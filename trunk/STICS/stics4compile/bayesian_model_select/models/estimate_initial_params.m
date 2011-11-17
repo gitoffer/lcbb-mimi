@@ -2,8 +2,8 @@ function bar = estimate_initial_params(corr,input,stics_opt,pb)
 
 model_name = input.Model;
 flat = @(x) x(:);
-G000 = max(corr(:)) - min(corr(:));
-G_inf = min(corr(:));
+G000 = mean(max(max(corr,[],1),[],2)) - mean(min(min(corr,[],1),[],2));
+G_inf = mean(corr(:));
 xdata = input.xdata;
 
 xf = xdata(1);
@@ -29,6 +29,11 @@ switch model_name
         [~,i] = max(max(corr(:,:,1),[],1));
         [~,j] = max(max(corr(:,:,2),[],1));
         b0(4) = (y(i)-y(j))/(1);
+        % epx,epy
+%         b0(5) = 0;
+%         b0(6) = 0;
+        %s
+%         b0(7) = 0.5;
         lb = [0 -Inf -Inf -Inf];
         ub = [Inf Inf Inf Inf];
         
@@ -36,17 +41,19 @@ switch model_name
             lambda = G000 - max(flat(corr(:,:,2)));
             b0(end+1) = lambda;
         end
-        bar{1} = b0;
-        bar{2} = lb;
-        bar{3} = ub;
         
     case 'diffusion_model'
         b0 = zeros(1,3);
         b0(1) = G000;
         b0(2) = G_inf;
         
-        %D
-        b0(3) = (G000-max(flat(corr(:,:,2))))/(t(2)-t(1));
+        % D
+        b0(3) = (max(flat(corr(:,:,1)))/max(flat(corr(:,:,2))))-1;
+        % epx,epy
+%         b0(4) = 0;
+%         b0(5) = 0;
+        % s
+%         b0(6) = 0.5;
         lb = [0 -Inf 0];
         ub = [Inf Inf Inf];
         
@@ -54,9 +61,6 @@ switch model_name
             lambda = G000 - max(flat(corr(:,:,2)));
             b0(end+1) = lambda;
         end
-        bar{1} = b0;
-        bar{2} = lb;
-        bar{3} = ub;
         
     case 'mixed_model'
         
@@ -64,15 +68,21 @@ switch model_name
         b0(1) = G000;
         b0(2) = G_inf;
         %D
-        b0(3) = (G000-max(flat(corr(:,:,2))))/(t(2)-t(1));
+        b0(3) = (max(flat(corr(:,:,1)))/max(flat(corr(:,:,2))))-1;
         %vx
         [~,i] = max(max(corr(:,:,1),[],2));
         [~,j] = max(max(corr(:,:,2),[],2));
-        b0(3) = (x(i)-x(j))/(t(2)-t(1));
+        b0(4) = (x(i)-x(j))/(t(2)-t(1));
         %vy
         [~,i] = max(max(corr(:,:,1),[],1));
         [~,j] = max(max(corr(:,:,2),[],1));
-        b0(4) = (y(i)-y(j))/(1);
+        b0(5) = (y(i)-y(j))/(1);
+        % epx,epy
+%         b0(6) = 0;
+%         b0(7) = 0;
+        % s
+%         b0(8) = 0.5;
+        
         lb = [0 -Inf 0 -Inf -Inf];
         ub = [Inf Inf Inf Inf Inf];
         
@@ -80,17 +90,16 @@ switch model_name
             lambda = G000 - max(flat(corr(:,:,2)));
             b0(end+1) = lambda;
         end
-        bar{1} = b0;
-        bar{2} = lb;
-        bar{3} = ub;
         
     case 'noise_model'
         G_inf = mean(corr(:));
         
         b0(1) = G_inf;
+        lb = -Inf;
+        ub = Inf;
         
-        bar{1} = b0;
-        bar{2} = -Inf;
-        bar{3} = Inf;
-        
+end
+
+bar = {b0,lb,ub};
+
 end
