@@ -1,4 +1,4 @@
-function [W,varargout] = power_law(mag,dir,power,x)
+function [W,varargout] = power_law(mag,dir,power,x,y)
 %POWER_LAW Generates streamline functions according to the powerlaw W =
 %Az^n.
 %
@@ -13,8 +13,9 @@ function [W,varargout] = power_law(mag,dir,power,x)
 % xies@mit.edu Nov 2011.
 
 
-if ~exist('x','var'), x= -10:.5:10; end
-[x,y] = meshgrid(x);
+if ~exist('x','var'), x = -10:.5:10; end
+if ~exist('y','var'), y = x; end
+[x,y] = meshgrid(x,y);
 
 z = x + y*1i;
 

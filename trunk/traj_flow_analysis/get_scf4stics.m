@@ -11,7 +11,6 @@ nbins = 25;
 
 C = zeros(T,nbins);
 for i = 1:T
-    i
     V = stics_img{i};
     V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
     tic

@@ -1,8 +1,9 @@
-function [W,varargout] = doublet(gamma,zA,theta,x)
+function [W,varargout] = doublet(gamma,zA,theta,x,y)
 
 if ~exist('theta','var'), theta = 0; end
-if ~exist('x','var'), x= -10:1:10; end
-[x,y] = meshgrid(x);
+if ~exist('x','var'), x = -10:1:10; end
+if ~exist('y','var'), y = x; end
+[x,y] = meshgrid(x,y);
 
 num_singularities = numel(zA);
 ZA = zeros([size(x),num_singularities]);
