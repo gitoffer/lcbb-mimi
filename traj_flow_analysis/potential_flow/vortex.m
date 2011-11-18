@@ -1,4 +1,4 @@
-function [W,varargout] = vortex(gamma,a,zA,x)
+function [W,varargout] = vortex(gamma,a,zA,x,y)
 %VORTEX Generates the flow potential for a vortex
 %
 % SYNOPSIS: [W,X,Y] = vortex(gamma,a,zA,x)
@@ -13,8 +13,9 @@ function [W,varargout] = vortex(gamma,a,zA,x)
 % xies@mit.edu. Nov 2011.
 
 if ~exist('x','var'), x = -10:.5:10; end
+if ~exist('y','var'), y = x; end
 
-[x,y] = meshgrid(x);
+[x,y] = meshgrid(x,y);
 
 z = x + y*1i;
 W = 1i*gamma/(2*pi)*(-log(z-zA) + log(a^2./z-conj(zA)));

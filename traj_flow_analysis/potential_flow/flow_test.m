@@ -6,15 +6,18 @@ flat = @(x) x(:);
 num_var = 10;
 nbins = 25;
 Cvv = zeros(num_var,nbins);
+x = -10:1:10;
+y = -50:1:50;
+
 for i = 1:num_var
     zA = [0];
     
-    [W0,x,y] = power_law(1,pi,1,-10:1:10);
-    W1 = source_sink_swirl(5*i*1i,zA,-10:1:10);
-    W2 = source_sink_swirl((i-1)*3,zA+1,-10:1:10);
-    W3 = source_sink_swirl(i*-5,0,-10:1:10);
+    [W0,X,Y] = power_law(1,pi,1,x,y);
+    W1 = source_sink_swirl(5*i*1i,zA,x,y);
+    W2 = source_sink_swirl((i-1)*3,zA+1,x,y);
+    W3 = source_sink_swirl(i*-5,0,x,y);
     W4 = doublet(1*i,0);
-    W5 = vortex(10,1*i,-1+1i,-10:1:10);
+    W5 = vortex(10,1*i,-1+1i,x,y);
     
     W = W0 + W1;
     [Vx,Vy] = velocity_from_potential(W);
@@ -34,7 +37,7 @@ for i = 1:num_var
     
     V = cat(3,Vx,Vy);
     V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
-    centroids = grid2list(x(:),y(:));
+    centroids = grid2list(X(:),Y(:));
     [Cvv_gl(i,:),R] = spatial_correlation_function(V,centroids,nbins,'off','off');
     [Cvv_loc(i,:),R] = spatial_correlation_function(V,centroids,nbins,'on','off');
 end
@@ -65,43 +68,49 @@ title('Local normalization')
 flat = @(x) x(:);
 nbins = 50;
 
-x = -20:1:20;
-zA = [-10+10i 10i 10+10i,...
-    -10 0 10,...
-    -10-10i -10i 10-10i ];
+x = -50:1:50;
+y = -10:1:10;
+zA = [-70i, 70i];
+gammas = [1000 1000];
 % zA = 0
 
-[W0,X,Y] = power_law(1,pi/4,1,x);
-W1 = source_sink_swirl(10,zA,x);
-W2 = doublet(1,zA,pi/2,x);
+[W0,X,Y] = power_law(1,pi/4,1,x,y);
+W1 = source_sink_swirl(gammas,zA,x,y);
 
-W = W0 + W1;
-contourf(X,Y,imag(W),-50:1:50),axis equal;
+W = W1;
+figure,contourf(X,Y,imag(W)),axis equal;
 [Vx,Vy] = velocity_from_potential(W);
-figure,quiver(X,Y,Vx,Vy,0,'linewidth',1),axis equal
 
 V = cat(3,Vx,Vy);
 V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
+
+[Vx,Vy] = list2grid(V,numel(y),numel(x));
+figure,quiver(X,Y,Vx,Vy,0,'linewidth',1),axis equal
+
 centroids = grid2list(X(:),Y(:));
-[Cvv,R] = spatial_correlation_function(V,centroids,nbins);
-figure,plot(R,Cvv);
+[Cvv_gl,R] = spatial_correlation_function(V,centroids,nbins,'off','off');
+figure,plot(R,Cvv_gl);
 hold on, plot(R,0*ones(1,nbins),'r-');
 
+[Cvv_loc,R] = spatial_correlation_function(V,centroids,nbins,'on','off');
+hold on,plot(R,Cvv_loc,'g-');
 
 %%
 flat = @(x) x(:);
 nbins = 25;
 zA = 0;
 
+x = -10:1:10;
+y = -50:1:50;
 Ws = cell(1,5);
-[Ws{1},x,y] = power_law(1,pi/4,1,-10:1:10);
-Ws{2} = source_sink_swirl(1i,zA,-10:1:10);
-Ws{3} = source_sink_swirl(1,zA+1,-10:1:10);
-Ws{4} = source_sink_swirl(-1,0,-10:1:10);
-Ws{5} = doublet(1,0);
+[Ws{1},X,Y] = power_law(10,pi/4,1,x,y);
+Ws{2} = source_sink_swirl(10i,zA,x,y);
+Ws{3} = source_sink_swirl(10,zA+1,x,y);
+Ws{4} = source_sink_swirl(-10,0,x,y);
+Ws{5} = doublet(1,0,0,x,y);
 name = {'uniform','swirl','source','sink','doublet'};
 
-for i = 1:5
+for i = 4:5
     
     if i <4
         W = Ws{i};
@@ -113,13 +122,13 @@ for i = 1:5
         title(['Streamline function for ' name{i} ' flow'])
         
         h((i-1)*4+2) = subplot(3,4,(i-1)*4+2);
-        quiver(x,y,Vx,Vy,0,'Linewidth',1), axis tight square;
+        quiver(x,y,Vx,Vy,0,'Linewidth',1), axis equal;
         title([name{i} ' vector field'])
         V = cat(3,Vx,Vy);
         V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
-        centroids = grid2list(x(:),y(:));
-        
+        centroids = grid2list(X(:),Y(:));
         [Cvv,R] = spatial_correlation_function(V,centroids,nbins,'off','off');
+        
         h((i-1)*4+3) = subplot(3,4,(i-1)*4+3);
         plot(R,Cvv), axis tight square;
         title('Spatial correlation function (global normalized)')
@@ -143,11 +152,11 @@ for i = 1:5
         title(['Streamline function for ' name{i} ' flow'])
         
         g((i-4)*4+2) = subplot(2,4,(i-4)*4+2);
-        quiver(x,y,Vx,Vy,0,'Linewidth',1), axis tight square;
+        quiver(x,y,Vx,Vy,0,'Linewidth',1), axis equal;
         title([name{i} ' vector field'])
         V = cat(3,Vx,Vy);
         V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
-        centroids = grid2list(x(:),y(:));
+        centroids = grid2list(X(:),Y(:));
         
         [Cvv,R] = spatial_correlation_function(V,centroids,nbins,'off','off');
         g((i-4)*4+3) = subplot(2,4,(i-4)*4+3);
