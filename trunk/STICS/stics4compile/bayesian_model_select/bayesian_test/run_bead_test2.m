@@ -17,18 +17,18 @@ for i = 1:J
         'n_dims', 2 ...      %  number of dimensions in which the simulation is conducted
         , 'sim_box_size_um',  [2 2 0].^7.*1 ...  % the simulated box is of this size. See code below for actual default value (should be box_size_px*um_per_px)
         , 'num_frames',     32 ...			% number of frames in the stack produced by the code
-        , 'density',        10 ...              % density of the particles, in um^-o.n_dims
+        , 'density',        20 ...              % density of the particles, in um^-o.n_dims
         , 'um_per_px',      .1 ...			% resolution, microns per pixel
         , 'sec_per_frame',  .1 ...		% seconds per frame
         ...
-        , 'diff_coeff',    (0.05*(11-i)) ...              	% diffusion coefficient in micron^2/sec
-        , 'u_convection',  [0 0 0] + 0*[.5 .5 0] ...        	% convection velocity in microns/sec
+        , 'diff_coeff',    1 ...              	% diffusion coefficient in micron^2/sec
+        , 'u_convection',  [0 0 0] + i*[.1 .1 0] ...        	% convection velocity in microns/sec
         , 'make_gradient' , 0 ...
         ...
         ...%%%%%%%% parameters for image generation %%%%%%%%%%%%%%%%%%%%%%%%%%%%
         , 'box_size_px',    [2 2 0].^6 ...  	% size of the images.
         , 'psf_type', 'g' ...            	% only gaussian psf ('g') is currently supported
-        , 'psf_sigma_um',   [0.5 0.5 0.7] ...  	% standard deviation of the psf in microns, indepedent for all three directions
+        , 'psf_sigma_um',   [0.4 0.4 0.7] ...  	% standard deviation of the psf in microns, indepedent for all three directions
         , 'renderer', 'points_from_nodes' ...  	%   'lines_from_bonds' or 'points_from_nodes'.
         ...
         , 'signal_level',      200 ...                %signal level above background
@@ -41,7 +41,7 @@ for i = 1:J
         , 'store_x', 1 ...
         ...
         ...%%%%%%%% parameters for data analysis %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        , 'corrTimeLimit', 5 ...
+        , 'corrTimeLimit', 6 ...
         , 'speed', NaN ...
         , 'snr', NaN ...
         , 'Pe', NaN ...
@@ -62,7 +62,7 @@ models = {
 
 photobleaching = 0;
 weighted_fit = 1;
-psf_size = .5;
+psf_size = .4;
 window = 200;
 bayes_opt = BayesOptions(models,photobleaching,weighted_fit,psf_size,window);
 
@@ -250,7 +250,7 @@ for j = 1:J
     pe(j) = opt(j).Pe;
 end
 
-pe = [opt.diff_coeff]';
+pe = [opt.speed]';
 
 h1 = errorbar(pe,vx,vx_std,'b-');
 hold on

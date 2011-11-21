@@ -18,11 +18,11 @@ STCorr = STCorr(:,:,2:end);
 % STCorr = STCorr./max(STCorr(:));
 STVar = STVar(:,:,2:end);
 
-% bg = estimate_background(STCorr);
+bg = estimate_background(STCorr);
 
-% for t = 1:size(STCorr,3)
-%     STCorr(:,:,t) = STCorr(:,:,t) - bg(t);
-% end
+for t = 1:size(STCorr,3)
+    STCorr(:,:,t) = STCorr(:,:,t) - bg(t);
+end
 
 %% Check image size to pass to Bayes
 xdata(1) = size(STCorr,1); %X direction

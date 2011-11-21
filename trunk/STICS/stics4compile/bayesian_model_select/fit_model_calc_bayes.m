@@ -1,6 +1,6 @@
 function o = fit_model_calc_bayes(observed_data,observed_var,in,lsq_opt,stics_o,bayes_o)
 
-VERBOSE = 2;
+VERBOSE = 0;
 flat = @(x) x(:);
 
 %FIT_MODEL_CALC_BAYES
@@ -29,7 +29,8 @@ model_name = in.Model; % Model to fit to data
 b0 = in.InitParams; % Initial guess for paramters
 lb = in.LowerBound; % Lowerbounds on paramters
 ub = in.UpperBound; % Upperbounds
-xdata = in.xdata;   % Matrix of lag-variable coordinate grid
+xdata = in.xdata;   % Matrix of lag-variable coordinate gridVERBOSE = 2;
+
 constants = [bayes_o.psf_size stics_o.um_per_px stics_o.sec_per_frame]; % Imaging parameters
 eval(['f = @' model_name ';']);
 
@@ -49,10 +50,10 @@ if weighted_regression
         fit_weights = 1./observed_var;
 %         observed_data = observed_data.*fit_weights;
         %         fw = @(x,xdata) fit_weights.*f(x,xdata,s);
-        [b,~,~,~,~,~,J] = lsqcurvefit(...
+        [b,~,residual,~,~,~,J] = lsqcurvefit(...
             @(x,xdata) f(x,xdata,constants).*fit_weights,...
             b0,xdata,observed_data.*fit_weights,lb,ub,lsq_opt);
-    catch err
+    catch err % If model returns NaN or Inf, set model probability to -Inf
         if (strcmp(err.identifier,'optim:snls:InvalidUserFunction'))
             switch model_name
                 case 'diffusion_model'
@@ -76,8 +77,9 @@ if weighted_regression
             rethrow(err)
         end
     end
-%     residual = reshape(residual,size(observed_data));
-    residual = f(b,xdata,constants) - observed_data;
+    residual = reshape(residual,size(observed_data));
+    residual = residual./fit_weights;
+%     residual = f(b,xdata,constants) - observed_data;
     resnorm = norm(flat(residual));
 else % not weighted regression
     try
@@ -181,5 +183,4 @@ o.vx = NaN;
 o.vy = NaN;
 % o = BayesModels(model_name,b,log_model_likelihood);
 
-o
 end
