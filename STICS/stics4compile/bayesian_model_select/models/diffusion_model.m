@@ -63,19 +63,6 @@ Y = Y(:,:,ones(1,l));
 G = G000.*exp(-((X-epx).^2 + (Y-epy).^2)/s^2./(1+T/tD))./(1+T/tD);
 if pb_flag, G = G.*exp(-T/lambda); end
 
-% G = zeros(n,m,l);
-% for i = 1:n
-%     X = (i - floor(n/2))*um_per_px;
-%     for j = 1:m
-%         Y = (j-floor(m/2))*um_per_px;
-%         G(i,j,:) = G000...
-%             .*exp(-((X-epx).^2+(Y-epy).^2)./s^2./(1+t/tD))./(1+t/tD);
-%         if pb_flag
-%             G(i,j,:) = G(i,j,:).*exp(-t./lambda);
-%         end
-%     end
-% end
-
 G = G + G_inf*ones(n,m,l);
 
 end

@@ -17,16 +17,16 @@ ST_std = zeros(X,Y,TauLimit);
 SeriesMean = squeeze(mean(mean(imgser)));
 
 % only correlate intensity fluctuations - subtract mean intensity
-imgser_fluct = zeros(X,Y,num_frame);
+% imgser_fluct = zeros(X,Y,num_frame);
 for i = 1:num_frame
-    imgser_fluct(:,:,i) = imgser(:,:,i) - SeriesMean(i);
+    imgser(:,:,i) = imgser(:,:,i) - SeriesMean(i);
 end
 % imgser_flut = imgser;
 
 for tau = 0 : TauLimit-1
     lagcorr = zeros(X,Y,(num_frame-tau));
     for pair=1:(num_frame-tau) % old: pair=1:(size(imgser,3)-tau)
-        lagcorr(:,:,pair) = fftshift(real(ifft2(fft2(imgser_fluct(:,:,pair)).*conj(fft2(imgser_fluct(:,:,(pair+tau)))))));
+        lagcorr(:,:,pair) = fftshift(real(ifft2(fft2(imgser(:,:,pair)).*conj(fft2(imgser(:,:,(pair+tau)))))));
         % normalize
         lagcorr(:,:,pair) = lagcorr(:,:,pair)/SeriesMean(pair)/SeriesMean(pair+tau)./numel(SeriesMean(pair));
     end

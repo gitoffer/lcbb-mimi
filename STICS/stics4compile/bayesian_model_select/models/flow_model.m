@@ -88,6 +88,8 @@ if pb_flag, G = G.*exp(-T/lambda); end
 %     end
 % end
 
+% (tauf*128*rats*(a(1)+a(2))*ratt-tauf^2*ratt^2*a(1)*a(2)))
+
 G = G + G_inf*ones(n,m,l);
 
 end
