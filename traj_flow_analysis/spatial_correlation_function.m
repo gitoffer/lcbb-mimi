@@ -9,6 +9,7 @@ function [Cvv,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt)
 %        centroids - coordinates of the vectors (must be the same size as
 %        V)
 %        dR - annulus size (to bin R)
+%        Rmax - maximum distance to look at (default is max distance)
 %        opt - options struct
 %           local - 'on'/'off' for local normalization (default is 'off')
 %           mean_subt - 'on'/'off' for subtracting the mean vector from the
@@ -27,7 +28,7 @@ end
 
 N = size(V,1);
 distances = pdist(centroids);
-% min_d = min(distances);
+if ~exist('Rmax','var'), Rmax = max(distances); end
 R = 0:dR:Rmax;
 edges = R;
 edges(1) = -Inf;
