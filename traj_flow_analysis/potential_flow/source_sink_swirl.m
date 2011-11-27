@@ -14,9 +14,11 @@ function [W,varargout] = source_sink_swirl(gamma,zA,x,y)
 %
 % xies@mit.edu. Nov 2011.
 
+mask = 0;
+
 if ~exist('x','var'), x = -10:.5:10; end
 if ~exist('y','var'), y = x; end
-[x,y] = meshgrid(x,y);
+[X,Y] = meshgrid(x,y);
 
 num_singularities = numel(zA);
 if numel(gamma) > 1
@@ -25,20 +27,27 @@ else
     gamma = gamma(ones(1,num_singularities));
 end
 
-
-ZA = zeros([size(x),num_singularities]);
+Gamma = zeros([size(X),num_singularities]);
+ZA = zeros([size(X),num_singularities]);
 for i = 1:num_singularities
-    ZA(:,:,i) = zA(ones(size(x))*i);
-    Gamma(:,:,i) = gamma(ones(size(x))*i);
+    ZA(:,:,i) = zA(ones(size(X))*i);
+    Gamma(:,:,i) = gamma(ones(size(X))*i);
 end
 
-z = x + y*1i;
+z = X + Y*1i;
 z = z(:,:,ones(1,num_singularities));
 
 W = Gamma./(2*pi).*log(z-ZA);
 W = sum(W,3);
 
+if mask
+    zA_left = zA + 1;
+    zA_right = zA - 1;
+    zA_up = zA + 1i;
+    zA_down = zA - 1i;
+    W(zA_left) = NaN;
+end
 if nargout > 1
-    varargout{1} = Xf;
-    varargout{2} = Yf;
+    varargout{1} = X;
+    varargout{2} = Y;
 end
