@@ -1,14 +1,37 @@
-function [Cvv,R] = spatial_correlation_function(V,centroids,nbins,local,mean_subt)
+function [Cvv,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt)
+%SPATIAL_CORRELATION_FUNCTION Calculates the mean spatial correlation in a
+%vector field as a function of distance separation R between vectors.
+%
+% SYNOPSIS: [Cvv,R] =
+% spatial_correlation_function(V,centroids,dR,local,mean_subt)
+%
+% INPUT: V - vector field
+%        centroids - coordinates of the vectors (must be the same size as
+%        V)
+%        dR - annulus size (to bin R)
+%        opt - options struct
+%           local - 'on'/'off' for local normalization (default is 'off')
+%           mean_subt - 'on'/'off' for subtracting the mean vector from the
+%           vector field (default is 'off')
+% OUTPUT: Cvv - correlation function
+%         R - binned distance
+%
+% xies@mit 11/2011.
 
-if ~exist('local','var'), local = 'off'; end
-if ~exist('mean_subt','var'), mean_subt = 'off'; end
+if ~exist('opt','var')
+    local = 'off'; mean_subt = 'off';
+else
+    if ~isfield(opt,'local'), local = 'off'; else local = opt.local; end
+    if ~isfield(opt,'mean_subt'), mean_subt = 'off'; else mean_subt = opt.mean_subt; end
+end
 
 N = size(V,1);
 distances = pdist(centroids);
-min_d = min(distances);
-max_d = max(distances);
-R = linspace(min_d,max_d,nbins-1);
-edges = [-inf R];
+% min_d = min(distances);
+R = 0:dR:Rmax;
+edges = R;
+edges(1) = -Inf;
+nbins = numel(edges);
 
 [counts,which_bins] = histc(distances,edges);
 Cvv = zeros(1,nbins);
@@ -41,11 +64,11 @@ for i = 1:nbins
 end
 
 if strcmpi(local,'off')
-    Cvv = (Cvv./counts)/nanmean(norms.^2);
+    Cvv = (Cvv./counts)./nanmean(norms.^2);
 else
     Cvv = Cvv./counts;
 end
 
 Cvv(1) = 1;
-R = [0 R];
+% R = [0 R];
 end

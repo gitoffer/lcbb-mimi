@@ -1,6 +1,72 @@
+%% 'mock-embryo' situation
 
+flat = @(x) x(:);
+x = (-100:8:100)*.16;
+y = (1:8:200)*.16;
+dR = 2;
+Rmax = max(y) - min(y);
 
-%%
+zA = [-125 -100 -75 -50 -25 0 ...
+    25 50 75 100 125];
+zA = [zA 136-88i -20+50i -60];
+zA = zA*.16;
+% zA = [-60 -40 -20 0 20 40 60];
+[W,X,Y] = line_flow(10,.5,0,x,y);
+[Vx,Vy] = velocity_from_potential(W);
+
+figure;
+h(1) = subplot(3,1,1);
+contourf(X,Y,real(W));axis tight equal;
+h(2) = subplot(3,1,2);
+quiver(X,Y,Vx,Vy,0); axis tight equal;
+V = cat(3,Vx,Vy);
+V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
+centroids = grid2list(X(:),Y(:));
+opt = struct('local','off','mean_subt','on');
+[Cvv_gl,~] = spatial_correlation_function(V,centroids,dR,Rmax,opt);
+opt = struct('local','on','mean_subt','on');
+[Cvv_loc,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt);
+subplot(3,1,3);
+plot(R,Cvv_loc,'r-',R,Cvv_gl,'b-');
+legend('Local','Global');
+title(['Mean subtraction is ' opt.mean_subt]);
+% ylim([-1 1]);
+xlim([0 R(end)]);
+
+linkaxes(h);
+%% Vary the number of bins
+
+flat = @(x) x(:);
+num_var = 25;
+Cvv_gl = cell(1,num_var);
+Cvv_loc = cell(1,num_var);
+R = cell(1,num_var);
+x = -200:8:200;
+y = -80:8:80;
+
+d = 50;
+zA = [-200 -175 -150 -125 -100 -75 -50 -25 0 ...
+    25 50 75 100 125 150 175 200];
+% zA = [-60 -40 -20 0 20 40 60];
+[W,X,Y] = source_sink_swirl(-10,zA,x,y);
+[Vx,Vy] = velocity_from_potential(W);
+V = cat(3,Vx,Vy);
+V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
+centroids = grid2list(X(:),Y(:));
+
+hold all,colorset = varycolor(num_var);
+set(gca,'colororder',colorset);
+for i = 1:num_var
+    dR = i;
+    
+    opt = struct('local','off','mean_subt','off');
+    [Cvv_gl{i},~] = spatial_correlation_function(V,centroids,dR,75,opt);
+    opt = struct('local','on','mean_subt','off');
+    [Cvv_loc{i},R{i}] = spatial_correlation_function(V,centroids,dR,75,opt);
+    plot(R{i},Cvv_loc{i});
+end
+
+%% Varies the strength of one type of flow
 
 flat = @(x) x(:);
 num_var = 10;
@@ -64,7 +130,7 @@ title('Local normalization')
 %%
 
 
-%%
+%% Plots normal/global SCF together
 flat = @(x) x(:);
 nbins = 50;
 
@@ -95,7 +161,7 @@ hold on, plot(R,0*ones(1,nbins),'r-');
 [Cvv_loc,R] = spatial_correlation_function(V,centroids,nbins,'on','off');
 hold on,plot(R,Cvv_loc,'g-');
 
-%%
+%% Plots simple flow fields
 flat = @(x) x(:);
 nbins = 25;
 zA = 0;
@@ -193,3 +259,4 @@ end
 % V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
 % centroids = grid2list(x(:),y(:));
 % [Cvv,R] = spatial_correlation_function(V,centroids,nbins,'off','off');
+
