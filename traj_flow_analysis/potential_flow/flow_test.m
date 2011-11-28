@@ -1,39 +1,44 @@
-%% 'mock-embryo' situation
+% MOCK-Embryo
 
 flat = @(x) x(:);
-x = (-100:8:100)*.16;
+x = (-100:8:100)*.16; % in microns
 y = (1:8:200)*.16;
-dR = 2;
+dR = 2; % in microns
 Rmax = max(y) - min(y);
 
+% Place sigularities
 zA = [-125 -100 -75 -50 -25 0 ...
     25 50 75 100 125];
-zA = [zA 136-88i -20+50i -60];
+zA = [zA 50-88i -20+50i -70 -10 15+9i];
 zA = zA*.16;
-% zA = [-60 -40 -20 0 20 40 60];
-[W,X,Y] = line_flow(10,.5,0,x,y);
+Gammas = 20*ones(1,11);
+Gammas = [Gammas 5 5 5 10 20];
+
+% Generate flow
+[W,X,Y] = source_sink_swirl(Gammas,zA,x,y);
 [Vx,Vy] = velocity_from_potential(W);
-
-figure;
-h(1) = subplot(3,1,1);
-contourf(X,Y,real(W));axis tight equal;
-h(2) = subplot(3,1,2);
-quiver(X,Y,Vx,Vy,0); axis tight equal;
 V = cat(3,Vx,Vy);
+% get a list of velocities
 V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
+% V = normalize_vector_field(V);
+[Vx,Vy] = list2grid(V,numel(y),numel(x));
+% get a list of centroids
 centroids = grid2list(X(:),Y(:));
-opt = struct('local','off','mean_subt','on');
-[Cvv_gl,~] = spatial_correlation_function(V,centroids,dR,Rmax,opt);
-opt = struct('local','on','mean_subt','on');
-[Cvv_loc,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt);
-subplot(3,1,3);
-plot(R,Cvv_loc,'r-',R,Cvv_gl,'b-');
-legend('Local','Global');
-title(['Mean subtraction is ' opt.mean_subt]);
-% ylim([-1 1]);
-xlim([0 R(end)]);
 
-linkaxes(h);
+% Generate SCFs
+mean_subt = 'off';
+opt = struct('local','off','mean_subt','off');
+[C_gl,~] = spatial_correlation_function(V,centroids,dR,Rmax,opt);
+opt = struct('local','on','mean_subt','off');
+[C_loc,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt);
+
+figure
+showsub_vert(...
+    @contourf,{X,Y,real(W)},'Flow potential','axis equal tight',...
+    @quiver,{X,Y,Vx,Vy,'linewidth',1},'Vector field','axis equal tight',...
+    @plot,{R,C_loc,'r-',R,C_gl,'b-'},['Mean subtraction is ' mean_subt],'legend(''Local'',''Global'');'...
+    );
+
 %% Vary the number of bins
 
 flat = @(x) x(:);
@@ -66,69 +71,66 @@ for i = 1:num_var
     plot(R{i},Cvv_loc{i});
 end
 
-%% Varies the strength of one type of flow
+%% Linear combination of simple flow fields
 
-flat = @(x) x(:);
-num_var = 10;
-nbins = 25;
-Cvv = zeros(num_var,nbins);
-x = -10:1:10;
-y = -50:1:50;
+flat = @(x) x(:); num_var = 10;
+x = (-100:8:100)*.16; % in microns
+y = (-100:8:100)*.16;
+dR = 2; % in microns
+Rmax = max(y) - min(y);
+nbins = numel(0:dR:Rmax);
+C_gl = zeros(num_var,nbins); C_loc = C_gl;
 
+% Generate different simple flow fields
+zA = [0];
+    
+[W0,X,Y] = power_law(1,pi,1,x,y); % Uniform
+W1 = source_sink_swirl(1i,zA,x,y); % Swirl
+W2 = source_sink_swirl(-1,zA+1,x,y); % Sink
+W3 = source_sink_swirl(1,0,x,y); % Source
+W4 = doublet(1*i,0); % Doublet
+W5 = vortex(1,1*i,-1+1i,x,y); % Vortex
+
+plot_field = 1;
+yaxis_label = 'swirl size';
 for i = 1:num_var
-    zA = [0];
     
-    [W0,X,Y] = power_law(1,pi,1,x,y);
-    W1 = source_sink_swirl(5*i*1i,zA,x,y);
-    W2 = source_sink_swirl((i-1)*3,zA+1,x,y);
-    W3 = source_sink_swirl(i*-5,0,x,y);
-    W4 = doublet(1*i,0);
-    W5 = vortex(10,1*i,-1+1i,x,y);
-    
-    W = W0 + W1;
+    W = W0 + i*W1;
     [Vx,Vy] = velocity_from_potential(W);
-    if any(i == [1,5,10])
-        switch i, case 1, n = 1; str = 'low'; case 5, n = 2; str = 'medium'; case 10, n = 3; str = 'high'; end
-        figure(2)
-        g(n) = subplot(1,3,n);
-        contourf(x,y,imag(W)),axis equal;axis tight;
-        title(['Streamline function for ' str ' swirl size'])
-        figure(3)
-        h(n) = subplot(1,3,n);
-        quiver(x,y,Vx,Vy,0,'Linewidth',1), axis tight square;
-        title([str ' swirl size + uniform field.'])
-        %         figure(2)
-        %         pcolor(x,y,imag(W))
-    end
-    
     V = cat(3,Vx,Vy);
     V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
     centroids = grid2list(X(:),Y(:));
-    [Cvv_gl(i,:),R] = spatial_correlation_function(V,centroids,nbins,'off','off');
-    [Cvv_loc(i,:),R] = spatial_correlation_function(V,centroids,nbins,'on','off');
+    
+    % Get SCF
+    opt = struct('local','off','mean_subt','on');
+    [C_gl(i,:),~] = spatial_correlation_function(V,centroids,dR,Rmax,opt);
+    opt = struct('local','on','mean_subt','on');
+    [C_loc(i,:),R] = spatial_correlation_function(V,centroids,dR,Rmax,opt);
+
+    % Plot underlying field (if turned on)
+    if plot_field && any(i == [1,5,10])
+        switch i, case 1, n = 1; str = 'low'; case 5, n = 2; str = 'medium'; case 10, n = 3; str = 'high'; end
+        figure(1)
+        g(n) = subplot(1,3,n);
+        contourf(x,y,imag(W)),axis equal;axis tight;
+        title(['Streamline function for ' str ' ' yaxis_label])
+        figure(2)
+        h(n) = subplot(1,3,n);
+        quiver(x,y,Vx,Vy,0,'Linewidth',1), axis tight square;
+        title(['Vector field for ' str ' ' yaxis_label])
+    end
 end
+linkaxes(g); linkaxes(h);
 
-linkaxes(h)
-linkaxes(g)
-figure;
-subplot(1,2,1)
+% Plot SCFs
+figure, subplot(1,2,1);
 [foo,bar] = meshgrid(R,1:num_var);
-pcolor(foo,bar,Cvv_gl); colorbar,axis square
+pcolor(foo,bar,C_gl); colorbar, axis square
+xlabel('Distance (R)'),title('Global normalization');
 
-xlabel('Distance (R)')
-ylabel('Swirl size')
-title('Global normalization')
-
-subplot(1,2,2)
-[foo,bar] = meshgrid(R,1:num_var);
-pcolor(foo,bar,Cvv_loc); colorbar,axis square
-
-xlabel('Distance (R)')
-ylabel('Swirl size')
-title('Local normalization')
-
-%%
-
+subplot(1,2,2);
+pcolor(foo,bar,C_loc); colorbar, axis square
+xlabel('Distance (R)'),title('Local normalization');
 
 %% Plots normal/global SCF together
 flat = @(x) x(:);
@@ -163,7 +165,7 @@ hold on,plot(R,Cvv_loc,'g-');
 
 %% Plots simple flow fields
 flat = @(x) x(:);
-nbins = 25;
+dR = 2;
 zA = 0;
 
 x = -10:1:10;
@@ -223,8 +225,8 @@ for i = 4:5
         V = cat(3,Vx,Vy);
         V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
         centroids = grid2list(X(:),Y(:));
+        [Cvv,R] = spatial_correlation_function(V,centroids,dR,max(y),'off','off');
         
-        [Cvv,R] = spatial_correlation_function(V,centroids,nbins,'off','off');
         g((i-4)*4+3) = subplot(2,4,(i-4)*4+3);
         plot(R,Cvv), axis tight square;
         title('Spatial correlation function (global normalized)')
@@ -240,23 +242,3 @@ for i = 4:5
         
     end
 end
-% 
-% W = W0;
-% [Vx,Vy] = velocity_from_potential(W);
-% if any(i == [1,5,10])
-%     switch i, case 1, n = 1; str = '0'; case 5, n = 2; str = 'pi/6'; case 10, n = 3; str = 'pi/3'; end
-%     figure(2)
-%     g(n) = subplot(1,3,n);
-%     contourf(x,y,imag(W)),axis equal;axis tight;
-%     title(['Streamline function for ' str 'angle of attack'])
-%     figure(3)
-%     h(n) = subplot(1,3,n);
-%     quiver(x,y,Vx,Vy,0,'Linewidth',1), axis tight square;
-%     title([str ' angle of attack (of uniform field).'])
-% end
-% 
-% V = cat(3,Vx,Vy);
-% V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
-% centroids = grid2list(x(:),y(:));
-% [Cvv,R] = spatial_correlation_function(V,centroids,nbins,'off','off');
-

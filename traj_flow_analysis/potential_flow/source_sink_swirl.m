@@ -22,7 +22,7 @@ if ~exist('y','var'), y = x; end
 
 num_singularities = numel(zA);
 if numel(gamma) > 1
-    if numel(gamma) ~= num_singularities, error('Please provide gammas');end
+    if numel(gamma) ~= num_singularities, error('Please provide corret number of gammas');end
 else
     gamma = gamma(ones(1,num_singularities));
 end

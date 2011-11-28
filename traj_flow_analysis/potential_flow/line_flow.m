@@ -20,7 +20,7 @@ if ~exist('y','var'), y = x; end
 
 z = X + Y*1i;
 
-W = gamma*sin(a*z)*exp(1i*phi);
+W = gamma*sinc(a*z)*exp(1i*phi);
 W = sum(W,3);
 
 if nargout > 1

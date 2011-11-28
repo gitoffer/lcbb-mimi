@@ -1,14 +1,16 @@
-options = {'off','on','off'};
+options = struct('time_avg','off','local','on','mean_subt','on');
 
 colorset = varycolor(136);
+dR = 10;
+Rmax = 112;
 
-[C_loc,R] = get_scf4stics(stics_img,Xf2,Yf2,o,options);
+[C_loc,R] = get_scf4stics(stics_img,Xf,Yf,dR,Rmax,o,options);
 [foo,bar] = meshgrid(R,1:size(C_loc,1));
 h = pcolor(foo,bar,C_loc);caxis([-1 1]);colorbar;
 xlabel('Distance (\mum)')
 ylabel('Time (s)')
-title('C(R) with local normalization')
-saveas(h,[io.sticsSaveName '/SCF/_coherence_localnorm_half'],'fig')
+title('C(R) with local normalization, mean subtraction')
+saveas(h,[io.save_name '/SCF/coherence_localnorm_msub'],'fig')
 
 figure
 set(gca, 'ColorOrder', colorset);
@@ -16,22 +18,26 @@ hold all
 for i = 1:size(C_loc,1)
     h = plot(R,C_loc(i,:),'Linewidth',1);
 end
+title('C(R) with local normalization, mean subtraction')
 xlabel('Distance (\mum)')
 ylabel('Coherence')
-saveas(h,[io.sticsSaveName '/SCF/_coherence_localnorm_single_half'],'fig')
-save([io.sticsSaveName '/SCF/local_SCF_half'],'C_loc','R')
+saveas(h,[io.save_name '/SCF/coherence_localnorm_single_msub'],'fig')
+save([io.save_name '/SCF/local_SCF'],'C_loc','R')
 
 %%
-options = {'off','off','off'};
+options = struct('time_avg','off','local','off','mean_subt','on');
 
 colorset = varycolor(136);
-[C_gl,R] = get_scf4stics(stics_img,Xf2,Yf2,o,options);
+dR = 10;
+Rmax = 112;
+
+[C_gl,R] = get_scf4stics(stics_img,Xf,Yf,dR,Rmax,o,options);
 [foo,bar] = meshgrid(R,1:size(C_gl,1));
 h = pcolor(foo,bar,C_gl);caxis([-1 1]);colorbar;
 xlabel('Distance (\mum)')
 ylabel('Time (s)')
 title('C(R) with global normalization')
-saveas(h,[io.sticsSaveName '/SCF/_coherence_glnorm_half'],'fig')
+saveas(h,[io.save_name '/SCF/_coherence_glnorm_msub'],'fig')
 
 figure
 set(gca, 'ColorOrder', colorset);
@@ -39,8 +45,9 @@ hold all
 for i = 1:size(C_gl,1)
     h = plot(R,C_gl(i,:),'linewidth',1);
 end
+title('C(R) with global normalization')
 xlabel('Distance (\mum)')
 ylabel('Coherence')
-saveas(h,[io.sticsSaveName '/SCF/_coherence_glnorm_single_half'],'fig')
+saveas(h,[io.save_name '/SCF/coherence_glnorm_single_msub'],'fig')
 
-save([io.sticsSaveName '/SCF/global_SCF_half'],'C_gl','R')
+save([io.save_name '/SCF/global_SCF'],'C_gl','R')
