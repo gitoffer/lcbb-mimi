@@ -50,17 +50,14 @@ end
 if strcmpi(local,'off')
     projections = pdist(V,@project_vectors);
     norms = sqrt(sum(V.^2,2));
-%     norms(isinf(norms)) = NaN;
 else
     projections = pdist(V,@project_vectors_norm);
 end
 projections = squareform(projections);
 
-% projections(logical(eye(N))) = norms.^2;
-
 for i = 1:nbins
     members = projections(which_bins == i);
-%     members(isinf(members)) = NaN;
+    members(isinf(members)) = NaN;
     Cvv(i) = nansum(members);
 end
 
@@ -71,5 +68,4 @@ else
 end
 
 Cvv(1) = 1;
-% R = [0 R];
 end

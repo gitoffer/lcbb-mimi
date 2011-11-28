@@ -1,8 +1,7 @@
 function run_stics(config_file,num_workers)
 
 %%%%%%%%%%%%%%%%%% Run Configuration file %%%%%%%%%%%
-cd('~/Desktop/Configuration files/To be run');
-eval(config_file)
+eval(config_file);
 stics_opt = SticsOptions(um_per_px,sec_per_frame,dt,wt,dx,dy,wx,wy,...
     corrTimeLim,origial_dimensions,crop,ch,bayes);
 cd('~/Desktop/MATLAB Library/STICS/stics4compile');
@@ -12,6 +11,7 @@ imcropped = im(y0:yf,x0:xf,t0:t_f,ch);
 % imsequence_play(imcrop)
 clear im;
 
+display('Image read into STICS.');
 %%%%%%%%%%%%%%%%%% Output Files %%%%%%%%%%%%%%%%%%%%
 io = SticsIo(imname,folder_stem,stics_opt,custom);
 
@@ -25,7 +25,7 @@ tbegin = max(ceil(stics_opt.dt/2),ceil(stics_opt.wt/2));
 tend = size(imcropped,3) - max(ceil(stics_opt.dt/2),ceil(stics_opt.wt/2));
 t = tbegin : stics_opt.dt : tend;
 
-%%%%%% Set up models
+%%%%%% Set up models for Bayesian analysis
 
 models = {
     'mixed_model', ...
@@ -70,9 +70,5 @@ save(io.sticsSaveName)
 if num_workers > 1
     eval('matlabpool close')
 end
-
-cd('~/Desktop/Configuration files/To be run');
-movefile(config_file,'..');
-cd('~/Desktop/MATLAB Library/STICS/stics4compile');
 
 end
