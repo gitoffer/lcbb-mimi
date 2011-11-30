@@ -17,7 +17,7 @@ classdef SticsIo
             obj.sticsSaveName = [obj.save_name,'/stics',obj.file_suffix,custom];
             
             display('Loaded data set:');
-            display(imname)
+            display(obj.file_name)
             display('Will save data to:')
             display(obj.sticsSaveName)
             
