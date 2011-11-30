@@ -1,7 +1,7 @@
-function stics_dots = getDots4Stics(vector,window,direction)
+function stics_dots = get_dots4stics(vector,window,direction)
 % Calculates the value of the average dotproduct between each STICS vector
 % and its neighbors as specified by window. Will normalize by vector norm.
-
+%
 % Can specify separating XY direction.
 
 n = length(vector);

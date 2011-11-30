@@ -15,10 +15,10 @@ display('Image read into STICS.');
 %%%%%%%%%%%%%%%%%% Output Files %%%%%%%%%%%%%%%%%%%%
 io = SticsIo(imname,folder_stem,stics_opt,custom);
 
-%% STICS analysis
+% STICS analysis
 
 if num_workers > 1
-    eval(['matlabpool ' int2str(num_workers)])
+    eval(['matlabpool open ' int2str(num_workers)])
 end
 
 tbegin = max(ceil(stics_opt.dt/2),ceil(stics_opt.wt/2));
@@ -49,6 +49,7 @@ corrTimeLim = stics_opt.corrTimeLim;
 
 tic
 parfor i = 1: numel(t)
+    display(['Starting STICS calculations for ' num2str(i) '.']);
     imser = imcropped(:,:,t(i)-ceil(wt/2)+1:t(i)-ceil(wt/2)+wt);
     if bayes
         [B Xf Yf] = stics_image_bayes(imser,stics_opt,bayes_opt,corrTimeLim,'off');

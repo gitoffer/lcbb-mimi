@@ -20,21 +20,6 @@ I = [I,I_right];
 
 vector_frame = vector(I);
 
-% for j = 1:t(end)+floor(wt/2)
-%     j
-%     I
-%     if I<numel(t)
-%         if j<=t(I)+floor(dt/2)
-%             vector_frame{j} = vector{I};
-%         else
-%             I=I+1;
-%             vector_frame{j} = vector{I};
-%         end
-%     else
-%         vector_frame{j} = vector{I};
-%     end
-% end
-
 % movie_size = 256*EF;% in pix
 % figure(201)
 [resized ~] = imresize(image,EF);

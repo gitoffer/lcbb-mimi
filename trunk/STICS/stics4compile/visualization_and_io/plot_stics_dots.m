@@ -1,6 +1,6 @@
-function plot_stics_dots(vector,o,io,window,varargin)
+function plot_stics_dots(vector,im,o,io,window,varargin)
 
-[Xf Yf] = grid4stics(o.im, o.dx, o.dy, o.wx, o.wy);
+[Xf Yf] = grid4stics(im, o.dx, o.dy, o.wx, o.wy);
 
 if isempty(varargin)
     direction = 'XY';
@@ -9,9 +9,9 @@ else
 end
 
 if strcmpi(direction,'t')
-    stics_dots = getDotsTemporal(vector,window);
+    stics_dots = get_dots_temporal(vector,window);
 else
-    stics_dots = getDots4Stics(vector,window,direction);
+    stics_dots = get_dots4stics(vector,window,direction);
 end
 
 clear M
