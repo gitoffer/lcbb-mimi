@@ -1,32 +1,4 @@
-function thresholded = threshold_img_stack(img,Lxx,Lyy,threshold,filter)
-
-if ~exist('filter','var')
-    filter = 'on';
-end
-
-[X,Y,Z] = size(img);
-ext = 2*max(X,Y);
-Lx = nextpow2(Lxx);
-Ly = nextpow2(Lyy);
-
-if filter
-    img = mat2gray(img);
-    img = 
-end
-
-
-%get a location dependent absolute-intensity cutoff 
-%using a relative-intensity cutoff "top "-percent 
-%absolute cutoff is determined from small compartments 
-
-%Discrete threshold array is smoothened at the end
-
-%raw=raw data array e.g. myosin
-%Lxx Lyy size of compartment
-%top relative intensity threshold
-%remove_spurious=1 filters structures<3pixels, =0 ->no filtering
-
-function thresh_stuff=get_stuff_threshold_fn(raw,Lxx,Lyy,top,remove_spurious);
+function thresh_stuff=get_stuff_threshold_fn(raw,Lxx,Lyy,top,remove_spurious)
 
 xdim = size(raw,1);
 ydim = size(raw,2);
