@@ -2,12 +2,12 @@
 %RETURN MEMBRANES,MYOSIN AND CADHERIN AT THAT DEPTH
 
 %FOR EACH EMBRYO NEED TO DETERMINE CONVENIENT PARAMETERS!
-%requieres embryo axis to lay horizontally (otherwise modify line ...)
-%always control if manifold (indqf) is correct using 
-%d=indqf-indq, (d=smoothened-discrete data) - Deviations should be 
-%of order of fluctuations within a myosin blob
+% requieres embryo axis to lay horizontally (otherwise modify line ...)
+% always control if manifold (indqf) is correct using 
+% d=indqf-indq, (d=smoothened-discrete data) - Deviations should be 
+% of order of fluctuations within a myosin blob
 
-clear all;
+clear variables;
 file='Embryo01_t21_z';
 dir  = '/Volumes/LaCie - Lab/MICROSCOPY DATA/Leica/2009/070109 SquGFP Gap43attp2-wt/Embryo01/';
 targ_dir = '/Volumes/LaCie - Lab/MICROSCOPY DATA/Leica/2009/070109 SquGFP Gap43attp2-wt/Embryo01/Projection/';
@@ -59,11 +59,11 @@ end
 %eventually try to apply membrane mask only to lower layers where
 %cells are hardly constricted and membranes lay far away from blobs
 
-
 %% get thresholded myosin stack (contains only local top %-age pixels)
 %  supposed to yield good estimate of depth of intense myosin
 
-myosin_threshed = threshold_
+myosin_threshed = threshold_img_stack(raw_myosin,
+
 
 thresh_myo=get_stuff_threshold_fn(rawmyo,Lx,Ly,top,0);
 figure(11); clf; imagesc(thresh_myo); colorbar;
