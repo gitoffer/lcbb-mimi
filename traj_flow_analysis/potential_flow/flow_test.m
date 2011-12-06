@@ -1,18 +1,17 @@
 % MOCK-Embryo
 
 flat = @(x) x(:);
-x = (-100:8:100)*.16; % in microns
-y = (1:8:200)*.16;
+x = (-500:8:500)*.16; % in microns
+y = (-200:8:200)*.16;
 dR = 2; % in microns
 Rmax = max(y) - min(y);
 
 % Place sigularities
-zA = [-125 -100 -75 -50 -25 0 ...
-    25 50 75 100 125];
-zA = [zA 50-88i -20+50i -70 -10 15+9i];
+zA0 = [-500:75:500];
+zA = [zA0 (rand(1,100)*400i-200i + rand(1,100)*1000)-500];
 zA = zA*.16;
-Gammas = 20*ones(1,11);
-Gammas = [Gammas 5 5 5 10 20];
+Gamma0 = -15*ones(1,numel(zA0));
+Gammas = [Gamma0 rand(1,100)*-15];
 
 % Generate flow
 [W,X,Y] = source_sink_swirl(Gammas,zA,x,y);
@@ -35,7 +34,7 @@ opt = struct('local','on','mean_subt','off');
 figure
 showsub_vert(...
     @contourf,{X,Y,real(W)},'Flow potential','axis equal tight',...
-    @quiver,{X,Y,Vx,Vy,'linewidth',1},'Vector field','axis equal tight',...
+    @quiver,{X,Y,Vx,Vy,0,'linewidth',1},'Vector field','axis equal tight',...
     @plot,{R,C_loc,'r-',R,C_gl,'b-'},['Mean subtraction is ' mean_subt],'legend(''Local'',''Global'');'...
     );
 
@@ -165,10 +164,11 @@ hold on,plot(R,Cvv_loc,'g-');
 
 %% Plots simple flow fields
 flat = @(x) x(:);
-dR = 2;
+dR = 5;
+Rmax = 100;
 zA = 0;
 
-x = -10:1:10;
+x = -50:1:50;
 y = -50:1:50;
 Ws = cell(1,5);
 [Ws{1},X,Y] = power_law(10,pi/4,1,x,y);
@@ -178,7 +178,9 @@ Ws{4} = source_sink_swirl(-10,0,x,y);
 Ws{5} = doublet(1,0,0,x,y);
 name = {'uniform','swirl','source','sink','doublet'};
 
-for i = 4:5
+for i = 1:5
+    opt_gl = struct('local','off','mean_subt','off');
+    opt_loc = struct('local','off','mean_subt','off');
     
     if i <4
         W = Ws{i};
@@ -195,7 +197,7 @@ for i = 4:5
         V = cat(3,Vx,Vy);
         V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
         centroids = grid2list(X(:),Y(:));
-        [Cvv,R] = spatial_correlation_function(V,centroids,nbins,'off','off');
+        [Cvv,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt_gl);
         
         h((i-1)*4+3) = subplot(3,4,(i-1)*4+3);
         plot(R,Cvv), axis tight square;
@@ -203,7 +205,7 @@ for i = 4:5
         xlabel('Distance of separation (R)')
         ylabel('SCF')
         
-        [Cvv,R] = spatial_correlation_function(V,centroids,nbins,'on','off');
+        [Cvv,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt_loc);
         h((i-1)*4+4) = subplot(3,4,(i-1)*4+4);
         plot(R,Cvv), axis tight square;
         title('Spatial correlation function (local normalized)')
@@ -225,7 +227,7 @@ for i = 4:5
         V = cat(3,Vx,Vy);
         V = grid2list(flat(V(:,:,1)),flat(V(:,:,2)));
         centroids = grid2list(X(:),Y(:));
-        [Cvv,R] = spatial_correlation_function(V,centroids,dR,max(y),'off','off');
+        [Cvv,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt_gl);
         
         g((i-4)*4+3) = subplot(2,4,(i-4)*4+3);
         plot(R,Cvv), axis tight square;
@@ -233,7 +235,7 @@ for i = 4:5
         xlabel('Distance of separation (R)')
         ylabel('SCF')
         
-        [Cvv,R] = spatial_correlation_function(V,centroids,nbins,'on','off');
+        [Cvv,R] = spatial_correlation_function(V,centroids,dR,Rmax,opt_loc);
         g((i-1)*4+4) = subplot(2,4,(i-4)*4+4);
         plot(R,Cvv), axis tight square;
         title('Spatial correlation function (local normalized)')
