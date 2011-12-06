@@ -21,7 +21,7 @@ e_params.smoothing = 15;
 % Imaging properties
 im_params.Z = 7;
 im_params.T = 100;
-im_params.ext = 2*1024;
+im_params.big_depth = 2*1024;
 im_params.X = 1000;
 im_params.Y = 400;
 im_params.num_channels = 2;
@@ -39,6 +39,7 @@ raw_myosin = im0{im_params.myo_ch};
 raw_membrane = im0{im_params.mem_ch};
 
 %% make a membrane mask
+
 if pr_params.mem_mask
     
     mem_mask = sum(raw_membrane(:,:,5:Z),3);
@@ -59,32 +60,24 @@ end
 %eventually try to apply membrane mask only to lower layers where
 %cells are hardly constricted and membranes lay far away from blobs
 
-%% get thresholded myosin stack (contains only local top %-age pixels)
+%% Local thresholding to get the top perc% pixels in a given volume.
 %  supposed to yield good estimate of depth of intense myosin
 
-myosin_threshed = threshold_img_stack(raw_myosin,
-
-
-thresh_myo=get_stuff_threshold_fn(rawmyo,Lx,Ly,top,0);
+local_thresholds = threshold_img_stack(raw_myosin,im_params.X,im_params.Y,filter,display);
 figure(11); clf; imagesc(thresh_myo); colorbar;
+local_thresholds = local_thresholds(:,:,ones(1,im_params.Z));
 
-Rmyo=zeros(xdim,ydim);
-for n=1:nz %apply threshold to each level
-    Rmyo=rawmyo(:,:,n); %array to calculate weighted average depth
-    Rmyo(Rmyo<thresh_myo)=0;
-    Tmyo(:,:,n)=Rmyo;
-end
-clear Rmyo;
+myosin_thresh = raw_myosin > local_thresholds;
+myosin_thresh = myosin_thresh.*raw_myosin;
+clear raw_myosin;
 
 %%  get depth of intense myosin - first discrete then smooth
+[myosin_sorted myo_sort_ind] = sort(myosin_thresh,3,'descend');
+myosin_thresh = sum(myosin_sorted,3);
+myosin_sorted = myosin_sorted./myosin_thresh(:,:,ones(1,im_params.Z));
+mysoin_sorted(isnan(myosin_sorted)) = 0;
 
-%order myosin signal at (x,y) and get fractional content in each layer
-[rmyo ind]=sort(Tmyo,3,'descend');
-tmyo=sum(rmyo(:,:,:),3);
-for n=1:nz 
-    rmyo(:,:,n)=rmyo(:,:,n)./tmyo;
-end
-rmyo(isnan(rmyo))=0;
+
 
 %make weighted average to get estimate of myosin depth at (x,y)
 indq=zeros(xdim,ydim);
