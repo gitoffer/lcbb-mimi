@@ -1,4 +1,5 @@
-options = struct('time_avg','off','local','on','mean_subt','on');
+options = struct('time_avg','off','local','on','mean_subt','off');
+[Xf,Yf] = grid4stics(imcropped,dx,dy,wx,wy);
 
 colorset = varycolor(numel(stics_img));
 dR = 10;
@@ -11,7 +12,7 @@ xlabel('Distance (\mum)')
 ylabel('Time (s)')
 mkdir([io.save_name '/SCF/']);
 title(['C(R) with local normalization, mean subtraction ' options.mean_subt])
-saveas(h,[io.save_name '/SCF/coherence_localnorm_meansub'],'fig')
+saveas(h,[io.save_name '/SCF/coherence_localnorm'],'fig')
 
 figure
 set(gca, 'ColorOrder', colorset);
@@ -22,7 +23,7 @@ end
 title(['C(R) with local normalization, mean subtraction ' options.mean_subt])
 xlabel('Distance (\mum)')
 ylabel('Coherence')
-saveas(h,[io.save_name '/SCF/coherence_localnorm_single_meansub'],'fig')
+saveas(h,[io.save_name '/SCF/coherence_localnorm_single'],'fig')
 % save([io.save_name '/SCF/local_SCF_meansub'],'C_loc','R')
 
 %%
