@@ -3,7 +3,7 @@ function run_stics(config_file,num_workers)
 %%%%%%%%%%%%%%%%%% Run Configuration file %%%%%%%%%%%
 eval(config_file);
 stics_opt = SticsOptions(um_per_px,sec_per_frame,dt,wt,dx,dy,wx,wy,...
-    corrTimeLim,origial_dimensions,crop,ch,bayes);
+    corrTimeLim,original_dimensions,crop,ch,bayes);
 cd('~/Desktop/MATLAB Library/STICS/stics4compile');
 
 %%%%%%%%%%%%%%%%%% Cropping image %%%%%%%%%%%%%%%%%%%

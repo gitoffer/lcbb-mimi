@@ -10,8 +10,9 @@ F = stics_movie(imcropped,stics_opt,stics_img,200);
 movie2avi(F,[io.sticsSaveName])
 
 %% Plot vectors as time series
-crop = struct('x0',350,'xf',360,'y0',1,'yf',10);
+crop = struct('x0',350,'xf',360,'y0',1,'yf',10); % CROP information
 stics_cropped = stics_crop(stics_img,Xf,Yf,crop);
+
 [N,M,~] = size(stics_cropped{1});
 T = numel(stics_cropped);
 V = zeros([N,M,2,T]);
@@ -23,17 +24,12 @@ Vy = reshape(V(:,:,2,:),T,N*M);
 plot(Vx,'Linewidth',1),ylim([-.05,.05]);
 figure,plot(Vy,'Linewidth',1);
 
-%% EDGE STICS movie
-% Will save movie
+%% Use edge to crop out cell
+m = load_edge_data([io.folder 'Edge_export']);
+mask = make_cell_mask(m,1:150,1,1,131,601,o.um_per_px);
+stics_cropped = stics_crop_mask(stics_img,Xf,Yf,mask,stics_opt);
 
-load([io.folder 'Membranes--basic_2d--Centroid-x'])
-x_vertex = cell2mat(data)./0.16;
-load([io.folder 'Membranes--basic_2d--Centroid-y'])
-y_vertex = cell2mat(data)./0.16;
-
-F = plot_stics_cellvelocity(membranes,o,vector,200,x_vertex,y_vertex);
-
-movie2avi(F,[io.save_name,'/stics_celltraj',io.file_suffix])
+F = stics_movie(imcropped,stics_opt,stics_cropped,200);
 
 %% Get strain (probably shouldn't use yet, without good STICS statistics)
 
@@ -56,3 +52,17 @@ plot_stics_dots(stics_img,imcropped,stics_opt,io,2,'XY');
 
 %%
 plot_xy_color(stics_img,imcropped,io,16*.2);
+
+
+
+%% EDGE STICS movie
+% Will save movie
+
+load([io.folder 'Membranes--basic_2d--Centroid-x'])
+x_vertex = cell2mat(data)./0.16;
+load([io.folder 'Membranes--basic_2d--Centroid-y'])
+y_vertex = cell2mat(data)./0.16;
+
+F = plot_stics_cellvelocity(membranes,o,vector,200,x_vertex,y_vertex);
+
+movie2avi(F,[io.save_name,'/stics_celltraj',io.file_suffix])
