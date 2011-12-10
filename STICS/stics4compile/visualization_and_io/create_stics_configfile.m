@@ -41,7 +41,7 @@ image_info = sprintf('%s\n%s%s%s\n%s%s%s\n%s\n',...
 needinput = 1;
 while needinput
     crop = input('Do you want to crop the image? [y/n]: ','s');
-    needinput = ~any(strcmpi(crop,{'y','n'});
+    needinput = ~any(strcmpi(crop,{'y','n'}));
 end
 if strcmpi(crop,'y')
     x0 = input('Enter left edge of cropped image (enter ''1'' for leftmost of image): ','s');
@@ -77,7 +77,7 @@ wx = input('Enter the STICS space window size in x (in pixels): ','s');
 needinput = 1;
 while needinput
     symmetric = input('Should the x- and y-directions have the same STICS settings? [y/n]: ','s');
-    needinput = ~any(strcmpi(symmetric,{'y','n'});
+    needinput = ~any(strcmpi(symmetric,{'y','n'}));
 end
 if strcmpi(symmetric,'y')
     wy = wx;
@@ -90,7 +90,7 @@ corrTimeLim = input('Enter the STICS correlation time limit (usually 3-8): ');
 needinput = 1;
 while needinput
     bayes = input('Perform bayesian analysis? [1 for yes, 0 for no]: ','s');
-    needinput = any(strcmpi(bayes,{'1','0'});
+    needinput = any(strcmpi(bayes,{'1','0'}));
 end
 stics_options = sprintf('%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s\n%s\n%s%s%s\n', ...
     '%%%%%%%%%%%%%%%%%% STICS options %%%%%%%%%%%%%%%%%%%%',...
