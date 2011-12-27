@@ -23,7 +23,7 @@ if strcmpi(disp,'on')
     set(fig1,'Position',[1 1 scnsize(3)/2 scnsize(4)/2]);
     
     for i = 1:T-1
-        axis([60 150 25 65])
+        axis([60 150 25 65]);
         axis equal
         
         drawnow;
