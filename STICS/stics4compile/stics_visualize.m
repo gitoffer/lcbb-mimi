@@ -53,8 +53,6 @@ plot_stics_dots(stics_img,imcropped,stics_opt,io,2,'XY');
 %%
 plot_xy_color(stics_img,imcropped,io,16*.2);
 
-
-
 %% EDGE STICS movie
 % Will save movie
 
