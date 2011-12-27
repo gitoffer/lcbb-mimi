@@ -1,17 +1,18 @@
 % MOCK-Embryo
 
 flat = @(x) x(:);
-x = (-500:8:500)*.16; % in microns
-y = (-200:8:200)*.16;
+x = (-200:8:200)*.16; % in microns
+y = (1:8:400)*.16;
 dR = 2; % in microns
 Rmax = max(y) - min(y);
 
 % Place sigularities
-zA0 = [-500:75:500];
+zA0 = [-500:25:500];
 zA = [zA0 (rand(1,100)*400i-200i + rand(1,100)*1000)-500];
-zA = zA*.16;
+zA = zA0*.16;
 Gamma0 = -15*ones(1,numel(zA0));
 Gammas = [Gamma0 rand(1,100)*-15];
+Gammas = Gamma0;
 
 % Generate flow
 [W,X,Y] = source_sink_swirl(Gammas,zA,x,y);

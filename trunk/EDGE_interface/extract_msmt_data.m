@@ -12,7 +12,6 @@ function [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert)
 %
 % xies@mit.edu 10/2011.
 
-
 if ~exist('convert','var'), convert = 'on'; end
 
 m = m_array(strcmpi({m_array.name},name_to_extract));

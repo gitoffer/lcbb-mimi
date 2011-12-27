@@ -9,4 +9,5 @@ xlabel('Time (min)')
 ylabel('Temporal correlation')
 mkdir([io.save_name '/TCF/']);
 title('C(\tau)')
-saveas(h,[io.save_name '/TCF/temporal_coherence_'],'fig')
+saveas(h,[io.save_name '/TCF/temporal_coherence'],'fig')
+
