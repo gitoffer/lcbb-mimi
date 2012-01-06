@@ -1,14 +1,12 @@
-function [coeff,As] = wavelet_decompose(im,N)
+function [coeff,As] = wavelet_decompose(im0,s)
 
-coeff = zeros([size(im),N]);
+% [N,M,T] = size(im);
+coeff = zeros([size(im0),s]);
+im = im0;
 
-for i = 1:N
-    g = fspecial('gaussian',7*i,i);
-    filtered = imfilter(im,g,'symmetric');
-    
-    sub = im - filtered;
-    coeff(:,:,i) = sub;
-    
+for i = 1:s
+    filtered = convolveB3AWT(im,i); % Ai = filtered, Ai-1 = im
+    coeff(:,:,i) = im - filtered;   % Wi = Ai-1 - Ai
     im = filtered;
 end
 As = im;
