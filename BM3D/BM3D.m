@@ -90,7 +90,7 @@ function [PSNR, y_est] = BM3D(y, z, sigma, profile, print_to_screen)
 %%%%
 image_name = [
 %     'montage.png'
-     'Cameraman256.png'
+     '~/Desktop/BM3D_images/Cameraman256.png'
 %     'boat.png'
 %     'Lena512.png'
 %     'house.png'
