@@ -12,11 +12,13 @@ if ~exist('channels','var')
 end
 
 im0 = imread(filename);
-% im = zeros([size(im0),num_frames,channels]);
+im = zeros([size(im0),num_frames,channels]);
+
 
 for j=1:channels
     for i = 1:num_frames
         im(:,:,i,j) = imread(filename , channels*(i-1)+(j));
+        im(:,:,i,j) = mat2gray(im(:,:,i,j));
     end
 end
 clear im0r

@@ -11,7 +11,7 @@ coeff = reshape(coeff,X*Y,N);
 
 % Use median absolute deviation, robust standard deviation estimator
 sigmas = mad(coeff,0,1);
-pixels_to_keep = coeff > sigmas(ones(1,X*Y),:);
+pixels_to_keep = coeff > .8*sigmas(ones(1,X*Y),:);
 new_coeff = coeff.*pixels_to_keep;
 
 new_coeff = reshape(new_coeff,X,Y,N);
