@@ -63,13 +63,13 @@ parfor i = 1: numel(t)
 end
 toc
 
-display('Saving data to:')
-display(io.sticsSaveName)
-
-save(io.sticsSaveName)
-
 if num_workers > 1
     eval('matlabpool close')
 end
+
+display('Saving data to:')
+display(io.sticsSaveName);
+
+save(io.sticsSaveName);
 
 end

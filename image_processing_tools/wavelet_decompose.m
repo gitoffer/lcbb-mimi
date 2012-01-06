@@ -1,8 +1,8 @@
-function [coeff,As] = wavelet_decompose(im0,s)
+function [coeff,As] = wavelet_decompose(im,s)
 
-% [N,M,T] = size(im);
-coeff = zeros([size(im0),s]);
-im = im0;
+im = mat2gray(im);
+coeff = zeros([size(im),s]);
+im = im;
 
 for i = 1:s
     filtered = convolveB3AWT(im,i); % Ai = filtered, Ai-1 = im
