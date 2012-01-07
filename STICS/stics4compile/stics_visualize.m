@@ -10,7 +10,7 @@ F = stics_movie(imcropped,stics_opt,stics_img,200);
 movie2avi(F,[io.sticsSaveName])
 
 %% Plot vectors as time series
-crop = struct('x0',350,'xf',360,'y0',1,'yf',10); % CROP information
+crop = struct('x0',350,'xf',360,'y0',50,'yf',60); % CROP information
 stics_cropped = stics_crop(stics_img,Xf,Yf,crop);
 
 [N,M,~] = size(stics_cropped{1});
@@ -21,15 +21,13 @@ for i = 1:numel(stics_cropped)
 end
 Vx = reshape(V(:,:,1,:),T,N*M);
 Vy = reshape(V(:,:,2,:),T,N*M);
-plot(Vx,'Linewidth',1),ylim([-.05,.05]);
-figure,plot(Vy,'Linewidth',1);
+plot(Vx,'Linewidth',1),ylim([-.05,.05]); title('V_x')
+figure,plot(Vy,'Linewidth',1); title('V_y')
 
 %% Use edge to crop out cell
 m = load_edge_data([io.folder 'Edge_export']);
-mask = make_cell_mask(m,1:150,1,1,131,601,o.um_per_px);
-stics_cropped = stics_crop_mask(stics_img,Xf,Yf,mask,stics_opt);
-
-F = stics_movie(imcropped,stics_opt,stics_cropped,200);
+[F,stics_cells] = stics_draw_cells(imcropped,stics_img,m,stics_opt,200);
+movie2avi(F,[io.save_name,'/edge_stisc',io.file_suffix]);
 
 %% Get strain (probably shouldn't use yet, without good STICS statistics)
 

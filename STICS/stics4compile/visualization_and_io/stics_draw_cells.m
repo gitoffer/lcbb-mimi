@@ -1,27 +1,26 @@
 function [F,stics_cells] = stics_draw_cells(image,stics_img,m,o,scaleFactor)
-%STICS_CROP_MAKS Returns a sub-vector field of the original STICS vector
-%field according to a mask.
-% SYNOPSIS: cropped = stics_crop(stics_img,Xf,Yf,mask,o)
+%STICS_DRAW_CELLS Uses an EDGE output to draw STICS according to which cell
+%they blong to.
 %
-% INPUT: stics_img - original STICS field
-%        Xf,Yf - original STICS mesh
-%        mask - mask of ROI over the original image
-%        o - SticsOptions structure
-% OUTPUT: cropped - cropped output
+% SYNOPSIS: [F,stics_cells] =
+% stics_draw_cells(im,stics_img,m,o,scaleFactor)
 %
-% xies@mit Dec 2011.
+% INPUT: im - image
+%        stics_im - STICS vectors
+%        m - imported EDGE measurements stack
+%        o - stics options
+%        scaleFactor - expansion factor
 
 % STICS grid
 EF = 2;
 [Xf Yf] = grid4stics(image,o.dx,o.dy,o.wx,o.wy);
 % Generate the correct time indexing vector
 T = length(stics_img);
-dt = o.dt;
-wt = o.wt;
+dt = o.dt; wt = o.wt;
 tbegin = max(ceil(dt/2),ceil(wt/2));
 tend = numel(o.crop(5):o.crop(6)) - max(ceil(dt/2),ceil(wt/2));
 t = tbegin : dt : tend;
-I = floor(wt/2):numel(t);
+I = 1:numel(t);
 j = 1:t(end) + floor(wt/2);
 I_left = I(ones(1,floor(wt/2)-1));
 I = [I_left,I];
@@ -48,7 +47,7 @@ for i = 1:t(end) + floor(wt/2)
     for j = 1:num_cells
         mask = make_cell_mask(m,i,1,j,X,Y,o.um_per_px);
         Vc = mask_vectorfield(stics_img{i},Xf,Yf,mask)*scaleFactor;
-        stics_cells{i,j} = Vc;
+        stics_cells{j,i} = Vc;
         Vc(Vc == 0) = NaN;
         quiver(Xf*EF,Yf*EF,Vc(:,:,1),Vc(:,:,2),'Color',colorset(j,:,:),'linewidth',1.5);
     end
