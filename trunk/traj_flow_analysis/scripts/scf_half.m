@@ -1,4 +1,8 @@
-[signal,X,Y] = stics_square(stics_img,Xf,Yf);
+
+crop = struct('x0',1,'xf',601,'y0',1,'yf',66); % CROP information
+[stics_cropped,Xfc,Yfc] = stics_crop(stics_img,Xf,Yf,crop);
+
+[signal,X,Y] = stics_square(stics_cropped,Xfc,Yfc);
 
 %%
 options = struct('time_avg','off','local','on','mean_subt','on');
@@ -13,7 +17,7 @@ h = pcolor(foo,bar,C_loc);caxis([-1 1]);colorbar;
 xlabel('Distance (\mum)')
 ylabel('Time (s)')
 title(['C(R) with local normalization, mean subtraction ' options.mean_subt])
-saveas(h,[io.save_name '/SCF/coherence_localnorm_meansub'],'fig')
+saveas(h,[io.save_name '/Half embryos for SCF/coherence_localnorm_meansub'],'fig')
 
 figure
 set(gca, 'ColorOrder', colorset);
@@ -24,8 +28,8 @@ end
 title(['C(R) with local normalization, mean subtraction ' options.mean_subt])
 xlabel('Distance (\mum)')
 ylabel('Coherence')
-saveas(h,[io.save_name '/SCF/coherence_localnorm_single_meansub'],'fig')
-save([io.save_name '/SCF/local_SCF_meansub'],'C_loc','R')
+saveas(h,[io.save_name '/Half embryos for SCF/coherence_localnorm_single_meansub'],'fig')
+save([io.save_name '/Half embryos for SCF/local_SCF_meansub'],'C_loc','R')
 
 %%
 options = struct('time_avg','off','local','on','mean_subt','off');
@@ -40,7 +44,7 @@ h = pcolor(foo,bar,C_loc);caxis([-1 1]);colorbar;
 xlabel('Distance (\mum)')
 ylabel('Time (s)')
 title(['C(R) with local normalization, mean subtraction ' options.mean_subt])
-saveas(h,[io.save_name '/SCF/coherence_localnorm'],'fig')
+saveas(h,[io.save_name '/Half embryos for SCF/coherence_localnorm'],'fig')
 
 figure
 set(gca, 'ColorOrder', colorset);
@@ -51,8 +55,8 @@ end
 title(['C(R) with local normalization, mean subtraction ' options.mean_subt])
 xlabel('Distance (\mum)')
 ylabel('Coherence')
-saveas(h,[io.save_name '/SCF/coherence_localnorm_single'],'fig')
-save([io.save_name '/SCF/local_SCF'],'C_loc','R')
+saveas(h,[io.save_name '/Half embryos for SCF/coherence_localnorm_single'],'fig')
+save([io.save_name '/Half embryos for SCF/local_SCF'],'C_loc','R')
 
 %%
 options = struct('time_avg','off','local','off','mean_subt','on');
@@ -67,7 +71,7 @@ h = pcolor(foo,bar,C_gl);caxis([-1 1]);colorbar;
 xlabel('Distance (\mum)')
 ylabel('Time (s)')
 title(['C(R) with global normalization, mean subtraction ' options.mean_subt])
-saveas(h,[io.save_name '/SCF/coherence_glnorm_meansub'],'fig')
+saveas(h,[io.save_name '/Half embryos for SCF/coherence_glnorm_meansub'],'fig')
 
 figure
 set(gca, 'ColorOrder', colorset);
@@ -78,9 +82,9 @@ end
 title(['C(R) with global normalization, mean subtraction ' options.mean_subt])
 xlabel('Distance (\mum)')
 ylabel('Coherence')
-saveas(h,[io.save_name '/SCF/coherence_glnorm_single_meansub'],'fig')
+saveas(h,[io.save_name '/Half embryos for SCF/coherence_glnorm_single_meansub'],'fig')
 
-save([io.save_name '/SCF/global_SCF_meansub'],'C_gl','R')
+save([io.save_name '/Half embryos for SCF/global_SCF_meansub'],'C_gl','R')
 
 %%
 options = struct('time_avg','off','local','off','mean_subt','off');
@@ -106,5 +110,5 @@ end
 title(['C(R) with global normalization, mean subtraction ' options.mean_subt])
 xlabel('Distance (\mum)')
 ylabel('Coherence')
-saveas(h,[io.save_name '/SCF/coherence_glnorm_single'],'fig')
-save([io.save_name '/SCF/global_SCF'],'C_loc','R')
+saveas(h,[io.save_name '/Half embryos for SCF/coherence_glnorm_single'],'fig')
+save([io.save_name '/Half embryos for SCF/global_SCF'],'C_loc','R')
