@@ -20,10 +20,10 @@ if ~isfield(crop,'tf'), tf = numel(stics_img); else tf = crop.tf; end
 x = Xf(1,:);
 y = Yf(:,1);
 % imc = zeros(yf-y0+floor(x(1)/2),xf-x0+floor(x(1)/2),numel(stics_img));
-x0 = x(x >= x0 & x < x0 + x(1));
-xf = x(x >= xf & x < xf + x(1));
-y0 = y(y >= y0 & y < y0 + y(1));
-yf = y(y >= yf & y < yf + y(1));
+x0 = x(x >= x0); x0 = min(x0);
+xf = x(x < xf); xf = max(xf);
+y0 = y(y >= y0); y0 = min(y0);
+yf = y(y < yf); yf = max(yf);
 
 x = x(:,find(x==x0):find(x==xf));
 y = y(find(y==y0):find(y==yf),:);

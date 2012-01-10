@@ -1,90 +1,53 @@
-options = struct('time_avg','off','local','off','mean_subt','on');
+%% Make STICS output square
+% [signal,X,Y] = stics_square(stics_img,Xf,Yf);
 signal = stics_img;
+X = Xf; Y = Yf;
 
-[Xf,Yf] = grid4stics(imcropped,dx,dy,wx,wy);
-dR = 10;
-Rmax = max(Yf(:));
-
-colorset = jet(floor(numel(signal)/16));
-set(gca, 'colororder', colorset);
-hold all
-for i = 1:16:numel(signal)
-    this_vector{1}(:,:,1) = signal{i}(:,:,1);
-    this_vector{1}(:,:,2) = zeros(size(this_vector{1}(:,:,1)));
-    [C_loc,R] = get_scf4stics(this_vector,Xf,Yf,dR,Rmax,stics_opt,options);
-    h = plot(R,C_loc);caxis([0 numel(stics_img)]);colorbar;
-end
-xlabel('Distance (\mum)')
-ylabel('Time (s)')
-mkdir([io.save_name '/SCF/']);
-title(['C(R) with of V_x, mean subtraction ' options.mean_subt])
-saveas(h,[io.save_name '/SCF/global_xcomp'],'fig')
-
-%%
+%% SCF along x
 options = struct('time_avg','off','local','off','mean_subt','on');
-signal = stics_img;
 
-[Xf,Yf] = grid4stics(imcropped,dx,dy,wx,wy);
 dR = 10;
-Rmax = max(Yf(:));
+Rmax = max(Y(:));
+[N,M,~] = size(signal{1});
 
-colorset = jet(floor(numel(signal)/16));
-set(gca, 'colororder', colorset);
-hold all
+index = 0;
 for i = 1:16:numel(signal)
-    this_vector{1}(:,:,1) = signal{i}(:,:,1);
-    this_vector{1}(:,:,2) = zeros(size(this_vector{1}(:,:,1)));
-    [C_loc,R] = get_scf4stics(this_vector,Xf,Yf,dR,Rmax,stics_opt,options);
-    h = plot(R,C_loc);caxis([0 numel(stics_img)]);colorbar;
-end
-xlabel('Distance (\mum)')
-ylabel('Time (s)')
-mkdir([io.save_name '/SCF/']);
-title(['C(R) of V_x, mean subtraction ' options.mean_subt])
-saveas(h,[io.save_name '/SCF/global_xcomp_means'],'fig')
+    index = index + 1;
+    subplot(4,3,index);
+    C_gl = zeros(N,13);
+    for j = 1:N
+        this_vector{1} = signal{i}(j,:,:);
+        [C_gl(j,:),R] = get_scf4stics(this_vector,X(j,:),Y(j,:),dR,Rmax,stics_opt,options);
+    end
+    [foo,bar] = meshgrid(R,(Y(:,1) - 56)*o.um_per_px);
+    pcolor(foo,bar,C_gl),colorbar;
+    xlabel('Distance (\mum)')
+    ylabel('Distance from midline (\um)')
+    title(['C(R) at t = ' num2str(i)]);
 
-%%
+end
+
+%% SCF along y
+
 options = struct('time_avg','off','local','off','mean_subt','on');
-signal = stics_img;
 
-[Xf,Yf] = grid4stics(imcropped,dx,dy,wx,wy);
 dR = 10;
-Rmax = max(Yf(:));
+Rmax = max(Y(:));
+[N,M,~] = size(signal{1});
 
-colorset = jet(floor(numel(signal)/16));
-set(gca, 'colororder', colorset);
-hold all
+index = 0;
 for i = 1:16:numel(signal)
-    this_vector{1}(:,:,2) = signal{i}(:,:,2);
-    this_vector{1}(:,:,1) = zeros(size(this_vector{1}(:,:,2)));
-    [C_loc,R] = get_scf4stics(this_vector,Xf,Yf,dR,Rmax,stics_opt,options);
-    h = plot(R,C_loc);caxis([0 numel(stics_img)]);colorbar;
+    index = index + 1;
+    subplot(4,3,index);
+    C_gl = zeros(13,M);
+    for j = 1:M
+        this_vector{1} = signal{i}(:,j,:);
+        [C_gl(:,j),R] = get_scf4stics(this_vector,X(:,j),Y(:,j),dR,Rmax,stics_opt,options);
+    end
+    [foo,bar] = meshgrid(X(1,:)*o.um_per_px,R);
+    pcolor(foo,bar,C_gl),colorbar;
+    xlabel('Distance (\mum)')
+    ylabel('Distance along x (\um)')
+    title(['C(R) at t = ' num2str(i)]);
+
 end
-xlabel('Distance (\mum)')
-ylabel('Time (s)')
-mkdir([io.save_name '/SCF/']);
-title(['C(R) with of V_y, mean subtraction ' options.mean_subt])
-saveas(h,[io.save_name '/SCF/global_ycomp'],'fig')
-
-%%
-options = struct('time_avg','off','local','off','mean_subt','on');
-signal = stics_img;
-
-[Xf,Yf] = grid4stics(imcropped,dx,dy,wx,wy);
-dR = 10;
-Rmax = max(Yf(:));
-
-colorset = jet(floor(numel(signal)/16));
-set(gca, 'colororder', colorset);
-hold all
-for i = 1:16:numel(signal)
-    this_vector{1}(:,:,2) = signal{i}(:,:,2);
-    this_vector{1}(:,:,1) = zeros(size(this_vector{1}(:,:,2)));
-    [C_loc,R] = get_scf4stics(this_vector,Xf,Yf,dR,Rmax,stics_opt,options);
-    h = plot(R,C_loc);caxis([0 numel(stics_img)]);colorbar;
-end
-xlabel('Distance (\mum)')
-ylabel('Time (s)')
-mkdir([io.save_name '/SCF/']);
-title(['C(R) of V_y, mean subtraction ' options.mean_subt])
-saveas(h,[io.save_name '/SCF/global_ycomp_means'],'fig')

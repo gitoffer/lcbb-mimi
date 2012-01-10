@@ -2,7 +2,9 @@ function [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert)
 %EXTRACT_MSMT_DATA (from EDGE). Extracts a specific measurement from an
 %array of EDGE measurement structures.
 %
-% SYNOPSOS: [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert)
+% SYNOPSOS: 
+%  data = extract_msmt_data(m_array,'anisotropy','off')
+% [data,unit] = extract_msmt_data(m_array,'anisotropy','off')
 %
 % INPUT: m_array - EDGE measurements
 %        name_to_extract - measurement name

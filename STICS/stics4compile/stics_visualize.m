@@ -10,8 +10,8 @@ F = stics_movie(imcropped,stics_opt,stics_img,200);
 movie2avi(F,[io.sticsSaveName])
 
 %% Plot vectors as time series
-crop = struct('x0',350,'xf',360,'y0',50,'yf',60); % CROP information
-stics_cropped = stics_crop(stics_img,Xf,Yf,crop);
+crop = struct('x0',1,'xf',601,'y0',1,'yf',66); % CROP information
+[stics_cropped,Xfc,Yfc] = stics_crop(stics_img,Xf,Yf,crop);
 
 [N,M,~] = size(stics_cropped{1});
 T = numel(stics_cropped);
@@ -19,6 +19,7 @@ V = zeros([N,M,2,T]);
 for i = 1:numel(stics_cropped)
     V(:,:,:,i) = stics_cropped{i};
 end
+
 Vx = reshape(V(:,:,1,:),T,N*M);
 Vy = reshape(V(:,:,2,:),T,N*M);
 plot(Vx,'Linewidth',1),ylim([-.05,.05]); title('V_x')
@@ -35,7 +36,6 @@ E = cell(numel(vector),1);
 for t = 1:numel(vector)
     E{t} = calc_strain(stics_img{t});
 end
-
 plot_strain(E,imcrop,Xf,Yf,io);
 
 %% Compute and plot divergence
