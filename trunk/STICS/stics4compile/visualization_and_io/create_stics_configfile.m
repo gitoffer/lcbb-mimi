@@ -1,5 +1,7 @@
 function create_stics_configfile
 
+display('To abort at any time, press CTRL + C!')
+
 % Header
 username = input('Please enter your name: ','s');
 header = sprintf('%s\n%s\n%s\n%s%s\n', ...
@@ -70,10 +72,10 @@ cropping_info = sprintf('%s\n%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\
 % STICS options
 um_per_px = input('Enter the spatial resolution (um/pixel): ','s');
 sec_per_frame = input('Enter the temporal resolution (sec/frame): ','s');
-dt = input('Enter the STICS frame rate (recommended: 1): ','s');
-dx = input('Enter the STICS grid spacing in x: ','s');
-wt = input('Enter the STICS time window size (in frames): ','s');
-wx = input('Enter the STICS space window size in x (in pixels): ','s');
+dt = input('Enter dt (recommended: 1): ','s');
+dx = input('Enter dx: ','s');
+wt = input('Enter wx: ','s');
+wx = input('Enter wx: ','s');
 needinput = 1;
 while needinput
     symmetric = input('Should the x- and y-directions have the same STICS settings? [y/n]: ','s');
@@ -83,16 +85,12 @@ if strcmpi(symmetric,'y')
     wy = wx;
     dy = dx;
 else
-    dy = input('Enter the STICS grid spacing in y: ','s');
-    wy = input('Enter the STICS space window size in y (in pixels): ','s');
+    dy = input('Enter dy: ','s');
+    wy = input('Enter wy: ','s');
 end
 corrTimeLim = input('Enter the STICS correlation time limit (usually 3-8): ');
-needinput = 1;
-while needinput
-    bayes = input('Perform bayesian analysis? [1 for yes, 0 for no]: ','s');
-    needinput = any(strcmpi(bayes,{'1','0'}));
-end
-stics_options = sprintf('%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s\n%s\n%s%s%s\n', ...
+
+stics_options = sprintf('%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s\n%s\n%s\n', ...
     '%%%%%%%%%%%%%%%%%% STICS options %%%%%%%%%%%%%%%%%%%%',...
     'um_per_px = ', um_per_px, ';', ...
     'sec_per_frame = ', sec_per_frame, ';', ...
@@ -105,7 +103,7 @@ stics_options = sprintf('%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%s%s\n%s%
     'corrTimeLim = ', corrTimeLim, ';', ...
     'origional_dimensions = [X,Y,T];', ...
     'crop = [x0,xf,y0,yf,t0,t_f,ch]', ...
-    'bayes = ', bayes, ';' ...
+    'bayes = 0' ...
     );
 
 display('Save the newly created config file to...');

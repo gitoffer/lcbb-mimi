@@ -3,12 +3,12 @@
 signal = stics_img;
 X = Xf; Y = Yf;
 
-%% SCF along x
-options = struct('time_avg','off','local','off','mean_subt','on');
-
 dR = 10;
 Rmax = max(Y(:));
 [N,M,~] = size(signal{1});
+
+%% SCF along x
+options = struct('time_avg','off','local','off','mean_subt','on');
 
 index = 0;
 for i = 1:16:numel(signal)
@@ -30,10 +30,6 @@ end
 %% SCF along y
 
 options = struct('time_avg','off','local','off','mean_subt','on');
-
-dR = 10;
-Rmax = max(Y(:));
-[N,M,~] = size(signal{1});
 
 index = 0;
 for i = 1:16:numel(signal)
