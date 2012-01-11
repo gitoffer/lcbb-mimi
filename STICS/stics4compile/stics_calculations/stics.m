@@ -18,9 +18,9 @@ SeriesMean = squeeze(mean(mean(imgser)));
 
 % only correlate intensity fluctuations - subtract mean intensity
 % imgser_fluct = zeros(X,Y,num_frame);
-for i = 1:num_frame
-    imgser(:,:,i) = imgser(:,:,i) - SeriesMean(i);
-end
+% for i = 1:num_frame
+%     imgser(:,:,i) = imgser(:,:,i) - SeriesMean(i);
+% end
 % imgser_flut = imgser;
 
 for tau = 0 : TauLimit-1
