@@ -21,6 +21,7 @@ targ_dir = '/Users/adammartin/Desktop/070109 SquGFP Gap43attp2-wt/Embryo01/Proje
 
 EMBRYO DEPENDENT PARAMETERS (chose using figs 1-4)
 thickness=2;     %thickening parameter for membrane mask
+function load_data4manifold
 Lx=20; Ly=20;    %compartment size for local intensity thresholding 
 top=5;           %local threshold - only top% of myosin intensity at x,y
                  %contribute to depth estimate  at x,y

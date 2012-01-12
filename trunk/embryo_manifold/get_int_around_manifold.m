@@ -21,10 +21,23 @@ if ~exist('interp','var')
     interp = 'on';
 end
 
-mf_layers = -n_levels:n_levels;
+layers_around = -n_levels:n_levels;
 if strcmpi(interp,'on')
-    
+    manifold_layers = manifold + layers_around;
+		% Anything higher than Z is sent to Z
+		manifold_layers(manifold_layers > Z) = Z;
+		% Anything lower than 1 is sent to 1
+		manifold_layers(manifold_layers < 1) = 1;
+
+		pixels_to_avg = manifold >= 1 && manifold <= nz
+		manifold_floor = floor(manifold_layers);
+		manifold_ceil = ceil(manifold_layers);
+		int_found = (1-alpha)*img_stack(:,:,manifold_floor) + alpha*img_stack(:,:,manifold_ceil);
 else
+		manifold_layers = round(manifold + layers_around);
+		manifold_layers(manifold_lyaers > Z) = Z;
+		manifold_layers(manifold_layers < 1) = 1;
+		
     
 end
 end

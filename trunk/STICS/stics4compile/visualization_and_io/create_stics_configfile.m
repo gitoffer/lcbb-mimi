@@ -1,6 +1,6 @@
 function create_stics_configfile
 
-display('To abort at any time, press CTRL + C!')
+display('To abort at any time, press CTRL + C!')w
 
 % Header
 username = input('Please enter your name: ','s');

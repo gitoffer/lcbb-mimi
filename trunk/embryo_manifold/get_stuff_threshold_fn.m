@@ -1,4 +1,4 @@
-function thresh_stuff=get_stuff_threshold_fn(raw,Lxx,Lyy,top,remove_spurious)
+function thresh_stuff=get_stuff_threshold_fn(raw,params,remove_spurious)
 
 xdim = size(raw,1);
 ydim = size(raw,2);
@@ -16,7 +16,7 @@ if remove_spurious==1
 end
 
 %% delete everything below "top" intensity percent in a volume element
-nx=xdim/Lx;
+nx=xdim/Lx; % Surely this is not integral
 ny=ydim/Ly;
 thresh_stuff=zeros(xdim,ydim); %array containing local threshold values
 
