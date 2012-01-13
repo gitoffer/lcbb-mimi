@@ -7,7 +7,7 @@ stics_opt = SticsOptions(um_per_px,sec_per_frame,dt,wt,dx,dy,wx,wy,...
 cd('~/Desktop/MATLAB Library/STICS/stics4compile');
 
 %%%%%%%%%%%%%%%%%% Cropping image %%%%%%%%%%%%%%%%%%%
-imcropped = im(y0:yf,x0:xf,t0:t_f,ch);
+imcropped = im(y0:yf,x0:xf,ch,t0:t_f);
 % imsequence_play(imcrop)
 clear im;
 

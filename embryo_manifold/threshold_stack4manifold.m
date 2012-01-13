@@ -1,7 +1,8 @@
 function local_thresholds = threshold_stack4manifold(imstack,params,prefilter,display)
 %THRESHOLD_STACK4MANIFOLD
-% Makes a thresholded myosin stack by looking in wx x wx x Z 'supervoxl' pixel intensity
-% distributions and taking the specified top percentile pixels in that local window.
+% Makes a thresholded myosin stack by looking in wx x wx x Z 'supervoxel'
+% pixel intensity distributions and taking the specified top percentile
+% pixels in that local window.
 %
 % SYNOPSIS: img_th = threshold_stack4manifold(imstack,params,1,'on')
 %
@@ -11,7 +12,8 @@ function local_thresholds = threshold_stack4manifold(imstack,params,prefilter,di
 %	           .perc - percentiles to keep
 %			   .filter_size - final smoothing filter size
 %							 
-%        prefilter - (optional), kernel size for pre-filter the image stack,
+%        prefilter - (optional), kernel size for pre-filter the image
+%                    stack,
 %                    usually to remove PSF noise (default = 0)
 %        display - 'on'/'off' display results (default 'off')
 %
@@ -23,6 +25,8 @@ if ~exist('filter','var')
     prefilter = 0;
     display = 'off';
 end
+
+wx = params.wx; wy = params.wy;
 
 [X,Y,Z] = size(imstack);
 support = 2*max(X,Y); % Support for filter
@@ -43,14 +47,14 @@ Ny = Y/wy_p2;
 x_bottom = ((1:Nx)-1)*wx_p2 + 1;
 x_top = x_bottom + wx_p2 - 1;
 y_bottom = ((1:Ny)-1)*wy_p2 + 1;
-y_top = y_bottom + yx_p2 + 1;
+y_top = y_bottom + wy_p2 + 1;
 
 % get if of for-loop?
 local_thresholds = zeros(X,Y);
 for i = 1:Nx
     for j = 1:Ny
 		% Crop out a wx x wy x Z section
-        v = imstack(x_bottom(i):x_top(i), y_bototm(j):y_top(j), :);
+        v = imstack(x_bottom(i):x_top(i), y_bottom(j):y_top(j),:);
 		% Generate a histogram of all pixel values
         counts = hist(v(:),params.bit_depth);
 		% Generate CDF
