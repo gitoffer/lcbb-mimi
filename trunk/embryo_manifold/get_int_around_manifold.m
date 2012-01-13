@@ -1,4 +1,4 @@
-function int_found = get_int_around_manifold(img_stack,manifold,nZ,n_levels,interp)
+function int_found = get_int_around_manifold(img_stack,manifold,extract_params,im_params)
 %GET_INT_AROUND_MANIFOLD Returns the intensity found within within +/- n
 % levels around the manifold seeded by embryo myosin intensity (presumptive
 % apical surface).
@@ -8,38 +8,39 @@ function int_found = get_int_around_manifold(img_stack,manifold,nZ,n_levels,inte
 %
 % INPUT: img_stack - image stack whose intensity is of interest
 %        manifold -
-%        nZ
-%        n_levels - number of +/- levels to return
-%        interp - (opt) 'on'/'off' to turn on interpolation between
-%        confocal stacks when calculating intensity. (Default is on)
+
+
+n_levels = extract_params.n_levels;
+interp = extract_params.interp;
+alpha = extract_params.alpha;
+Z = im_params.Z;
 
 [X,Y] = size(manifold);
 int_found = zeros(X,Y,2*n_levels + 1); % Intensity broken down by layers
-% total_int = zeros(X,Y);
-
-if ~exist('interp','var')
-    interp = 'on';
-end
+total_int = zeros(X,Y);
 
 layers_around = -n_levels:n_levels;
 if strcmpi(interp,'on')
     manifold_layers = manifold + layers_around;
-		% Anything higher than Z is sent to Z
-		manifold_layers(manifold_layers > Z) = Z;
-		% Anything lower than 1 is sent to 1
-		manifold_layers(manifold_layers < 1) = 1;
-
-		pixels_to_avg = manifold >= 1 && manifold <= nz
-		manifold_floor = floor(manifold_layers);
-		manifold_ceil = ceil(manifold_layers);
-		int_found = (1-alpha)*img_stack(:,:,manifold_floor) + alpha*img_stack(:,:,manifold_ceil);
+	% Anything higher than Z is sent to Z
+	manifold_layers(manifold_layers > Z) = Z;
+	% Anything lower than 1 is sent to 1
+	manifold_layers(manifold_layers < 1) = 1;
+	
+	pixels_to_avg = manifold >= 1 & manifold <= Z
+	manifold_layers = manifold_layers(pixels_to_avg);
+	manifold_floor = floor(manifold_layers);
+	manifold_ceil = ceil(manifold_layers);
+	int_found = (1-alpha)*img_stack(:,:,manifold_floor) + alpha*img_stack(:,:,manifold_ceil);
+	int_found = pixels_t_
 else
-		manifold_layers = round(manifold + layers_around);
-		manifold_layers(manifold_lyaers > Z) = Z;
-		manifold_layers(manifold_layers < 1) = 1;
-		
-    
+	manifold_layers = round(manifold + layers_around);
+	manifold_layers(manifold_lyaers > Z) = Z;
+	manifold_layers(manifold_layers < 1) = 1;
+	pixels_mask = manifold >= 1 & manifold <= Z;
+	int_found
 end
+
 end
 
 
@@ -86,7 +87,7 @@ for m=-mf:mf %from layer -mf to layer +mf
     end
 end
 %
-% for m=1:k  %fractional content in each layer
+s for m=1:k  %fractional content in each layer
 %     Mstuff(:,:,m)=Mstuff(:,:,m)./tot_Mstuff(:,:);
 % end
 
