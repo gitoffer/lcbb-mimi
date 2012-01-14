@@ -1,4 +1,4 @@
-function im = imread_multi(filename,channels,z,num_frames)
+function im = imread_multi(filename,channels,z,num_frames,convert)
 %IMREAD_MULTI Reads in a multidimensional TIF image stack.
 %
 % SYNOPSIS: im = imread_multi(filename,num_frames,channels)
@@ -12,12 +12,17 @@ function im = imread_multi(filename,channels,z,num_frames)
 
 im0 = imread(filename);
 im = zeros([size(im0),channels,z,num_frames]);
-
-for k = 1:channels
+if ~exist('convert','var'), convert = 'off'; end
+index = 0;
+for i = 1:num_frames
     for j = 1:z
-        for i = 1:num_frames
-            im(:,:,k,j,i) = (i + z*(j-1) + channels*(k-1));
-            im(:,:,k,j,i) = mat2gray(im(:,:,k,j,i));
+        for k = 1:channels
+            index = index + 1;
+            im(:,:,k,j,i) = imread(filename,index);
+            if strcmpi(convert,'on')
+                im(:,:,k,j,i) = mat2gray(im(:,:,k,j,i));
+            end
         end
     end
 end
+im = squeeze(im);

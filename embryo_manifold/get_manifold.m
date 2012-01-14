@@ -16,24 +16,25 @@ function manifold = get_manifold(myosin_thresh,manifold_params,im_params)
 % Sort myosin-intensity along z and return the ranked index.
 [myosin_sorted, intensity_index] = sort(myosin_thresh,3,'descend');
 % Project in Z total myosin intensity.
-myosin_thresh = sum(myosin_sorted,3);
+total_int = sum(myosin_sorted,3);
 % Divide sorted myosin by total intensity... This yields relative contribution fro each slice
-myosin_sorted = myosin_sorted./myosin_tresh(:,:,ones(1,im_params.Z));
-mysoin_sorted(isnan(myosin_sorted)) = 0;
+myosin_sorted = myosin_sorted./total_int(:,:,ones(1,im_params.Z));
+myosin_sorted(isnan(myosin_sorted)) = 0;
 
 % Get weighted-average...
-index = sum(myosin_sorted(:,:,1:manifold_params.avg_slice).*intensity_index(:,:,1:manifold_params.avg_slice));
-if strcmpi(manifold.params.display, 'on')
-	figure(21); clf; imagesc(index,[0,nz]);colorbar;
+index = sum( ...
+    myosin_sorted(:,:,1:manifold_params.avg_slice) ...
+    .*intensity_index(:,:,1:manifold_params.avg_slice),3);
+if strcmpi(manifold_params.display, 'on')
+	figure(21); clf; imagesc(index,[0,im_params.Z]);colorbar;
 	title('Discrete myosin indices');
 end
 
-%% Remove outliers in z-depth, testing against average z-depth values in AP axis.
+%%Remove outliers in z-depth, testing against average z-depth values in AP axis.
 % Assumption: There should be no strong 'uneven-ness' in AP axis.
 %if pr_params.mem_mask
 %	index_weighted = myosin_index.*mem_mask;
 %end
-%%
 %Remove strong deviations compared to 
 %typical depth values in a-p direction, assuming no strong depth varyation in posterior anterior
 %direction. Consider measurements within a dn thick slice in a-p direction
@@ -56,15 +57,15 @@ end
 % Make a 'mask' of where the myosin is
 myosin_mask = double(index > 0);
 % Smooth/blur the index (which is discrete) by a Gaussian filter
-index_sm = gaussian_filter(index,pr_params.support,manifold_params.smoothing,'off','off');
+index_sm = gaussian_bandpass(index,manifold_params.support,manifold_params.smoothing,0);
 % Smooth/blur the mask by the same kernel
-myosin_mask_sm = gaussian_filter(myosin_mask,pr_params.support,manifold_params.smoothing,'off','off');
+myosin_mask_sm = gaussian_bandpass(myosin_mask,manifold_params.support,manifold_params.smoothing,0);
 % Divide the smoothed index by the mask, to 'normalize' the index
-index_sm(index_sm > 0) = index_sm(myosin_mask > 0)./myosin_sm(myosin_sm > 0);
+index_sm(myosin_mask > 0) = index_sm(myosin_mask > 0)./myosin_mask_sm(myosin_mask > 0);
 manifold =index_sm;
 
 if strcmpi(manifold_params.display, 'on')
-	figure(40); clf; imagesc(manifold,[0,Z]); colorbar;
+	figure(40); clf; imagesc(manifold,[0,im_params.Z]); colorbar;
 	title('Final smooth manifold');
 end
 

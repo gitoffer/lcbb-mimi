@@ -9,10 +9,10 @@
 %of order of fluctuations within a myosin blob
 
 clear all;
-file='Embryo01_';
+file='SqhGFP Gap43mCherry 2.tif';
 %dir = 'c:/fly/072009_myosin_ECad_actin/';   %from where the data comes
 %dir = 'c:/fly/070509_myosin_ECad_actin/';
-dir  = '/Users/adammartin/Desktop/070109 SquGFP Gap43attp2-wt/Embryo01/';
+dir  = '~/Desktop/Mimi/Data/12-06-2011/';
 targ_dir = '/Users/adammartin/Desktop/070109 SquGFP Gap43attp2-wt/Embryo01/Projection/';
 %targ_dir = 'c:/fly/072009_myosin_ECad_actin/';
 %targ_dir = 'c:/fly/070509_myosin_ECad_actin/'; %where the new data goes
@@ -21,7 +21,6 @@ targ_dir = '/Users/adammartin/Desktop/070109 SquGFP Gap43attp2-wt/Embryo01/Proje
 
 EMBRYO DEPENDENT PARAMETERS (chose using figs 1-4)
 thickness=2;     %thickening parameter for membrane mask
-function load_data4manifold
 Lx=20; Ly=20;    %compartment size for local intensity thresholding 
 top=5;           %local threshold - only top% of myosin intensity at x,y
                  %contribute to depth estimate  at x,y

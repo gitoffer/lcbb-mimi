@@ -1,4 +1,4 @@
-function local_thresholds = threshold_stack4manifold(imstack,params,prefilter,display)
+function local_thresholds = threshold_stack4manifold(imstack,params)
 %THRESHOLD_STACK4MANIFOLD
 % Makes a thresholded myosin stack by looking in wx x wx x Z 'supervoxel'
 % pixel intensity distributions and taking the specified top percentile
@@ -21,22 +21,19 @@ function local_thresholds = threshold_stack4manifold(imstack,params,prefilter,di
 %
 % xies @ mit. jan 2012.
 
-if ~exist('filter','var')
-    prefilter = 0;
-    display = 'off';
-end
 
-wx = params.wx; wy = params.wy;
+wx = params.wx; wy = params.wy; perc = params.perc;
+prefilter = params.prefilter; display = params.display;
 
-[X,Y,Z] = size(imstack);
-support = 2*max(X,Y); % Support for filter
+[Y,X,Z] = size(imstack);
+support = 2*1024; % Support for filter
 wx_p2 = nextpow2(wx);
 wy_p2 = nextpow2(wy);
 
 % Pre-filter image
 if prefilter
     for i = 1:Z
-        [imstack(:,:,i),~] = uint8(gaussian_filter(imstack(:,:,i),support,prefilter,0));
+        imstack(:,:,i) = gaussian_bandpass(imstack(:,:,i),support,prefilter,0);
     end
 end
 
@@ -47,34 +44,36 @@ Ny = Y/wy_p2;
 x_bottom = ((1:Nx)-1)*wx_p2 + 1;
 x_top = x_bottom + wx_p2 - 1;
 y_bottom = ((1:Ny)-1)*wy_p2 + 1;
-y_top = y_bottom + wy_p2 + 1;
+y_top = y_bottom + wy_p2 - 1;
 
 % get if of for-loop?
-local_thresholds = zeros(X,Y);
+local_thresholds = zeros(Y,X);
 for i = 1:Nx
     for j = 1:Ny
 		% Crop out a wx x wy x Z section
-        v = imstack(x_bottom(i):x_top(i), y_bottom(j):y_top(j),:);
+        
+        v = imstack(y_bottom(j):y_top(j),x_bottom(i):x_top(i),:);
 		% Generate a histogram of all pixel values
-        counts = hist(v(:),params.bit_depth);
+        [counts,intensity] = hist(v(:),params.bin_number);
 		% Generate CDF
         CDF = cumsum(counts);
         CDF = CDF/max(CDF(:));
 		% Find threshold by percentile
-        local_thresholds(x_bottom(i):x_top(i), y_bottom(i):y_top(i)) = ...
-            find(CDF > params.perc/100,1,'first');
+        local_thresholds(y_bottom(j):y_top(j),x_bottom(i):x_top(i)) = ...
+            intensity(find(CDF > 1-perc/100,1,'first'));
     end
 end
 
 if strcmpi(display,'on')
-    figure(5); clf; imagesc(local_thresholds);
+    figure(5); clf; imagesc(local_thresholds);colorbar;
 end
 
-local_thresholds = gaussian_filter(local_thresholds,support,params.filter_size,0);
-local_thresholds = local_thresholds(1:X,1:Y); % ?
+local_thresholds = gaussian_bandpass(local_thresholds,support,params.filter_size,0);
+% local_thresholds = local_thresholds(1:Y,1:X)./params.bit_depth; % ?
 
 if strcmpi(display,'on')
-    figure(6); clf; imagesc(local_thresholds);
+    figure(6); clf; imagesc(local_thresholds);colorbar;
+    title('Local threshold values')
 end
 
 end

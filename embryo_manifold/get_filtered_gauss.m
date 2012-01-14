@@ -24,8 +24,9 @@ if (shp~=0)
     filt=filt-1/(2*pi*shp^2)*exp(-(xx.^2+yy.^2)/2/shp^2);
 end
 
-
 % filtering in Fourier domain
 cellsf=real(ifft2(fft2(bg).*fft2(fftshift(filt))));
-cellsf=cellsf((ext-a(1))/2+1:(ext-a(1))/2+a(1),(ext-a(2))/2+1:(ext-a(2))/2+a(2));
-filt=filt((ext-a(1))/2+1:(ext-a(1))/2+a(1),(ext-a(2))/2+1:(ext-a(2))/2+a(2));
+cellsf= cellsf((ext-a(1))/2+1:(ext-a(1))/2+a(1), ...
+    (ext-a(2))/2+1:(ext-a(2))/2+a(2));
+filt=filt((ext-a(1))/2+1:(ext-a(1))/2+a(1), ...
+    (ext-a(2))/2+1:(ext-a(2))/2+a(2));
