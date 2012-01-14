@@ -22,7 +22,7 @@ if num_workers > 1
 end
 
 tbegin = max(ceil(stics_opt.dt/2),ceil(stics_opt.wt/2));
-tend = size(imcropped,3) - max(ceil(stics_opt.dt/2),ceil(stics_opt.wt/2));
+tend = size(imcropped,4) - max(ceil(stics_opt.dt/2),ceil(stics_opt.wt/2));
 t = tbegin : stics_opt.dt : tend;
 
 %%%%%% Set up models for Bayesian analysis
