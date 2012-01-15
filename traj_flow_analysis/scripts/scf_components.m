@@ -1,6 +1,6 @@
 %% Make STICS output square
 [signal,X,Y] = stics_square(stics_img,Xf,Yf);
-
+clear this_vector
 %%
 options = struct('time_avg','off','local','off','mean_subt','off');
 
