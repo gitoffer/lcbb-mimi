@@ -20,6 +20,8 @@ int_found = zeros(X,Y,2*n_levels + 1); % Intensity broken down by layers
 total_int = zeros(X,Y);
 
 layers_around = -n_levels:n_levels;
+layers_around = layers_around(
+
 if strcmpi(interp,'on')
     % PROBLEMATIC
     manifold_layers = manifold + layers_around;

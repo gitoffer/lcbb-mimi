@@ -1,4 +1,5 @@
 [signal,X,Y] = stics_square(stics_img,Xf,Yf);
+mkdir([io.save_name '/SCF/'])
 
 %%
 options = struct('time_avg','off','local','on','mean_subt','on');

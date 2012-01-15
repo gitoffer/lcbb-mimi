@@ -21,9 +21,9 @@ io.write_path = '';
 % io.zstr = '_z';
 % io.cstr = '_ch';
 % First image in sequence to analyse
-io.t0 = 10;
+io.t0 = 20;
 % Last image in sequence to read
-io.tf = 10;
+io.tf = 20;
 % Processing parameters - mostly low-level
 io.write2file = 1;
 
@@ -37,17 +37,17 @@ im_params.myo_ch = 1;
 im_params.mem_ch = 2;
 
 % Embryo-specific processing parameters (these need to be tweaked every time)
-th_params.wx = 50;
-th_params.wy = 50;
-th_params.perc = 20; % Top percentile to threshold myosin
-th_params.bin_number = 1000; % bin-number for CDF calculations
-th_params.filter_size = 25; % Gaussian size for smoothing the thresholded myosin
-th_params.prefilter = 0;
+th_params.wx = 10;
+th_params.wy = 10;
+th_params.perc = 50; % Top percentile to threshold myosin
+th_params.bin_number = 500; % bin-number for CDF calculations
+th_params.filter_size = 15; % Gaussian size for smoothing the thresholded myosin
+th_params.prefilter = 1;
 th_params.display = 'on';
 
 % Smoothing filter size for blurring the discrete Z-index
 manifold_params.support = 1024; % Kernel support size for Gaussian filters - powers of 2 for FFT fastness
-manifold_params.smoothing = 15;
+manifold_params.smoothing = 30;
 manifold_params.avg_slice = 4;
 manifold_params.display = 'on'; % Turn on to visualize the manifold
 
@@ -61,7 +61,6 @@ extract_params.n_levels = 5;
 extract_params.interp = 'on';
 extract_params.interp_alpha = .5; % Should be .5
 
-
 % Read in the entire stack -- memory-intensitve, might want to do it
 % piecewise?
 % entire_stack = imread_multi([io.path io.file],im_params.num_channels,im_params.Z,im_params.T-100);
@@ -72,6 +71,9 @@ for t = io.t0: io.tf
     % 	raw_membrane = input_data{2};
     raw_myosin = squeeze(entire_stack(:,:,im_params.myo_ch,:,t));
     raw_membrane = squeeze(entire_stack(:,:,im_params.mem_ch,:,t));
+    % invert the z-stack order
+    raw_myosin = raw_myosin(:,:,end:-1:1);
+    raw_membrane = raw_membrane(:,:,end:-1:1);
     
     if strcmpi(mem_params.mem_mask,'on')
         raw_myosin = make_mem_mask(raw_membrane, ...
