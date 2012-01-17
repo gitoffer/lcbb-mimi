@@ -21,7 +21,7 @@ total_int = sum(myosin_sorted,3);
 myosin_sorted = myosin_sorted./total_int(:,:,ones(1,im_params.Z));
 myosin_sorted(isnan(myosin_sorted)) = 0;
 
-% Get weighted-average...
+% Get weighted-average of indices ...
 index = sum( ...
     myosin_sorted(:,:,1:manifold_params.avg_slice) ...
     .*intensity_index(:,:,1:manifold_params.avg_slice),3);
@@ -40,7 +40,8 @@ end
 %direction. Consider measurements within a dn thick slice in a-p direction
 %indq=indq.*MembMask;       % remove membrane contribution from depth data
 %dn=16;                     % thickness of slice in A-P direction
-%for n=1:dn:ydim            % remove leftovers of membrane which typically deviate strongly from structure myosin
+%for n=1:dn:ydim            % remove leftovers of membrane which typically deviate strongly from
+%												    structure myosin
 %    A=indq(:,n:n+dn-1);    %use this line if AP-axis vertically
 %    A=indq(n:n+dn-1,:);    %use this line if AP-axis horiz
 %    [r,c,v]=find(A);
@@ -54,15 +55,27 @@ end
 
 %% Making the smooth manifold
 
+% indn=index*0;
+% indn(index>0)=1;
+% [indqf,filt] = get_filtered_gauss(index,manifold_params.support, ...
+%     manifold_params.smoothing,0);
+% [indnf,filt] = get_filtered_gauss(indn,manifold_params.support, ...
+%     manifold_params.smoothing,0);
+% indqf(indnf>0)=indqf(indnf>0)./indnf(indnf>0);
+% figure(40); clf; imagesc(indqf,[0,im_params.Z]); colorbar;
+
 % Make a 'mask' of where the myosin is
 myosin_mask = double(index > 0);
 % Smooth/blur the index (which is discrete) by a Gaussian filter
-index_sm = gaussian_bandpass(index,manifold_params.support,manifold_params.smoothing,0);
+index_sm = gaussian_bandpass( ...
+    index,manifold_params.support,manifold_params.smoothing,0);
 % Smooth/blur the mask by the same kernel
-myosin_mask_sm = gaussian_bandpass(myosin_mask,manifold_params.support,manifold_params.smoothing,0);
+myosin_mask_sm = gaussian_bandpass( ...
+	myosin_mask,manifold_params.support,manifold_params.smoothing,0);
 % Divide the smoothed index by the mask, to 'normalize' the index
-index_sm(myosin_mask > 0) = index_sm(myosin_mask > 0)./myosin_mask_sm(myosin_mask > 0);
-manifold =index_sm;
+index_sm(myosin_mask_sm > 0) = index_sm(myosin_mask_sm > 0)./myosin_mask_sm(myosin_mask_sm > 0);
+% index_sm = index_sm./myosin_mask_sm;
+manifold = index_sm;
 
 if strcmpi(manifold_params.display, 'on')
 	figure(40); clf; imagesc(manifold,[0,im_params.Z]); colorbar;
