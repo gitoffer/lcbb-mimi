@@ -50,6 +50,5 @@ kernel = kernel(fix((support - Y)/2) + 1 : fix((support - Y))/2 + Y, ...
 if nargout > 1
     varargout{1} = kernel;
 end
-imgf = imgf*max(img(:))/max(imgf(:));
- 
+
 end

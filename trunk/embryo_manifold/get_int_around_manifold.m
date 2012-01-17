@@ -1,14 +1,26 @@
-function int_found = get_int_around_manifold(img_stack,manifold,extract_params,im_params)
+function [int_found,fraction_found] = get_int_around_manifold(img_stack,manifold,extract_params,im_params)
 %GET_INT_AROUND_MANIFOLD Returns the intensity found within within +/- n
 % levels around the manifold seeded by embryo myosin intensity (presumptive
 % apical surface).
 %
-% SYNOPSIS: int_found =
+% SYNOPSIS: int_found = 
+%	 	get_int_around_manifold(img_stack,manifold,extract_params,im_params)
 % get_int_around_manifold(img_stack,manifold,nZ,n_levels,interp);
 %
 % INPUT: img_stack - image stack whose intensity is of interest
-%        manifold -
-
+%        manifold - the smoothened index locations of the myosin manifold
+%				 extract_params.n_levels - number of levels (on each side) from in
+%																	 the manifold to include in the final
+%																	 data
+%				 extract_params.interp - 'on'/'off' Turn interpolation between
+%																 manifold indicies on
+%				 extract_params.interp_alpha - should be 0.5
+%
+% OUTPUT: int_found - intensity found within +/- n_levels of the manifold
+%					fraction_found - total fraction of image intensity included in
+%													 the manifold
+%
+% xies@mit.edu Jan 2012.
 
 n_levels = extract_params.n_levels;
 interp = extract_params.interp;
@@ -18,33 +30,43 @@ Z = im_params.Z;
 [X,Y] = size(manifold);
 int_found = zeros(X,Y,2*n_levels + 1); % Intensity broken down by layers
 total_int = zeros(X,Y);
-
 layers_around = -n_levels:n_levels;
-layers_around = layers_around(
+layers_around = permute(layers_around,[2 3 1]);
+layers_around = layers_around(ones(1,X),ones(1,Y),:);
+manifold = manifold(:,:,ones(1,numel(-n_levels:n_levels)));
 
 if strcmpi(interp,'on')
-    % PROBLEMATIC
-    manifold_layers = manifold + layers_around;
+
+  manifold_layers = manifold + layers_around;
 	% Anything higher than Z is sent to Z
 	manifold_layers(manifold_layers > Z) = Z;
 	% Anything lower than 1 is sent to 1
 	manifold_layers(manifold_layers < 1) = 1;
-	
-	pixels_to_avg = manifold >= 1 & manifold <= Z;
+
+	% Only operate on meaningful
+	pixels_to_avg = manifold_layers >= 1 & manifold_layers <= Z;
 	manifold_layers = manifold_layers(pixels_to_avg);
 	manifold_floor = floor(manifold_layers);
 	manifold_ceil = ceil(manifold_layers);
+	% Interpolation (1-a)*floor + a*ceil
 	int_found = (1-alpha)*img_stack(:,:,manifold_floor) + alpha*img_stack(:,:,manifold_ceil);
-% 	int_found = pixels_t_
+
 else
+
 	manifold_layers = round(manifold + layers_around);
 	manifold_layers(manifold_lyaers > Z) = Z;
 	manifold_layers(manifold_layers < 1) = 1;
-	pixels_mask = manifold >= 1 & manifold <= Z;
-% 	int_found
+	%pixels_mask = manifold >= 1 & manifold <= Z;
+	int_found = img_stack(:,:,manifold_layers);
+
+end
+
+if nargout > 1
+	fraction_found = sum(int_found(:))/sum(img_stack(:));
 end
 
 end
+
 
 
 
