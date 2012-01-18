@@ -15,17 +15,20 @@ io.file='SqhGFP Gap43.tif';
 % Directory path for image
 io.path  = '~/Desktop/Mimi/Data/05-26-2011/';
 % Directory path for target output images
-io.write_path = '';
+io.write_path = '~/Desktop/';
 % Strings for writing/reading TIFF sequences
 % io.tstr = '_t';
 % io.zstr = '_z';
 % io.cstr = '_ch';
 % First image in sequence to analyse
-io.t0 = 20;
+io.t0 = 1;
 % Last image in sequence to read
-io.tf = 20;
+io.tf = 150;
 % Processing parameters - mostly low-level
 io.write2file = 1;
+
+%%
+DEBUGGING = 0;
 
 %% Image properties
 im_params.X = 1000; % Image size
@@ -38,9 +41,9 @@ im_params.mem_ch = 2;
 im_params.support = 1024;
 
 % Embryo-specific processing parameters (these need to be tweaked every time)
-th_params.Nx = 2;
-th_params.Ny = 2;
-th_params.perc = 5; % Top percentile to threshold myosin
+th_params.Nx = 1;
+th_params.Ny = 1;
+th_params.perc = 1; % Top percentile to threshold myosin
 th_params.bin_number = 500; % bin-number for CDF calculations
 th_params.filter_size = 1; % Gaussian size for smoothing the thresholded myosin
 th_params.prefilter = 1;
@@ -48,9 +51,9 @@ th_params.display = 'off';
 
 % Smoothing filter size for blurring the discrete Z-index
 manifold_params.support = 1024; % Kernel support size for Gaussian filters - powers of 2 for FFT fastness
-manifold_params.smoothing = 15;
+manifold_params.smoothing = 20;
 manifold_params.avg_slice = 3;
-manifold_params.display = 'on'; % Turn on to visualize the manifold
+manifold_params.display = 'off'; % Turn on to visualize the manifold
 
 % Membrane masking parameters
 mem_params.mem_mask = 'off';
@@ -58,21 +61,23 @@ mem_params.mask_thickness = 5;
 mem_params.display = 'off';
 
 % Manifold extraction parameters
-extract_params.n_levels = 5;
-extract_params.interp = 'off';
-extract_params.interp_alpha = .5; % Should be .5
+extract_params.n_levels = 1;
+extract_params.interp = 'on';
 
 % Read in the entire stack -- memory-intensitve, might want to do it
 % piecewise?
-% entire_stack = imread_multi([io.path io.file],im_params.num_channels,im_params.Z,im_params.T-100);
+% entire_stack = imread_multi([io.path io.file],im_params.num_channels,im_params.Z,im_params.T);
 
-for t = 150: 150
+myosinM = zeros(im_params.Y,im_params.X,2*extract_params.n_levels + 1,numel(io.t0:io.tf));
+membraneM = zeros(im_params.Y,im_params.X,2*extract_params.n_levels + 1,numel(io.t0:io.tf));
+
+for t = io.t0 : io.tf
     % 	input_data = load_stack4manifold(io,im_params,t);
     % 	raw_myosin = input_data{1};
     % 	raw_membrane = input_data{2};
     raw_myosin = squeeze(entire_stack(:,:,im_params.myo_ch,:,t));
     raw_membrane = squeeze(entire_stack(:,:,im_params.mem_ch,:,t));
-
+    
     % invert the z-stack order
     raw_myosin = raw_myosin(:,:,end:-1:1);
     raw_membrane = raw_membrane(:,:,end:-1:1);
@@ -86,46 +91,41 @@ for t = 150: 150
     local_thresholds = threshold_stack4manifold(raw_myosin, ...
         th_params,im_params);
     local_thresholds = local_thresholds(:,:,ones(1,im_params.Z));
-
+    
     % Threshold myosin
     myosin_thresh = raw_myosin.*(raw_myosin > local_thresholds);
-    figure,showsub(@imagesc,max(raw_myosin,[],3),'Raw myosin','colorbar;',...
-        @imagesc,local_thresholds(:,:,1),'Threhold','colorbar',...
-        @imagesc,max(raw_myosin > local_thresholds,[],3),'Mask','colorbar',...
-        @imagesc,max(myosin_thresh,[],3),'Thresholded myosin','colorbar'...
-        );
-    keyboard;
+    if DEBUGGING
+        figure,showsub(@imagesc,{max(raw_myosin,[],3)},'Raw myosin','colorbar,axis equal tight;',...
+            @imagesc,{local_thresholds(:,:,1)},'Threhold','colorbar,axis equal tight',...
+            @imagesc,{max(raw_myosin > local_thresholds,[],3)},'Mask','colorbar,axis equal tight',...
+            @imagesc,{max(myosin_thresh,[],3)},'Thresholded myosin','colorbar,axis equal tight'...
+            );
+        keyboard;
+    end
     
     % Generate manifold
     manifold = get_manifold(myosin_thresh,manifold_params,im_params);
-    keyboard;
+    %     keyboard;
     
     % Use manifold to get myosin/membrane signal
     myosin_manifold = get_int_around_manifold(raw_myosin,manifold,extract_params,im_params);
-    membrane_mnifold = get_int_around_manifold(raw_mem,manifold,extract_params,im_params);
-    
-    keyboard;
+    membrane_manifold = get_int_around_manifold(raw_membrane,manifold,extract_params,im_params);
 
-end
-
-%%%%%%%%%%%%
-
-%% GET Myosin Actin and Cadherin around MyosinDepth Manifold
-
-%%
-if WRITE_TO_FILE==1
-    for n=1:11
-        ii=n-1;
-        jstr=int2str(ii);
-        if (n < 11)
-            jstr=strcat('0',jstr);
-        end
-        imwrite(uint8(Amyo(:,:,n)),[targ_dir,'actin_proj/',file,jstr,'_ch02.tif'],'tif');
-        imwrite(uint8(Mmyo(:,:,n)),[targ_dir,'myosin_proj/',file,jstr,'_ch00.tif'],'tif');
-        imwrite(uint8(Cmyo(:,:,n)),[targ_dir,'cadherin_proj/',file,jstr,'_ch01.tif'],'tif');
-        imwrite(uint8(Cmyo(:,:,n)),[targ_dir,'alltogether/',file,jstr,'_ch01.tif'],'tif');
-        imwrite(uint8(Mmyo(:,:,n)),[targ_dir,'alltogether/',file,jstr,'_ch00.tif'],'tif');
-        imwrite(uint8(Amyo(:,:,n)),[targ_dir,'alltogether/',file,jstr,'_ch02.tif'],'tif');
+    myosinM(:,:,:,t-io.t0+1) = myosin_manifold;
+    membraneM(:,:,:,t-io.t0+1) = membrane_manifold;
+    if DEBUGGING
+        figure,showsub(@imagesc,{myosin_manifold(:,:,1)},'Layer 1','colorbar,axis equal tight;',...
+            @imagesc,{myosin_manifold(:,:,2)},'Layer 2','colorbar,axis equal tight',...
+            @imagesc,{myosin_manifold(:,:,3)},'Layer 3','colorbar,axis equal tight'...
+            );
+        figure,showsub(@imagesc,{membrane_manifold(:,:,1)},'Layer 1','colorbar; axis equal tight;',...
+            @imagesc,{membrane_manifold(:,:,2)},'Layer 2','colorbar,axis equal tight',...
+            @imagesc,{membrane_manifold(:,:,3)},'Layer 3','colorbar,axis equal tight'...
+            );
     end
 end
 
+if io.write2file
+    write_tiff_stack(myosinM,[io.write_path 'myosin_manifold.tif']);
+    write_tiff_stack(membraneM,[io.write_path 'memenbrane_manifold.tif']);
+end
