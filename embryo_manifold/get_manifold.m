@@ -25,10 +25,6 @@ myosin_sorted(isnan(myosin_sorted)) = 0;
 index = sum( ...
     myosin_sorted(:,:,1:manifold_params.avg_slice) ...
     .*intensity_index(:,:,1:manifold_params.avg_slice),3);
-if strcmpi(manifold_params.display, 'on')
-	figure(21); clf; imagesc(index,[0,im_params.Z]);colorbar;
-	title('Discrete myosin indices');
-end
 
 %%Remove outliers in z-depth, testing against average z-depth values in AP axis.
 % Assumption: There should be no strong 'uneven-ness' in AP axis.
@@ -78,8 +74,11 @@ index_sm(myosin_mask_sm > 0) = index_sm(myosin_mask_sm > 0)./myosin_mask_sm(myos
 manifold = index_sm;
 
 if strcmpi(manifold_params.display, 'on')
-	figure(40); clf; imagesc(manifold,[0,im_params.Z]); colorbar;
-	title('Final smooth manifold');
+	figure(40); clf;
+    showsub( ...
+        @imagesc,{index,[0,im_params.Z]},'Discrete myosin indices','colorbar; axis equal tight;', ...
+        @imagesc,{manifold,[0,im_params.Z]},'Final smooth manifold','colorbar; axis equal tight;' ...
+        )
 end
 
 end
