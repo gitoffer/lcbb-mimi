@@ -40,7 +40,7 @@ io.tf = 200;
 io.write2file = 1;
 
 %%
-DEBUGGING = 0;
+DEBUGGING = 1;
 
 %% Image properties
 im_params.X = 1000; % Image size
@@ -86,7 +86,7 @@ membraneM = zeros(im_params.Y,im_params.X,2*extract_params.n_levels + 1,numel(io
 fraction_found_myo = zeros(numel(io.t0:io.tf),1);
 fraction_found_mem = zeros(numel(io.t0:io.tf),1);
 
-for t = io.t0 : io.tf
+for t = 40 : 50
     % 	input_data = load_stack4manifold(io,im_params,t);
     % 	raw_myosin = input_data{1};
     % 	raw_membrane = input_data{2};
