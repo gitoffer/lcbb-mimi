@@ -74,9 +74,7 @@ end
 
 end
 
-%
-%
-%
+
 % function Mstuff=get_stuff_around_manifold(stuff,mfold,nz,mf,interp)
 %
 % xdim=size(mfold,1);

@@ -1,4 +1,4 @@
-function [imgf,varargout] = gaussian_bandpass(img,support,sigma_lp,sigma_hp)
+function [imgf,varargout] = gaussian_bandpass(img,support,sigma_lp,sigma_hp,option)
 %GAUSSIAN_FILTER Performs Gaussian bandpass in spatial frequencies to get a
 %filtered image. Performs filtering in the frequency domain.
 %
@@ -9,19 +9,32 @@ function [imgf,varargout] = gaussian_bandpass(img,support,sigma_lp,sigma_hp)
 %        support - support of the Gaussian kernel (assumed to be symmetric)
 %        sigma_lp - Low pass frequency (if 0, no filtering will be done)
 %        high_lp - High pass frequency (if 0, no filtering will be done)
+%        option - 'zero'/'symmetric' boundary condition
 %
 % OUTPUT: imgf - filtered image
 %         kernel - optional
+% 
 % xies@mit Nov 2011
+
 support = int16(support);
 a = int16(size(img));
 Y = a(1);
 X = a(2);
 
+if ~exist('option','var'),option = 'symmetric'; end
+
 % Zero-padd raw input image (by roughly half the support of the kernel)
-bg = zeros(support);
-bg(fix((support-Y)/2) + 1:fix((support-Y)/2) + Y,...
-    fix((support-X)/2) + 1:fix((support-X)/2) + X) = img;
+if strcmpi(option,'symmetric')
+    bg = padarray(img, ...
+        [double(fix((support-Y)/2)) double(fix((support-X)/2))], ...
+        'symmetric','both');
+else
+    bg = zeros(support);
+    bg(fix((support-Y)/2) + 1:fix((support-Y)/2) + Y,...
+        fix((support-X)/2) + 1:fix((support-X)/2) + X) = img;
+end
+
+
 [Xf,Yf] = meshgrid(1:support);
 Xf = double(Xf - support/2 - 1);
 Yf = double(Yf - support/2 - 1);
