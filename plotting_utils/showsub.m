@@ -1,4 +1,10 @@
 function showsub(varargin)
+%SHOWSUB Subplots
+%
+% SYNOPSIS:
+% showsub(@imshow,{image,[]},'Title 1','colorbar',...);
+%
+% xies@mit Jan 2012
 
 if mod(nargin,4) ~= 0, error('Input in the format {@plot_method,data,title,gca_opt...}'); end
 

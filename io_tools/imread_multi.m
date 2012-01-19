@@ -26,4 +26,3 @@ for i = 1:num_frames
         end
     end
 end
-im = squeeze(im);
