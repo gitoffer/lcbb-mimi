@@ -7,7 +7,7 @@ EF = 1.5;
 dt = o.dt;
 wt = o.wt;
 tbegin = max(ceil(dt/2),ceil(wt/2));
-tend = size(image,3) - max(ceil(dt/2),ceil(wt/2));
+tend = size(image,5) - max(ceil(dt/2),ceil(wt/2));
 t = tbegin : dt : tend;
 [Xf Yf] = grid4stics(image, o.dx, o.dy, o.wx, o.wy);
 

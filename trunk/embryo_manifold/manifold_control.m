@@ -23,9 +23,9 @@
 
 clear variables; clc; close all
 % Image filename, with extension but no directory path
-io.file='SqhGFP Gap43.tif';
+io.file='SqhAx3 UtrGFP SqhCher Cyo.tif';
 % Directory path for image
-io.path  = '~/Desktop/Mimi/Data/05-26-2011/';
+io.path  = '~/Desktop/Mimi/Data/Frank/10-12-2011/';
 % Directory path for target output images
 io.write_path = '~/Desktop/';
 % Strings for writing/reading TIFF sequences
@@ -35,18 +35,18 @@ io.write_path = '~/Desktop/';
 % First image in sequence to analyse
 io.t0 = 1;
 % Last image in sequence to read
-io.tf = 200;
+io.tf = 150;
 % Processing parameters - mostly low-level
 io.write2file = 1;
 
 %%
-DEBUGGING = 1;
+DEBUGGING = 0;
 
 %% Image properties
-im_params.X = 1000; % Image size
-im_params.Y = 400;
-im_params.Z = 7; % Total Z-slices
-im_params.T = 300; % Total frames
+im_params.X = 752; % Image size
+im_params.Y = 331;
+im_params.Z = 8; % Total Z-slices
+im_params.T = 400; % Total frames
 im_params.num_channels = 2; % Number of channels
 im_params.myo_ch = 1;
 im_params.mem_ch = 2;
@@ -57,7 +57,7 @@ th_params.Nx = 1;
 th_params.Ny = 1;
 th_params.perc = 1; % Top percentile to threshold myosin
 th_params.bin_number = 500; % bin-number for CDF calculations
-th_params.filter_size = 1; % Gaussian size for smoothing the thresholded myosin
+th_params.filter_size = 15; % Gaussian size for smoothing the thresholded myosin
 th_params.prefilter = 1;
 th_params.display = 'off';
 
@@ -65,7 +65,7 @@ th_params.display = 'off';
 manifold_params.support = 1024*2; % Kernel support size for Gaussian filters - powers of 2 for FFT fastness
 manifold_params.smoothing = 20;
 manifold_params.avg_slice = 4;
-manifold_params.display = 'on'; % Turn on to visualize the manifold
+manifold_params.display = 'off'; % Turn on to visualize the manifold
 
 % Membrane masking parameters
 mem_params.mem_mask = 'off';
@@ -86,7 +86,7 @@ membraneM = zeros(im_params.Y,im_params.X,2*extract_params.n_levels + 1,numel(io
 fraction_found_myo = zeros(numel(io.t0:io.tf),1);
 fraction_found_mem = zeros(numel(io.t0:io.tf),1);
 
-for t = 40 : 50
+for t = io.t0 : io.tf
     % 	input_data = load_stack4manifold(io,im_params,t);
     % 	raw_myosin = input_data{1};
     % 	raw_membrane = input_data{2};
@@ -120,7 +120,9 @@ for t = 40 : 50
     
     % Generate manifold
     manifold = get_manifold(myosin_thresh,manifold_params,im_params);
-    %     keyboard;
+    if DEBUGGING
+        keyboard
+    end
     
     % Use manifold to get myosin/membrane signal
     [myosin_manifold,fraction_found_myo(t-io.t0+1)] = get_int_around_manifold(raw_myosin,manifold,extract_params,im_params);
@@ -143,6 +145,6 @@ end
 %%
 
 if io.write2file
-    write_tiff_stack(myosinM,[io.write_path 'myosin_manifold.tif']);
-    write_tiff_stack(membraneM,[io.write_path 'memenbrane_manifold.tif']);
+    write_tiff_stack(myosinM,[io.write_path 'myosin_manifold_early.tif']);
+    write_tiff_stack(membraneM,[io.write_path 'memenbrane_manifold_early.tif']);
 end

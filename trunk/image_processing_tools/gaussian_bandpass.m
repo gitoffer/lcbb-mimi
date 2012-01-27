@@ -28,12 +28,12 @@ if strcmpi(option,'symmetric')
     bg = padarray(img, ...
         [double(fix((support-Y)/2)) double(fix((support-X)/2))], ...
         'symmetric','both');
+    bg = bg(1:support,1:support);
 else
     bg = zeros(support);
     bg(fix((support-Y)/2) + 1:fix((support-Y)/2) + Y,...
         fix((support-X)/2) + 1:fix((support-X)/2) + X) = img;
 end
-
 
 [Xf,Yf] = meshgrid(1:support);
 Xf = double(Xf - support/2 - 1);
