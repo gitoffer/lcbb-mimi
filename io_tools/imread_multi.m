@@ -2,7 +2,7 @@ function im = imread_multi(filename,channels,z,num_frames,convert)
 %IMREAD_MULTI Reads in a multidimensional TIF image stack in CZT
 %format.
 %
-% SYNOPSIS: im = imread_multi(filename,channels,znum_frames)
+% SYNOPSIS: im = imread_multi(filename,channels,z,num_frames)
 %
 % INPUTS: filename - image file to be read-in
 %         channels - number of channels

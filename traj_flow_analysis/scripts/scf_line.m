@@ -14,7 +14,7 @@ index = 0;
 for i = 1:16:numel(signal)
     index = index + 1;
     subplot(4,4,index);
-    C_gl = zeros(N,24);
+    C_gl = zeros(N,25);
     for j = 1:N
         this_vector{1} = signal{i}(j,:,:);
         [C_gl(j,:),R] = get_scf4stics(this_vector,X(j,:),Y(j,:),dR,Rmax,stics_opt,options);
@@ -24,8 +24,10 @@ for i = 1:16:numel(signal)
     xlabel('Distance (\mum)')
     ylabel('Distance from midline (\mum)')
     title(['C(R) at t = ' num2str(i)]);
-
 end
+h = gcf;
+saveas(h,[io.save_name '/SCF/line_along_x'],'fig');
+
 
 %% SCF along y
 
@@ -35,7 +37,7 @@ index = 0;
 for i = 1:16:numel(signal)
     index = index + 1;
     subplot(4,4,index);
-    C_gl = zeros(24,M);
+    C_gl = zeros(25,M);
     for j = 1:M
         this_vector{1} = signal{i}(:,j,:);
         [C_gl(:,j),R] = get_scf4stics(this_vector,X(:,j),Y(:,j),dR,Rmax,stics_opt,options);
@@ -45,5 +47,6 @@ for i = 1:16:numel(signal)
     ylabel('Distance (\mum)')
     xlabel('Distance along x (\mum)')
     title(['C(R) at t = ' num2str(i)]);
-
+    
 end
+saveas(gcf,[io.save_name '/SCF/line_along_y'],'fig');

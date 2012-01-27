@@ -8,6 +8,7 @@ function df = smooth_differentiate(f,method)
 %
 % OUTPUT: df - differentiated filter
 % xies@mit Jan 8
+% NOT FINISHED!
 
 if ~exist('method','var')
     method = 'sgolay';
@@ -15,4 +16,3 @@ end
 
 filtered = smooth(f,method);
 df = diff(filtered);
-
