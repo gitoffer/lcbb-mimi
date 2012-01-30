@@ -1,4 +1,4 @@
-function neighbor = draw_random_neighbor(cell)
+function neighbor = draw_random_neighbor(lattice,cell)
 
 cell_n = cell.i;
 cell_m = cell.j;
@@ -29,6 +29,19 @@ switch j
     case 8
         neighbor_i = cell_n + 1;
         neighbor_j = cell_m + 1;
+end
+
+% Now check for border cells
+[N,M] = size(lattice);
+if neighbor_i > N
+				neighbor_i = 1;
+elseif neighbor_i < 1
+				neighbor_i = N;
+end
+if neighbor_j > m
+				neighbor_j = 1;
+elseif neighbor_j < 1
+				neighbor_j = M;
 end
 
 neighbor.i = neighbor_i;
