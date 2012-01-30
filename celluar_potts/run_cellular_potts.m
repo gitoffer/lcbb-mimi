@@ -8,13 +8,23 @@ identity = [1 2 1 2 1 2 1 2 1];
 
 p.energy_function = @differential_adhesion;
 p.energy_parameters = [1 0 5];
-
 p.simulation_tempereature = 100;
 p.identity = identity;
 
 max_time = 100;
 
 lattice = initial_lattice;
+% Actually this probably doesn't matter... set ground state energy to 0?
+%energy = feval(lattice,p);
+energy = 0;
+
+lattice_history = zeros(size(lattice),max_time);
+energy_history = zeros(max_time);
+
 for i = 1:max_time
-    lattice = potts_step(lattice,
+				lattice_history(:,:,i) = lattice;
+				energy_history(i) = energy;
+    [lattice,energy] = potts_step(lattice,energy,p);
 end
+
+

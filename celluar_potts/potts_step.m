@@ -1,15 +1,21 @@
 function [updated_lattice,updated_energy] = potts_step(current_lattice,energy_current,p)
+%POTTS_STEP
+%
+% SYNPOSIS: [new_lattice,new_E] = potts_step(old_lattice,old_E,params)
+%
+% xies@mit.edu. 20.415 Spring 2012.
 
 % Parse parameters
 f = p.energy_function;
 T = p.simulation_temperature;
 
-% Set up periodic boundary (pad array)
-current_lattice = make_periodic_bounds(current_lattice);
+
+% Set up periodic boundary (pad array) NO NEED
+% current_lattice = make_periodic_bounds(current_lattice);
 
 % Pick a random cell and a random neighbor
 cell = draw_random_cell(current_lattice);
-neighbor = draw_random_neighbor(cell);
+neighbor = draw_random_neighbor(current_lattice,cell);
 
 % Temporarily switch pixel-identity of 'cell' and 'neighbor'
 % candidate_lattice = current_lattice;
@@ -17,12 +23,9 @@ neighbor = draw_random_neighbor(cell);
 % candidate_lattice(cell.i,cell.j) = ...
 %     current_lattice(neighbor.i,neighbor.j);
 % candidate_lattice(neighbor.i,neighbor.j) = tmp;
-% Reevaluate energy functional
-energy_after = feval( ...
-    f,candidate_lattice,cell,neighbor,parameters);
-
-% Find change in energy and calculate acceptance probability (boltzmann)
-deltaE = energy_after - energy_current;
+% Reevaluate delta energy functional
+deltaE= feval( ...
+    f,candidate_lattice,cell,neighbor,p);
 acceptance_prob = exp(-deltaE/T);
 
 % Metropolis step

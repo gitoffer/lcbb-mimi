@@ -1,4 +1,5 @@
 function tiff_sequence_write(stack,name_base)
+%TIFF_SEQUENCE_WRITE Writes a matrix as a 
 
 [~,~,num_frames,channels] = size(stack);
 
