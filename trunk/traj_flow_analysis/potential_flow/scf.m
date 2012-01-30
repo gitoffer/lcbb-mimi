@@ -59,7 +59,7 @@ save([io.save_name '/SCF/local_SCF'],'C_loc','R')
 options = struct('time_avg','off','local','off','mean_subt','on');
 
 colorset = varycolor(numel(signal));
-dR = 10;
+dR = 10; %pixel grid separation - 2um?
 Rmax = max(Y(:));
 
 [C_gl,R] = get_scf4stics(signal,X,Y,dR,Rmax,stics_opt,options);

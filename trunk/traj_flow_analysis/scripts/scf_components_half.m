@@ -1,5 +1,5 @@
 
-crop = struct('x0',1,'xf',601,'y0',1,'yf',66); % CROP information
+crop = struct('x0',1,'xf',751,'y0',1,'yf',100); % CROP information
 [stics_cropped,Xfc,Yfc] = stics_crop(stics_img,Xf,Yf,crop);
 
 %Make STICS output square
@@ -14,6 +14,7 @@ Rmax = max(Y(:));
 colorset = jet(floor(numel(signal)/16));
 set(gca, 'colororder', colorset);
 hold all
+
 for i = 1:16:numel(signal)
     this_vector{1}(:,:,1) = signal{i}(:,:,1);
     this_vector{1}(:,:,2) = zeros(size(this_vector{1}(:,:,1)));
