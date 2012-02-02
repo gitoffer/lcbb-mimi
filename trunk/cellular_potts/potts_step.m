@@ -1,7 +1,8 @@
-function [updated_lattice,updated_energy,flag] = potts_step(current_lattice,energy_current,p)
-%POTTS_STEP
+function [updated_lattice,updated_energy] = potts_step(current_lattice,energy_current,p)
+%POTTS_STEP Make one step according to the Metropolis-Monte Carlo cellular
+%Potts algorithm.
 %
-% SYNPOSIS: [new_lattice,new_E] = potts_step(old_lattice,old_E,params)
+% SYNPOSIS: [new_lattice,new_E] = potts_step(old_lattice,old_E,params);
 %
 % xies@mit.edu. 20.415 Spring 2012.
 
@@ -9,18 +10,12 @@ function [updated_lattice,updated_energy,flag] = potts_step(current_lattice,ener
 f = p.energy_function;
 T = p.simulation_temperature;
 
-
-% Set up periodic boundary (pad array) NO NEED
-% current_lattice = make_periodic_bounds(current_lattice);
-
-% Pick a random cell and a random neighbor
-cell = draw_random_cell(current_lattice);
-[neighbor,skip] = draw_random_neighbor(current_lattice,cell);
-
-if skip
-    updated_lattice = current_lattice; updated_energy = energy_current;
-    'blah'
-    return
+% Pick a random cell-pixel and a random neighboring pixel. Will continue
+% to draw until a cell-pixel with non-self neighboring pixels are drawn.
+draw = 1;
+while draw
+    cell = draw_random_cell(current_lattice);
+    [neighbor,draw] = draw_random_neighbor(current_lattice,cell);
 end
 
 % Temporarily switch pixel-identity of 'cell' and 'neighbor'
@@ -35,7 +30,9 @@ deltaE= feval( ...
 
 if deltaE < 0
     updated_lattice = current_lattice;
-    updated_energy = energy_current;
+    updated_lattice(cell.i,cell.j) = ...
+        current_lattice(neighbor.i,neighbor.j);
+    updated_energy = deltaE + energy_current;
 else
     acceptance_prob = exp(-deltaE/T);
     
@@ -44,7 +41,6 @@ else
         updated_lattice = current_lattice;
         updated_lattice(cell.i,cell.j) = ...
             current_lattice(neighbor.i,neighbor.j);
-        %     updated_lattice = candidate_lattice;
         updated_energy = deltaE + energy_current;
     else
         updated_lattice = current_lattice;
