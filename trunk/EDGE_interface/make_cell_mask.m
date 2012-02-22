@@ -31,5 +31,5 @@ for i = 1:numel(frames)
         mask(:,:,i) = poly2mask(x,y,Y,X);
     end
 end
-
+mask = logical(mask);
 end
