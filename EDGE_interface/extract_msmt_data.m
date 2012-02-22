@@ -17,7 +17,7 @@ function [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert)
 if ~exist('convert','var'), convert = 'on'; end
 
 m = m_array(strcmpi({m_array.name},name_to_extract));
-if ~isempty(m) 
+if ~isempty(m)
     if strcmpi(convert,'on')
         data = cell2mat(m.data);
     else

@@ -2,8 +2,10 @@ function deltaE = differential_adhesion(lattice,p,cell,neighbor)
 %DIFFERENTIAL_ADHESION Calculates the total energy (or a change in energy)
 % for a given cell-lattice, according to the differential adhesion model.
 %
+% Reference: Glazier, Graner, 1993, PRE.
+%
 % If given only the cell-lattice and the parameter structure, will yield the
-%	total energy. However if two pairs of pixel coordinates are given, will
+% total energy. However if two pairs of pixel coordinates are given, will
 % calculate the change in energy if the first pixel were to become a part of
 % the cell to which the second pixel belongs.
 %
@@ -14,7 +16,6 @@ function deltaE = differential_adhesion(lattice,p,cell,neighbor)
 %				 p - parameter structure
 %				 	.energy_parameters - array of energy parameters
 %				  .identity - a list of the identity of each cell (for adhesion)
-%					.
 %
 %
 % xies@mit.edu. 20.415 Spring 2012.
@@ -26,13 +27,13 @@ switch nargin
     case 4
         % If there are 4 inputs, then cell i and cell j are given, then we only calculate the change in energy if the identity of cell i was to be replaced by that of cell j.
         
-        homophilic = p.energy_parameters(1);
-        heterophilic = p.energy_parameters(2);
-        sigma_area = p.energy_parameters(3);
-        target_area = p.energy_parameters(4);
-        sigma_perim = p.energy_parameters(5);
-        target_perim = p.energy_parameters(6);
-        background_interaction = p.energy_parameters(7);
+        ad_1 = p.energy_parameters(1);
+        ad_2 = p.energy_parameters(2);
+        ad_12 = p.energy_parameters(3);
+        bg_1 = p.energy_parameters(4);
+        bg_2 = p.energy_parameters(5);
+        sigma_area = p.energy_parameters(6);
+        target_area = p.energy_parameters(7);
         
         i = cell.i;
         j = cell.j;
@@ -40,98 +41,70 @@ switch nargin
         n = neighbor.i;
         m = neighbor.j;
         
-        % Need to correct for when neighbor is on the boundary-- shift the lattice?
-        
         cell_number = lattice(i,j);
         neighbor_number = lattice(n,m);
-        
-        % Find the identity of the cells
-        if cell_number > 0
-            cell_id = p.identity(cell_number);
-        end
-        if neighbor_number > 0
-            neighbor_id = p.identity(neighbor_number);
+        if cell_number == neighbor_number
+            keyboard
         end
         
-        % calculate cell area (pixel number)
+        % calculate cell area
         area_cell = numel(lattice(lattice == cell_number));
         area_neighbor = numel(lattice(lattice == neighbor_number));
         
-        % Need perimeter?
-        %       perimeters = regionprops(lattice,'Perimeter');
-        %       perimeter_cell = perimeters(cell_number).Perimeter;
-        %       perimeter_neighbor = perimeters(neighbor_number).Perimeter;
-        perimeter_cell = numel(lattice(bwperim(lattice == cell_number)));
-        perimeter_neighbor = numel(lattice(bwperim(lattice == neighbor_number)));
-        
-        % Thicken the cell areas by 1, and where the thickened cells overlap
-        % is defined to be the contact boundary (called junction)
-        bound_cell = bwmorph(lattice == cell_number,'thicken',1);
-        bound_neighbor = lattice == neighbor_number;
-        junction_bf = numel(bound_cell(bound_cell & bound_neighbor));
-        
-        % Now perform swap and calculate readjusted geometry
-        candidate_lattice = lattice;
-        candidate_lattice(i,j) = neighbor_number;
-        
-        % Recalculate junction lengths and
-        bound_cell = bwmorph(candidate_lattice == cell_number,'thicken',1);
-        bound_neighbor = candidate_lattice == neighbor_number;
-        junction_after = numel(bound_cell(bound_cell & bound_neighbor));
-        %        perimeters = regionprops(candidate_lattice,'Perimeter');
-        %        perimeter_cell_after = perimeters(cell_number).Perimeter;
-        %        perimeter_neighbor_after = perimeters(neighbor_number).Perimeter;
-        perimeter_cell_after = numel(lattice(bwperim(candidate_lattice == cell_number)));
-        perimeter_neighbor_after = ...
-            numel(lattice(bwperim(candidate_lattice == neighbor_number)));
-        
-        % Find junction length differences
-        delta_junction = junction_after - junction_bf;
         % Find deviation from target
         dev_A_cell_before = area_cell - target_area;
         dev_A_cell_after = area_cell - 1 - target_area;
         dev_A_neighbor_before = area_neighbor - target_area;
         dev_A_neighbor_after = area_neighbor + 1 - target_area;
         
-        dev_P_cell_before = perimeter_cell - target_perim;
-        dev_P_cell_after = perimeter_cell_after - target_perim;
-        dev_P_neighbor_before = perimeter_neighbor - target_perim;
-        dev_P_neighbor_after = perimeter_neighbor_after - target_perim;
-        
         % Determine whether the cells are of the same type
-        
         if cell_number == 0
-            homo_adhesion = 0;
-            hetero_adhesion = 0;
-            perimeter_elasticity = sigma_perim*(dev_P_neighbor_after^2 - dev_P_neighbor_before^2);
+            cell_id = 0;
             area_elasticity = sigma_area*(dev_A_neighbor_after^2 - dev_A_neighbor_before^2);
-            
-            bg_adhesion = background_interaction;            
+            neighbor_id = p.identity(neighbor_number);
         elseif neighbor_number == 0
-            homo_adhesion = 0;
-            hetero_adhesion = 0;
-            perimeter_elasticity = sigma_perim*(dev_P_cell_after^2 - dev_P_cell_before^2);
+            neighbor_id = 0;
             area_elasticity = sigma_area*(dev_A_cell_after^2 - dev_A_cell_before^2);
-            
-            bg_adhesion = background_interaction;
+            cell_id = p.identity(cell_number);
         else
-            same_type = cell_id == neighbor_id;
-            
-            homo_adhesion = - homophilic*(delta_junction)*same_type;
-            hetero_adhesion = - heterophilic*(delta_junction)*~same_type;
-            bg_adhesion = 0;
-            perimeter_elasticity = sigma_perim*(dev_P_cell_after^2 - dev_P_cell_before^2 ...
-                + dev_P_neighbor_after^2 - dev_P_neighbor_before^2);
+            cell_id = p.identity(cell_number);
+            neighbor_id = p.identity(neighbor_number);
             area_elasticity = sigma_area*(dev_A_cell_after^2 - dev_A_cell_before^2 ...
                 + dev_A_neighbor_after^2 - dev_A_neighbor_before^2);
         end
         
-        deltaE = homo_adhesion + hetero_adhesion ...
-            + perimeter_elasticity + area_elasticity + bg_adhesion;
+        % Find adhesion connection before
+        same_type = (cell_id == neighbor_id);
+        if same_type
+            switch cell_id
+                case 1, adhesion_before = ad_1; % Jll
+                case 2, adhesion_before = ad_2; % Jdd
+                otherwise
+                    keyboard
+            end
+        else
+            switch cell_id + neighbor_id
+                case 3, adhesion_before = ad_12; %Jld
+                case 1, adhesion_before = bg_1; %JlM
+                case 2, adhesion_before = bg_2; %JdM
+                otherwise
+                    keyboard
+            end
+        end
+        
+        % Find adhesion energy after
+        switch neighbor_id
+            case 0, adhesion_after = 0;
+            case 1, adhesion_after = ad_1;
+            case 2, adhesion_after = ad_2;
+            otherwise
+                keyboard
+        end
+        
+        deltaE = (adhesion_after - adhesion_before) + area_elasticity;
         
     otherwise
         error('Incorrect number of inputs: either 2 or 4.');
 end
 
 end
-

@@ -12,23 +12,18 @@ T = p.simulation_temperature;
 
 % Pick a random cell-pixel and a random neighboring pixel. Will continue
 % to draw until a cell-pixel with non-self neighboring pixels are drawn.
-draw = 1;
-while draw
-    cell = draw_random_cell(current_lattice);
-    [neighbor,draw] = draw_random_neighbor(current_lattice,cell);
+
+cell = draw_random_cell(current_lattice);
+[neighbor,selfsame] = draw_random_neighbor(current_lattice,cell);
+
+if selfsame
+    deltaE = 0;
+else
+    deltaE= feval( ...
+        f,current_lattice,p,cell,neighbor);
 end
 
-% Temporarily switch pixel-identity of 'cell' and 'neighbor'
-% candidate_lattice = current_lattice;
-% tmp = current_lattice(cell.i,cell.j);
-% candidate_lattice(cell.i,cell.j) = ...
-%     current_lattice(neighbor.i,neighbor.j);
-% candidate_lattice(neighbor.i,neighbor.j) = tmp;
-% Reevaluate delta energy functional
-deltaE= feval( ...
-    f,current_lattice,p,cell,neighbor);
-
-if deltaE < 0
+if deltaE <= 0
     updated_lattice = current_lattice;
     updated_lattice(cell.i,cell.j) = ...
         current_lattice(neighbor.i,neighbor.j);
@@ -36,7 +31,7 @@ if deltaE < 0
 else
     acceptance_prob = exp(-deltaE/T);
     
-    % Metropolis
+    % Metropolis acceptance
     if accept(acceptance_prob)
         updated_lattice = current_lattice;
         updated_lattice(cell.i,cell.j) = ...

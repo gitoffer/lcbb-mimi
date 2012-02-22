@@ -23,9 +23,9 @@
 
 clear variables; clc; close all
 % Image filename, with extension but no directory path
-io.file='SqhAx3 UtrGFP SqhCher Cyo.tif';
+io.file='SqhGFPmCherryGap43_7_tcrop.tif';
 % Directory path for image
-io.path  = '~/Desktop/Mimi/Data/Frank/10-12-2011/';
+io.path  = '~/Desktop/Mimi/Data/01-30-2012/7/';
 % Directory path for target output images
 io.write_path = '~/Desktop/';
 % Strings for writing/reading TIFF sequences
@@ -35,18 +35,18 @@ io.write_path = '~/Desktop/';
 % First image in sequence to analyse
 io.t0 = 1;
 % Last image in sequence to read
-io.tf = 150;
-% Processing parameters - mostly low-level
+io.tf = 80;
+
 io.write2file = 1;
 
 %%
 DEBUGGING = 0;
 
 %% Image properties
-im_params.X = 752; % Image size
-im_params.Y = 331;
-im_params.Z = 8; % Total Z-slices
-im_params.T = 400; % Total frames
+im_params.X = 1000; % Image size
+im_params.Y = 400;
+im_params.Z = 10; % Total Z-slices
+im_params.T = 80; % Total frames
 im_params.num_channels = 2; % Number of channels
 im_params.myo_ch = 1;
 im_params.mem_ch = 2;
@@ -57,7 +57,7 @@ th_params.Nx = 1;
 th_params.Ny = 1;
 th_params.perc = 1; % Top percentile to threshold myosin
 th_params.bin_number = 500; % bin-number for CDF calculations
-th_params.filter_size = 15; % Gaussian size for smoothing the thresholded myosin
+th_params.filter_size = 30; % Gaussian size for smoothing the thresholded myosin
 th_params.prefilter = 1;
 th_params.display = 'off';
 
@@ -79,7 +79,7 @@ extract_params.interp = 'on';
 %%
 % Read in the entire stack -- memory-intensitve, might want to do it
 % piecewise?
-entire_stack = imread_multi([io.path io.file],im_params.num_channels,im_params.Z,im_params.T);
+% entire_stack = imread_multi([io.path io.file],im_params.num_channels,im_params.Z,im_params.T);
 
 myosinM = zeros(im_params.Y,im_params.X,2*extract_params.n_levels + 1,numel(io.t0:io.tf));
 membraneM = zeros(im_params.Y,im_params.X,2*extract_params.n_levels + 1,numel(io.t0:io.tf));
@@ -121,6 +121,7 @@ for t = io.t0 : io.tf
     % Generate manifold
     manifold = get_manifold(myosin_thresh,manifold_params,im_params);
     if DEBUGGING
+        imagesc(manifold);
         keyboard
     end
     

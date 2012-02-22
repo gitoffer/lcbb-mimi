@@ -20,3 +20,5 @@ end
 
 R = R*stics_o.um_per_px;
 if strcmpi(time_avg,'on'), C = nanmean(C,1); end
+
+end

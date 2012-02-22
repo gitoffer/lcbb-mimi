@@ -1,6 +1,6 @@
 function [F,stics_cells] = stics_draw_cells(image,stics_img,m,o,scaleFactor)
 %STICS_DRAW_CELLS Uses an EDGE output to draw STICS according to which cell
-%they blong to.
+%they belong.
 %
 % SYNOPSIS: [F,stics_cells] =
 % stics_draw_cells(im,stics_img,m,o,scaleFactor)
@@ -16,16 +16,17 @@ EF = 2;
 [Xf Yf] = grid4stics(image,o.dx,o.dy,o.wx,o.wy);
 % Generate the correct time indexing vector
 T = length(stics_img);
-dt = o.dt; wt = o.wt;
-tbegin = max(ceil(dt/2),ceil(wt/2));
-tend = numel(o.crop(5):o.crop(6)) - max(ceil(dt/2),ceil(wt/2));
-t = tbegin : dt : tend;
-I = 1:numel(t);
-j = 1:t(end) + floor(wt/2);
-I_left = I(ones(1,floor(wt/2)-1));
-I = [I_left,I];
-I_right = I(ones(1,numel(j) - numel(I))*end);
-I = [I,I_right];
+% dt = o.dt; wt = o.wt;
+% tbegin = max(ceil(dt/2),ceil(wt/2));
+% tend = numel(o.crop(5):o.crop(6)) - max(ceil(dt/2),ceil(wt/2));
+% t = tbegin : dt : tend;
+% I = 1:numel(t);
+% j = 1:t(end) + floor(wt/2);
+% I_left = I(ones(1,floor(wt/2)-1));
+% I = [I_left,I];
+% I_right = I(ones(1,numel(j) - numel(I))*end);
+% I = [I,I_right];
+I = pad_stics_time_index(o);
 stics_img = stics_img(I);
 
 % Grab the grid vectors
