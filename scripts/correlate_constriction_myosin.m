@@ -16,9 +16,9 @@ myosins = extract_msmt_data(m,'myosin intensity','on');
 %% Generate correlations
 % areas = areas(40:end,:,:);
 % myosin = myosin(40:end,:,:);
-zslice = 2;
+zslice = 3;
 
-areas_sm = smooth2a(squeeze(areas(:,zslice,:)),2,0);
+areas_sm = smooth2a(squeeze(areas(:,zslice,:)),1,0);
 myosins_sm = smooth2a(squeeze(myosins(:,zslice,:)),1,0);
 % anisotropy_sm = smooth2a(squeeze(anisotropys(:,zslice,:)),1,0);
 % perimeters_sm = smooth2a(squeeze(perimeters(:,zslice,:)),1,0);
@@ -47,7 +47,7 @@ figure,showsub(@imagesc,{[-wt wt],[1 num_cells], correlations},'Cross-correlatio
     @errorbar,{-wt:wt,mean_corr,std_corr},'Mean cross-correlation','axis on');
 
 %% Plot individual correlations
-zslice = 6;
+zslice = 2;
 
 cellID = 72;
 area_sm = smooth2a(squeeze(areas(:,zslice,cellID)),2,0);
@@ -69,12 +69,17 @@ correlation = nanxcorr(area_rate,myosin_rate,wt,1);
 figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
 
+%% Interpolate NaNs and truncate NaNs
+myosin_interp = interp_and_truncate_nan(myosin_sm);
+
 %% Plot correlations individually
-center = plot_corr_myo_area(areas,myosins,6,72);
-n1 = plot_corr_myo_area(areas,myosins,5,72);
+cellID = 72;
+center = plot_corr_myo_area(areas,myosins,6);
+n1 = plot_corr_myo_area(areas,myosins,5);
 
 %% Plot cell correlation as in time
 X = 1000;
 Y = 400;
-
-F = draw_measurement_on_cells(m,correlations,X,Y,.19);
+max_corr = nanmax(correlations,[],2);
+max_corr = max_corr(:,ones(1,num_frames));
+F = draw_measurement_on_cells(m,myosins_rate',X,Y,.19);
