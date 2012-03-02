@@ -33,7 +33,7 @@ for j = 1:t(end)+floor(wt/2)
     velocity(:,:,:,j) = vector_frame{j}*scaleFactor; % um/min (Mimi: Actuallly um/sec?)
     quiver(EF*Xf,EF*Yf,velocity(:,:,1,j), velocity(:,:,2,j), 0,'y','Linewidth',1)
 %     set(gca, 'units', 'pixels', 'Position', [0 0 movie_size movie_size]);
-%     set(gcf, 'units', 'pixels', 'Position', [250 250 movie_size movie_size+EF0]);
+%     set(gcf, 'units', 'pixels', 'Position', [250 250 movie_size movie_size+EF]);
     title(['wt:',int2str(o.wt),' wx:',int2str(o.wx),' dt:',int2str(o.dt)]);
 
     % putting in a scale bar
