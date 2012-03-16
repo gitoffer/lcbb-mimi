@@ -26,7 +26,7 @@ correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
 
 %% Get individual correlations
 zslice = 1;
-cellID = 79;
+cellID = 80;
 
 area_sm = smooth2a(squeeze(areas(:,zslice,cellID)),1,0);
 myosin_sm = smooth2a(squeeze(myosins(:,zslice,cellID)),1,0);
@@ -56,6 +56,7 @@ myosin_sm = myosins_sm(:,cellID);
 myosin_interp = interp_and_truncate_nan(myosin_sm);
 x = 1:numel(myosin_interp);
 myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
+% myosin_nobg = myosin_nobg - min(myosin_nobg(:));
 
 lb = [0 0 0];
 ub = [Inf Inf 20];
@@ -76,6 +77,7 @@ for i = 1:num_cells
         myosin_interp = interp_and_truncate_nan(myosin_sm);
         x = 1:numel(myosin_interp);
         myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
+        myosin_nobg = myosin_nobg - min(myosin_nobg(:));
         
         lb = [0 0 0];
         ub = [Inf Inf 20];
@@ -88,7 +90,7 @@ end
 
 %% Plot peaks and the neighbors' peaks
 
-cellID = randi(82);
+cellID =79;
 neighbors = neighborID{10,zslice,cellID};
 % plot(peaks(:,center),'k-');
 % hold on;
@@ -107,4 +109,4 @@ X = 1000;
 Y = 400;
 max_corr = nanmax(correlations,[],2);
 max_corr = max_corr(:,ones(1,num_frames));
-F = draw_measurement_on_cells(m,myosins_rate',X,Y,.19);
+F = draw_measurement_on_cells(peaks,myosins_rate',X,Y,.19);

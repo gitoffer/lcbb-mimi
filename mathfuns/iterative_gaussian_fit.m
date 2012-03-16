@@ -22,7 +22,7 @@ n_peaks = 0;
 
 while significant
 
-    [p,resnorm,residual] = lsqcurvefit(@gauss1d,guess,x,curve,lb,ub);
+    [p,resnorm,residual] = lsqcurvefit(@lsq_gauss1d,guess,x,curve,lb,ub);
     S_alt = resnorm/(T-2*(n_peaks+1));
     test_obs = S_alt/S_null;
     

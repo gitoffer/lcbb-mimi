@@ -61,7 +61,8 @@ for i = 1:num_models
         STCorr,STVar,input,lsq_opt,stics_opt,bayes_opt);
 end
 
-output = assign_probability(output);
+model_P = num2cell(assign_probability([output.log_likelihood]));
+[output.model_probability] = deal(model_P{:});
 output = get_physical_params(output);
 
 end

@@ -3,8 +3,9 @@ function correlations = nanxcorr(A,B,wt,dim)
 %signals when NaN is present.
 %
 % SYNOPSIS: correlations = nanxcorr(A,B,wt)
+%               By default correlate across the first dimension
 %           correlations = nanxcorr(A,B,wt,dim)
-%
+%               Denote which dimension you want to correlate
 %
 % Modiefied from acmartin. xies@mit.edu Jan 2012.
 
