@@ -15,7 +15,7 @@ switch func2str(handle.background_function)
         lb(2) = -max(data);
         
         ub(1) = max(data)/numel(data);
-        ub(1) = max(data);
+        ub(2) = max(data);
     case 'lsq_gauss1d'
         
         high = max(data(:));

@@ -47,8 +47,10 @@ end
 % NEED TO MARGINALIZE over background variables
 
 % Convert to log-differences for numerical stability
-log_diffs = likelihoods(ones(1,Mmax+1),:) - likelihoods(ones(1,Mmax+1),:)';
-P = 1./sum(exp(log_diffs),2);
-P(isnan(P) | isinf(P)) = 0;
+% log_diffs = likelihoods(ones(1,Mmax+1),:) - likelihoods(ones(1,Mmax+1),:)';
+% P = 1./sum(exp(log_diffs),2);
+% P(isnan(P) | isinf(P)) = 0;
+
+P = assign_probability(likelihoods);
 
 end

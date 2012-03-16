@@ -5,7 +5,7 @@
 folder2load = '/Users/Imagestation/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements/';
 msmt2make = {'area','myosin_intensity','vertex-x','vertex-y'};
 
-m = load_edge_data(folder2load,msmt2make);
+m = load_edge_data(folder2load,msmt2make{:});
 areas = extract_msmt_data(m,'area','on');
 myosins = extract_msmt_data(m,'myosin intensity','on');
 % anisotropys = extract_msmt_data(m,'anisotropy','on');
@@ -16,7 +16,7 @@ myosins = extract_msmt_data(m,'myosin intensity','on');
 %% Generate correlations
 % areas = areas(40:end,:,:);
 % myosin = myosin(40:end,:,:);
-zslice = 3;
+zslice = 2;
 
 areas_sm = smooth2a(squeeze(areas(:,zslice,:)),1,0);
 myosins_sm = smooth2a(squeeze(myosins(:,zslice,:)),1,0);
@@ -29,7 +29,7 @@ myosins_rate = central_diff_multi(myosins_sm);
 % anisotropys_rate = central_diff(anisotropy_sm);
 % orientations_rate = central_diff(orientations_sm);
 
-wt = 20;
+wt = 7;
 correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
 
 %% Plot myosin, area, rates and average correlation
@@ -49,7 +49,7 @@ figure,showsub(@imagesc,{[-wt wt],[1 num_cells], correlations},'Cross-correlatio
 %% Plot individual correlations
 zslice = 2;
 
-cellID = 72;
+cellID = 38;
 area_sm = smooth2a(squeeze(areas(:,zslice,cellID)),2,0);
 myosin_sm = smooth2a(squeeze(myosins(:,zslice,cellID)),1,0);
 figure,showsub(@plot,{1:num_frames,area_sm},['Cell area for cell #' num2str(cellID)],'', ...
@@ -64,7 +64,6 @@ figure,showsub(@plot,{1:num_frames,area_rate,'r-'}, ...
     ['Myosin change in cell #' num2str(cellID)],'' ...
     );
 
-wt = 20;
 correlation = nanxcorr(area_rate,myosin_rate,wt,1);
 figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
@@ -80,6 +79,16 @@ n1 = plot_corr_myo_area(areas,myosins,5);
 %% Plot cell correlation as in time
 X = 1000;
 Y = 400;
-max_corr = nanmax(correlations,[],2);
-max_corr = max_corr(:,ones(1,num_frames));
-F = draw_measurement_on_cells(m,myosins_rate',X,Y,.19);
+signal = correlations;
+signal(isnan(signal)) = 0;
+max_corr = zeros(1,num_cells);
+for i = 1:num_cells
+    [p,resnorm,~,flag] = lsqcurvefit(@lsq_gauss1d,[.2 0 2],-wt:wt,signal(i,:),...
+        [0 -wt -wt],[1 wt wt]);
+    if flag > 0 && resnorm < sum(signal(i,:))/2
+        max_corr(i) = p(1);
+    end
+end
+
+max_corr = max_corr(ones(1,num_frames),:);
+F = draw_measurement_on_cells(m,max_corr,X,Y,.19);

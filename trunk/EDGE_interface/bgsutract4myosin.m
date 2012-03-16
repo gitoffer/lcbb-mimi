@@ -9,8 +9,8 @@ switch method
     case 'gaussian'
         [height,max] = extrema(signal);
         guess = [height(1) max(1) 2];
-        p = lsqcurvefit(@gauss1d,guess,x,signal);
-        bg = gauss1d(p,x);
+        p = lsqcurvefit(@lsq_gauss1d,guess,x,signal);
+        bg = lsq_gauss1d(p,x);
     otherwise
         error('Unsupported method')
 end
