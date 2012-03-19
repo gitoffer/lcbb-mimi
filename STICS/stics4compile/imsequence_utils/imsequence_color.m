@@ -32,7 +32,7 @@ for j = 1:num_frame
         pcolor(A);
         shading flat
         set(gcf, 'Renderer', 'zbuffer');
-        colormap(spring)
+        colormap(hot)
         caxis(color_limits);
         axis equal;
         colorbar;

@@ -1,10 +1,11 @@
-function histmat  = hist2(x, y, xedges, yedges)
-% function histmat  = hist2(x, y, xedges, yedges)
+function [histmat,xedges,yedges]  = hist2(x, y, xedges, yedges)
+%SYNOPSIS: [histmat,xedges,yedges]  = hist2(x, y, xedges, yedges)
 %
 % Extract 2D histogram data containing the number of events
 % of [x , y] pairs that fall in each bin of the grid defined by 
 % xedges and yedges. The edges are vectors with monotonically 
-% non-decreasing values.  
+% non-decreasing values. By default, will use linearly spaced
+% edges with 30 bins.
 %
 %EXAMPLE 
 %
@@ -23,12 +24,20 @@ function histmat  = hist2(x, y, xedges, yedges)
 % histmat_ = hist2(x, y, xedges_, yedges_);
 % figure; pcolor(xedges_,yedges_,histmat_'); colorbar ; axis square tight ;
 
+% Modified by xies@mit to include default behavior
 % University of Debrecen, PET Center/Laszlo Balkay 2006
 % email: balkay@pet.dote.hu
 
-if nargin ~= 4
-    error ('The four input arguments are required!');
+switch nargin
+		case 2
+				xedges = linspace(nanmin(x),nanmax(y),30);
+				yedges = linspace(nanmin(y),nanmax(y),30);
+		case 4
+		otherwise
+				error('Either 2 or 4 inputs required.');
 end
+		
+
 if any(size(x) ~= size(y)) 
     error ('The size of the two first input vectors should be same!');
 end
