@@ -7,7 +7,7 @@ Yf = Yf*EF;
 flat = @(x) x(:);
 
 T = numel(E);
-[X,Y,foo,foo] = size(E{1});
+[X,Y,~,~] = size(E{1});
 
 Psi = cell(T,1);
 L = cell(T,1);
@@ -26,6 +26,7 @@ end
 
 clear F;
 figure(401)
+B = zeros(T,X,Y);
 for t = 1:T
     foo = imresize(imcrop(:,:,t),1.5);
     imshow(foo,[])
@@ -36,7 +37,7 @@ for t = 1:T
             [ellipse_x,ellipse_y] = get_ellipse(Xf(i,j),Yf(i,j),200*L{t}(i,j,1,1),200*L{t}(i,j,2,2),Psi{t}(i,j));
             A = get_ellipse_area(L{t}(i,j,1,1),L{t}(i,j,2,2));
             B(t,i,j) = A;
-            C = find_color(A, -.0005,.0005);
+            C = find_color(A, -.0002,.0002);
             plot(ellipse_x,ellipse_y,'Color',C);
         end
     end
