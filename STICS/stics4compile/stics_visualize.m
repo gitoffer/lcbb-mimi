@@ -32,11 +32,11 @@ movie2avi(F,[io.save_name,'/edge_stisc',io.file_suffix]);
 
 %% Get strain (probably shouldn't use yet, without good STICS statistics)
 
-E = cell(numel(vector),1);
-for t = 1:numel(vector)
+E = cell(numel(stics_img),1);
+for t = 1:numel(stics_img)
     E{t} = calc_strain(stics_img{t});
 end
-plot_strain(E,imcrop,Xf,Yf,io);
+plot_strain(E,imcropped,Xf,Yf,io);
 
 %% Compute and plot divergence
 
