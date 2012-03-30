@@ -1,4 +1,6 @@
 function signal_nobg = bgsutract4myosin(signal,method,params)
+%BGSUBTRACT4MYOSIN Given a signal, fit a function to it (wide gaussian) or 
+
 
 x = params{1};
 
