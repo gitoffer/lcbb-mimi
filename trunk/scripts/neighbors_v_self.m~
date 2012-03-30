@@ -1,10 +1,10 @@
-tobe_measured = areas_rate;
-meas_name = 'constriction rate';
+tobe_measured = myosins_rate(1:end,:);
+[num_frames,num_cells] = size(tobe_measured);
+meas_name = 'constriction rate (later)';
 
-%% get all neighbor measurements
 [meas_n,cells_w_neighb] = neighbor_msmt(tobe_measured,neighborID(1,:));
 
-%% Plot average dynamic correlation between focall cell and its neighbo
+%% Plot average dynamic correlation between focall cell and its neighbors
 cellIDs = 1:82;
 
 foo = zeros(num_cells,10,21);
@@ -25,12 +25,12 @@ std_foo = squeeze(nanstd(foo,0,2));
 pcolor(x,y,avg_foo),colorbar,axis equal tight;
 
 %% Plot measurement for focal cell and its neighbors
-focal_cell = 61;
+focal_cell = 33;
 
 figure
 subplot(2,1,1),plot(tobe_measured(:,focal_cell),'k-')
 title([meas_name ' for cell #' num2str(focal_cell)]);
-[x,y] = meshgrid(1:80,neighborID{1,focal_cell});
+[x,y] = meshgrid(1:num_frames,neighborID{1,focal_cell});
 subplot(2,1,2),pcolor(x,y,meas_n{focal_cell}');
 ylabel(['Cell #' num2str(focal_cell) ' neighbors']);
 xlabel('Time (frames)');colorbar;
@@ -38,7 +38,7 @@ xlabel('Time (frames)');colorbar;
 %% Plot dynamic correlation between focal cell and its neighbors
 figure,
 
-focal_cell = 61;
+focal_cell = 48;
 % plot focal and neighbor behavior
 subplot(3,1,1),
 plot(tobe_measured(:,focal_cell),'k-','LineWidth',5);
@@ -64,8 +64,8 @@ title('Average cross-correlation')
 % Get Pearson's correlation for neighboring cells
 handle.vertex_x = vertices_x;
 handle.vertex_y = vertices_y;
-handle.save_name = '~/Desktop/Cell neighbors correlation/cell_';
-pearsons = neighbor_cell_pearson(tobe_measured,meas_n,cells_w_neighb,neighborID);
+handle.savename = '~/Desktop/Neighbor behavior/pearsons_myosin_rate (all)/cell_';
+pearsons_myosin = neighbor_cell_pearson(tobe_measured,meas_n,cells_w_neighb,neighborID,handle);
 
 %% Plot measurement on cells (for comparison to above)
 
@@ -87,3 +87,11 @@ for j = 1:numel(cells_w_neighb)
     F = draw_measurement_on_cell_small(handle);
     movie2avi(F,['~/Desktop/Cell neighbors contraction rate/cell_' num2str(focal_cell)]);
 end
+
+%% Get neighbor angles
+
+centroid_x_neighbor = neighbor_msmt(centroids_x,neighborID(1,:));
+centroid_y_neighbor = neighbor_msmt(centroids_y,neighborID(1,:));
+
+angles = get_neighbor
+
