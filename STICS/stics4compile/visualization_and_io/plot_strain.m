@@ -13,16 +13,16 @@ Psi = cell(T,1);
 L = cell(T,1);
 conds = zeros(X,Y,T,2);
 % diagonalize strain matrix
-for t = 1:T
-    for i = 1:X
-        for j = 1:Y
-            ep(:,:) = E{t}(i,j,:,:);
-            [d,lambda,conds(i,j,t,:)] = condeig(ep);
-            Psi{t}(i,j) = atan(d(1,2)/d(1,1));
-            L{t}(i,j,:,:) = lambda;
-        end
-    end
-end
+% for t = 1:T
+%     for i = 1:X
+%         for j = 1:Y
+%             ep(:,:) = E{t}(i,j,:,:);
+%             [d,lambda,conds(i,j,t,:)] = condeig(ep);
+%             Psi{t}(i,j) = atan(d(1,2)/d(1,1));
+%             L{t}(i,j,:,:) = lambda;
+%         end
+%     end
+% end
 
 clear F;
 figure(401)
@@ -33,8 +33,12 @@ for t = 1:T
     hold all
     for i = 1:X
         for j = 1:Y
+            [d,lambda] = eig(E{t}(i,j,:,:));
+            psi = atan2(d(1,2)/d(1,1));
+            a = lambda(1,1);
+            b = lambda(2,2);
             
-            [ellipse_x,ellipse_y] = get_ellipse(Xf(i,j),Yf(i,j),200*L{t}(i,j,1,1),200*L{t}(i,j,2,2),Psi{t}(i,j));
+            [ellipse_x,ellipse_y] = get_ellipse(Xf(i,j),Yf(i,j),200*a,200*b,psi);
             A = get_ellipse_area(L{t}(i,j,1,1),L{t}(i,j,2,2));
             B(t,i,j) = A;
             C = find_color(A, -.0002,.0002);

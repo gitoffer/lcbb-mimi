@@ -16,11 +16,10 @@ if ~exist('N','var'), N = 300; end
 num_ell = numel(lx);
 thetas = linspace(0,2*pi + 0.1, N);
 
-
 for i = 1:num_ell
     r = [(lx(i)*cos(thetas))' (ly(i)*sin(thetas))'];
-    Rot=[cos(angle(i)) -sin(angle(i))
-        sin(angle(i)) cos(angle(i))];
+    Rot= [cos(angle(i)) -sin(angle(i))
+         sin(angle(i)) cos(angle(i))];
     r=r*Rot;
     h(i) = patch(c_x(i)+r(:,1),c_y(i)+r(:,2),colors(i,:),'EdgeColor',colors(i,:));
 end

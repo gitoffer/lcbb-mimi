@@ -30,7 +30,7 @@ function [histmat,xedges,yedges]  = hist2(x, y, xedges, yedges)
 
 switch nargin
 		case 2
-				xedges = linspace(nanmin(x),nanmax(y),30);
+				xedges = linspace(nanmin(x),nanmax(x),30);
 				yedges = linspace(nanmin(y),nanmax(y),30);
 		case 4
 		otherwise

@@ -1,25 +1,10 @@
 %CORRELATE_CONSTRICTION_MYOSIN
 %
 % xies@mit.edu Jan 2012
-
-folder2load = '/Users/Imagestation/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements/';
-msmt2make = {'area','myosin_intensity','vertex-x','vertex-y'};
-
-m = load_edge_data(folder2load,msmt2make{:});
-areas = extract_msmt_data(m,'area','on');
-myosins = extract_msmt_data(m,'myosin intensity','on');
-% anisotropys = extract_msmt_data(m,'anisotropy','on');
-% perimeters = extract_msmt_data(m,'perimeter','on');
-% orientations = extract_msmt_data(m,'orientation','on');
-
-[num_frames,num_z,num_cells] = size(areas);
 %% Generate correlations
-% areas = areas(40:end,:,:);
-% myosin = myosin(40:end,:,:);
-zslice = 2;
 
-areas_sm = smooth2a(squeeze(areas(:,zslice,:)),1,0);
-myosins_sm = smooth2a(squeeze(myosins(:,zslice,:)),1,0);
+areas_sm = smooth2a(squeeze(areas),1,0);
+myosins_sm = smooth2a(squeeze(myosins),1,0);
 % anisotropy_sm = smooth2a(squeeze(anisotropys(:,zslice,:)),1,0);
 % perimeters_sm = smooth2a(squeeze(perimeters(:,zslice,:)),1,0);
 % orientations_sm = smooth2a(squeeze(orientations(:,zslice,:)),1,0);

@@ -1,4 +1,5 @@
-function [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert)
+function [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert, ...
+    slice_range)
 %EXTRACT_MSMT_DATA (from EDGE). Extracts a specific measurement from an
 %array of EDGE measurement structures.
 %
@@ -24,7 +25,14 @@ if ~isempty(m)
         data = m.data;
     end
 else
-    error('edge:msmt_not_found','Found nothing.')
+    error('edge:msmt_not_found',['Found no measurement called ' name_to_extract])
 end
+
+[~,num_slices,~] = size(data);
+if nargin <= 3
+    slice_range = 1:num_slices;
+end
+
+data = squeeze(data(:,slice_range,:));
 
 if nargout > 1, varargout{1} = m.unit; end

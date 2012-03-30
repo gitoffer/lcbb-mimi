@@ -16,7 +16,7 @@ elseif value <= mini
     C = ColorSet(1,:);
 else
     color_range = mini:(maxi-mini)/(N-1):maxi;
-    z = abs(color_range-value);
-    [i] = find(min(z) == z);
+    z = abs(bsxfun(@minus,color_range,value));
+    [i] = find(bsxfun(@eq,min(z),z));
     C = ColorSet(i,:);
 end

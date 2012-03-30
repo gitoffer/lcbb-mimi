@@ -1,4 +1,8 @@
 function [vx,vy] = centroid_velocity(x,y,frames,disp)
+%CENTROID VELOCITY Calculate the velocity of the centroids X,Y for a set of
+%cells.
+%
+% USE: [Vx,Vy] = centroid_velocity(x,y,frames)
 
 [T,N] = size(x);
 
@@ -10,11 +14,8 @@ y = y(frames,:);
 
 T = numel(frames);
 
-x_sm = smooth2a(x,2,0);
-y_sm = smooth2a(y,2,0);
-
-vx = diff(x_sm,1);
-vy = diff(y_sm,1);
+vx = diff(x,1);
+vy = diff(y,1);
 
 % v = sqrt(vx.^2 + vy.^2);
 if strcmpi(disp,'on')
