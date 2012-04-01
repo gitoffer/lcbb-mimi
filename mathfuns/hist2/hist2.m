@@ -2,12 +2,12 @@ function [histmat,xedges,yedges]  = hist2(x, y, xedges, yedges)
 %SYNOPSIS: [histmat,xedges,yedges]  = hist2(x, y, xedges, yedges)
 %
 % Extract 2D histogram data containing the number of events
-% of [x , y] pairs that fall in each bin of the grid defined by 
-% xedges and yedges. The edges are vectors with monotonically 
+% of [x , y] pairs that fall in each bin of the grid defined by
+% xedges and yedges. The edges are vectors with monotonically
 % non-decreasing values. By default, will use linearly spaced
 % edges with 30 bins.
 %
-%EXAMPLE 
+%EXAMPLE
 %
 % events = 1000000;
 % x1 = sqrt(0.05)*randn(events,1)-0.5; x2 = sqrt(0.05)*randn(events,1)+0.5;
@@ -29,24 +29,25 @@ function [histmat,xedges,yedges]  = hist2(x, y, xedges, yedges)
 % email: balkay@pet.dote.hu
 
 switch nargin
-		case 2
-				xedges = linspace(nanmin(x),nanmax(x),30);
-				yedges = linspace(nanmin(y),nanmax(y),30);
-		case 4
-		otherwise
-				error('Either 2 or 4 inputs required.');
+    case 2
+        num_bins = max(sshist(x(~isnan(x))),sshist(y(~isnan(y))));
+        xedges = linspace(nanmin(x),nanmax(x),num_bins);
+        yedges = linspace(nanmin(y),nanmax(y),num_bins);
+    case 4
+    otherwise
+        error('Either 2 or 4 inputs required.');
 end
-		
 
-if any(size(x) ~= size(y)) 
+
+if any(size(x) ~= size(y))
     error ('The size of the two first input vectors should be same!');
 end
 
 [~, xbin] = histc(x,xedges);
 [~, ybin] = histc(y,yedges);
 
-%xbin, ybin zero for out of range values 
-% (see the help of histc) force this event to the 
+%xbin, ybin zero for out of range values
+% (see the help of histc) force this event to the
 % first bins
 xbin(xbin == 0) = inf;
 ybin(ybin == 0) = inf;
@@ -56,15 +57,15 @@ ynbin = length(yedges);
 
 if xnbin >= ynbin
     xy = ybin*(xnbin) + xbin;
-      indexshift =  xnbin; 
+    indexshift =  xnbin;
 else
     xy = xbin*(ynbin) + ybin;
-      indexshift =  ynbin; 
+    indexshift =  ynbin;
 end
 
 %[xyuni, m, n] = unique(xy);
 xyuni = unique(xy);
-xyuni(end) = []; 
+xyuni(end) = [];
 hstres = histc(xy,xyuni);
 clear xy;
 
