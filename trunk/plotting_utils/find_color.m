@@ -1,4 +1,5 @@
 function [C] = find_color(value,mini,maxi,N)
+%FIND_COLOR
 
 error(nargchk(3, 4, nargin))
 if maxi<mini

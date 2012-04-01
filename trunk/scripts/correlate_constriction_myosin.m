@@ -5,9 +5,9 @@
 
 areas_sm = smooth2a(squeeze(areas),1,0);
 myosins_sm = smooth2a(squeeze(myosins),1,0);
-% anisotropy_sm = smooth2a(squeeze(anisotropys(:,zslice,:)),1,0);
-% perimeters_sm = smooth2a(squeeze(perimeters(:,zslice,:)),1,0);
-% orientations_sm = smooth2a(squeeze(orientations(:,zslice,:)),1,0);
+% anisotropy_sm = smooth2a(squeeze(anisotropys),1,0);
+% perimeters_sm = smooth2a(squeeze(perimeters),1,0);
+% orientations_sm = smooth2a(squeeze(orientations),1,0);
 
 areas_rate = -central_diff_multi(areas_sm,1,1);
 myosins_rate = central_diff_multi(myosins_sm);
@@ -32,11 +32,11 @@ figure,showsub(@imagesc,{[-wt wt],[1 num_cells], correlations},'Cross-correlatio
     @errorbar,{-wt:wt,mean_corr,std_corr},'Mean cross-correlation','axis on');
 
 %% Plot individual correlations
-zslice = 2;
+zslice = 1;
 
-cellID = 38;
-area_sm = smooth2a(squeeze(areas(:,zslice,cellID)),2,0);
-myosin_sm = smooth2a(squeeze(myosins(:,zslice,cellID)),1,0);
+cellID = 10;
+area_sm = smooth2a(squeeze(areas(:,cellID)),2,0);
+myosin_sm = smooth2a(squeeze(myosins(:,cellID)),1,0);
 figure,showsub(@plot,{1:num_frames,area_sm},['Cell area for cell #' num2str(cellID)],'', ...
     @plot,{1:num_frames,myosin_sm},['Myosin found in cell #' num2str(cellID)],'' ...
     );

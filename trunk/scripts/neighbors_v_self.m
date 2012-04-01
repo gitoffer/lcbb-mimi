@@ -1,31 +1,46 @@
-tobe_measured = myosins_rate(1:end,:);
+tobe_measured = areas_rate(1:end,:);
 [num_frames,num_cells] = size(tobe_measured);
-meas_name = 'constriction rate (later)';
+meas_name = 'Contraction rate (late)';
 
 [meas_n,cells_w_neighb] = neighbor_msmt(tobe_measured,neighborID(1,:));
+num_foci = numel(cells_w_neighb);
 
 %% Plot average dynamic correlation between focall cell and its neighbors
-cellIDs = 1:82;
 
-foo = zeros(num_cells,10,21);
+% Parameters
+wt = 5;
 
-for j = cellIDs
-    for i = 1:10
-        try
-            foo(j,i,:) = nanxcorr(tobe_measured(:,j),meas_n{j}(:,i),10);
-        catch err
-            foo(j,i,:) = nan(1,21);
-        end
+%Preallocate memory
+dynamic_corr = cell(1,num_foci);
+avg_dynamic_corr = nan(num_cells,2*wt+1);
+std_dynamic_corr = nan(num_cells,2*wt+1);
+max_dynamic_corr = cell(1,num_foci);
+shift_dynamic_corr = cell(1,num_foci);
+
+% Loop through focus cells
+for j = 1:numel(cells_w_neighb)
+    cellID = cells_w_neighb(j);
+    % get dynamic corr for all neighbors
+    num_neighbors = numel(neighborID{1,cellID});
+    this_corr = zeros(num_neighbors,2*wt+1);
+%     keyboard
+    for i = 1:num_neighbors
+        this_corr(i,:) = nanxcorr(tobe_measured(:,cellID),meas_n{cellID}(:,i),wt);
     end
+    dynamic_corr{j} = this_corr;
+    avg_dynamic_corr(cellID,:) = nanmean(this_corr,1);
+    std_dynamic_corr(cellID,:) = nanstd(this_corr,1);
+    [m,I] = nanmax(abs(this_corr),[],2);
+    max_dynamic_corr{j} = m';
+    shift_dynamic_corr{j} = I'-wt;
 end
 
-avg_foo = squeeze(nanmean(foo,2));
-std_foo = squeeze(nanstd(foo,0,2));
-[x,y] = meshgrid(-10:10,1:82);
-pcolor(x,y,avg_foo),colorbar,axis equal tight;
+[x,y] = meshgrid(-wt:wt,1:num_cells);
+pcolor(x,y,avg_dynamic_corr),colorbar,axis equal tight;
+title(['Dynamic correlation between neighbors for ' meas_name]);
 
 %% Plot measurement for focal cell and its neighbors
-focal_cell = 33;
+focal_cell = 15;
 
 figure
 subplot(2,1,1),plot(tobe_measured(:,focal_cell),'k-')
@@ -38,7 +53,7 @@ xlabel('Time (frames)');colorbar;
 %% Plot dynamic correlation between focal cell and its neighbors
 figure,
 
-focal_cell = 48;
+focal_cell = 15;
 % plot focal and neighbor behavior
 subplot(3,1,1),
 plot(tobe_measured(:,focal_cell),'k-','LineWidth',5);
@@ -48,7 +63,7 @@ legend('Focal cell', names{:});
 title(['Cell' num2str(focal_cell) ' and neighbor ' meas_name])
 
 % plot correlation
-subplot(3,1,2),plot(-10:10,squeeze(foo(focal_cell,:,:))')
+subplot(3,1,2),plot(-wt:wt,squeeze(dynamic_corr{find(cells_w_neighb == focal_cell)})')
 names = cellstr(num2str(neighborID{1,focal_cell}));
 legend(names{:});
 title(['Neighbor-to-focal cell cross-correlation in ' meas_name])
@@ -56,7 +71,7 @@ title(['Neighbor-to-focal cell cross-correlation in ' meas_name])
 % plot avg correlation
 % plot correlation
 subplot(3,1,3)
-errorbar(-10:10,avg_foo(focal_cell,:),std_foo(focal_cell,:))
+errorbar(-wt:wt,avg_dynamic_corr(focal_cell,:),std_dynamic_corr(focal_cell,:))
 title('Average cross-correlation')
 
 %% Calculate or plot
@@ -64,8 +79,8 @@ title('Average cross-correlation')
 % Get Pearson's correlation for neighboring cells
 handle.vertex_x = vertices_x;
 handle.vertex_y = vertices_y;
-handle.savename = '~/Desktop/Neighbor behavior/pearsons_myosin_rate (all)/cell_';
-pearsons_myosin = neighbor_cell_pearson(tobe_measured,meas_n,cells_w_neighb,neighborID,handle);
+handle.savename = '~/Desktop/Neighbor behavior/pearsons_contraction_rate (all)/cell_';
+pearsons = neighbor_cell_pearson(tobe_measured,meas_n,cells_w_neighb,neighborID,handle);
 
 %% Plot measurement on cells (for comparison to above)
 
@@ -85,13 +100,34 @@ for j = 1:numel(cells_w_neighb)
     handle.vertex_y = vertices_y;
     handle.title = ['Contraction rates of cell #' num2str(focal_cell) ' and its neighbors'];
     F = draw_measurement_on_cell_small(handle);
-    movie2avi(F,['~/Desktop/Cell neighbors contraction rate/cell_' num2str(focal_cell)]);
+    movie2avi(F,['~/Desktop/Neighbor behavior/contraction_rate (all)/cell_' num2str(focal_cell)]);
 end
 
 %% Get neighbor angles
+num = 1:num_foci;
+
+max_corr = cell2mat(shift_dynamic_corr(num));
+tobe_plotted = max_corr(:);
 
 centroid_x_neighbor = neighbor_msmt(centroids_x,neighborID(1,:));
 centroid_y_neighbor = neighbor_msmt(centroids_y,neighborID(1,:));
 
+angles = get_neighbor_angle(centroids_x,centroids_y, ...
+    centroid_x_neighbor,centroid_y_neighbor,cells_w_neighb, ...
+    unwrap(deg2rad(orientations)));
 
+angles_mat = cell2mat(angles)';
+
+%     hold on
+%     polar(angles_mat(1,:)',abs(tobe_plotted),'r*');
+%     hold off
+%     drawnow; pause(1);
+
+thresh = 0;
+
+polar(angles_mat(tobe_plotted>thresh),tobe_plotted(tobe_plotted>thresh),'r*');
+hold on;
+polar(angles_mat(tobe_plotted<-thresh),-tobe_plotted(tobe_plotted<-thresh),'b*');
+ylabel(meas_name)
+hold off
 
