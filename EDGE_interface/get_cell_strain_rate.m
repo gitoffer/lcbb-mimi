@@ -9,6 +9,11 @@ function [strain_rate,fval,flag] = get_cell_strain_rate(shape_0,shape_f,area_con
 % USE: strain_rate =
 %   get_cell_strain_rate(init_shape,final_shape,area_constraint) ;
 %
+% Reference: Blanchard, GB et al. Tissue tectonics: morphogenetic strain
+%            rates, cell shape change and intercalation. Nature Methods
+%            (2009).
+%   http://www.nature.com/nmeth/journal/v6/n6/full/nmeth.1327.html
+%
 % xies@mit.edu March 2012.
 
 % get parameters about measurement stack

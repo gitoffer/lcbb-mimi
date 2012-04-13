@@ -1,15 +1,4 @@
 
-%% Generate correlations
-zslice = 2;
-
-areas_sm = smooth2a(squeeze(areas(:,zslice,:)),1,0);
-myosins_sm = smooth2a(squeeze(myosins(:,zslice,:)),1,0);
-
-areas_rate = -central_diff_multi(areas_sm,1,1);
-myosins_rate = central_diff_multi(myosins_sm);
-
-wt = 7;
-correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
 
 %% Finds consecutive runs of increasing myosin; segments the myosin data
 % using hysteresis thresholding
@@ -24,7 +13,7 @@ input = myosins_rate; input(~roi) = NaN;
 response = areas_rate; response(~roi) = NaN;
 imagesc(areas_rate'),caxis([-5 5]),colorbar,xlabel('Time'),ylabel('Cells');
 title('Smoothed constriction rate');
-figure,imagesc(response'),xlabel('Time'),ylabel('Cells'),caxis([-5 5]),colorbar;
+figure,imagesc(response_2'),xlabel('Time'),ylabel('Cells'),caxis([-5 5]),colorbar;
 title('Constriction rates masked by myosin increasing regions');
 
 %% Plot PDF distributinos
@@ -54,19 +43,32 @@ decreasing(response < 0) = response(response < 0);
 masks = nan(size(response));
 masks(response > 0) = 1;
 masks(response < 0) = -1;
-inc_m = draw_measurement_on_cells(m,masks,Xext,Yext,um_per_px);
 
+% inc_m = draw_measurement_on_cells(m,masks,Xext,Yext,um_per_px);
 % inc_m = draw_measurement_on_cells(m,increasing,Xext,Yext,um_per_px);
 % dec_m = draw_measurement_on_cells(m,decreasing,Xext,Yext,um_per_px);
 
-%%
-close all
-tracks = load_edge_data(folder2load,'centroid-x','centroid-y');
-centroids.x = extract_msmt_data(tracks,'centroid-x','on');
-centroids.y = extract_msmt_data(tracks,'centroid-y','on');
+handle.todraw = 1:num_cells;
+handle.m = decreasing;
+handle.title = 'Decreasing constriction rates';
+handle.vertex_x = vertices_x;
+handle.vertex_y = vertices_y;
+handle.caxis = [-3 3];
+F = draw_measurement_on_cell_small(handle);
+movie2avi(F,['~/Desktop/cr_myosins_5_dec_m'])
 
-cent_x = squeeze(centroids.x(:,zslice,:));
-cent_y = squeeze(centroids.y(:,zslice,:));
+% handle.m = increasing;
+% F = draw_measurement_on_cell_small(handle);
+% movie2avi(F,['~/Desktop/cr_filtered_incmyo_' num2str(thresh)])
+
+%%
+% close all
+% tracks = load_edge_data(folder2load,'centroid-x','centroid-y');
+% centroids.x = extract_msmt_data(tracks,'centroid-x','on');
+% centroids.y = extract_msmt_data(tracks,'centroid-y','on');
+
+cent_x = centroids_x;
+cent_y = centroids_y;
 
 nbins = 40;
 bins = linspace(1,70,nbins);

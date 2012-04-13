@@ -1,8 +1,11 @@
 function [centroid_x,centroid_y] = get_cell_trajectory(m,sliceID,frames,disp)
-% GET_CELL_TRAJECTORY (from EDGE)
+%GET_CELL_TRAJECTORY (from EDGE) Can use to display cell trajectories.
+% NOTE: Not super useful... Only useful as a plotting tool.
 %
 % SYNOPSIS: [X,Y] = get_cell_trajectory(m,sliceID,frames)
+%
 % Outputs are optional.
+% xies@mit. Dec 2012.
 
 if ~exist('disp','var'), disp = 'off'; end
 
@@ -32,4 +35,6 @@ if strcmpi(disp,'on')
     hold off
     xlabel(['Position in x (' u ')']);
     ylabel(['Position in y (' u ')']);
+end
+
 end

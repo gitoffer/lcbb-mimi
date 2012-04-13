@@ -9,15 +9,26 @@ function imsequence_color(imsequence,savename,movie_title,color_limits)
 %
 % Jun He @ mit.
 
+close all;
 num_frame = size(imsequence,3);
 if nargin < 4
     max_pix_value = nanmax(imsequence(:))/2;
     min_pix_value = nanmin(imsequence(:))/2;
     color_limits = [min_pix_value max_pix_value];
 end
-%%%set image play size
+%%%set image play size to be 1/4 of screen
+set(0,'Units','pixels')
+scnsize = get(0,'ScreenSize');
+fig1 = figure(102);
+position = get(fig1,'Position');
+outerpos = get(fig1,'OuterPosition');
+borders = outerpos - position;
+edge = -borders(1)/2;
+pos1 = [edge, scnsize(4)/2, scnsize(3)/2 - edge, scnsize(4)/2];
+set(fig1,'OuterPosition',pos1)
 
-figure(102),clf;
+
+clf;
 if nargin > 1
     F(1:num_frame) = struct('cdata', [],...
         'colormap', []);

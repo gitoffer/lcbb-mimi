@@ -1,18 +1,4 @@
 
-%% Generate correlations
-
-areas_sm = smooth2a(squeeze(areas(:,zslice,:)),1,0);
-myosins_sm = smooth2a(squeeze(myosins(:,zslice,:)),1,0);
-major = squeeze(majors(:,zslice,:));
-minor = squeeze(minors(:,zslice,:));
-orientation = squeeze(orientations(:,zslice,:));
-anisotropy = squeeze(anisotropies(:,zslice,:));
-
-areas_rate = -central_diff_multi(areas_sm,1,1);
-myosins_rate = central_diff_multi(myosins_sm);
-
-wt = 7;
-correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
 %% Scatter plots of myosin versus area
 signal = myosins_sm;
 signal2 = areas_sm;
@@ -50,8 +36,8 @@ figure,pcolor(xedges,yedges,histmat');
 colorbar;xlabel('Myosin'),ylabel('Area');
 
 %% Scatter plots of myosin versus area
-signal = major;
-signal2 = minor;
+signal = majors;
+signal2 = minors;
 
 % Make all leading 0's NaN
 for i = 1:num_cells
@@ -77,7 +63,7 @@ colorbar;xlabel('Myosin rate'),ylabel('Constriction rate');
 figure,pcolor(xedges,yedges,histmat');
 colorbar;xlabel('Myosin'),ylabel('Area');
 
-%%
+%% K means ( doesn't work! )
 for t = 20:40
     clf
     feature_vec = cat(2, ...
@@ -85,10 +71,10 @@ for t = 20:40
         squeeze(areas_rate(t,:))', ...
         squeeze(myosins_sm(t,:))', ...
         squeeze(myosins_rate(t,:))', ...
-        squeeze(anisotropy(t,:))', ...
-        squeeze(orientation(t,:))', ...
-        squeeze(major(t,:))', ...
-        squeeze(minor(t,:))');
+        squeeze(anisotropies(t,:))', ...
+        squeeze(orientations(t,:))', ...
+        squeeze(majors(t,:))', ...
+        squeeze(minors(t,:))');
     
     [Idx,centers,sumd] = kmeans(feature_vec,2);
     

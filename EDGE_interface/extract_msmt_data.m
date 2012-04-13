@@ -3,7 +3,7 @@ function [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert, .
 %EXTRACT_MSMT_DATA (from EDGE). Extracts a specific measurement from an
 %array of EDGE measurement structures.
 %
-% SYNOPSOS: 
+% SYNOPSIS: 
 %  data = extract_msmt_data(m_array,'anisotropy','off')
 % [data,unit] = extract_msmt_data(m_array,'anisotropy','off')
 %
@@ -12,6 +12,8 @@ function [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert, .
 %        convert - 'on'/'off' converts from cell to numerical. Default on.
 %        Will cause errors if measurements are not the same size across
 %        cells and time frames (e.g. vertex).
+%
+% See also load_edge_data
 %
 % xies@mit.edu 10/2011.
 
@@ -36,3 +38,5 @@ end
 data = squeeze(data(:,slice_range,:));
 
 if nargout > 1, varargout{1} = m.unit; end
+
+end

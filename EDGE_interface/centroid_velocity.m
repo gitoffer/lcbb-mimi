@@ -33,3 +33,5 @@ if strcmpi(disp,'on')
     movie2avi(F,'cell_centroid_velocities');
     
 end
+
+end

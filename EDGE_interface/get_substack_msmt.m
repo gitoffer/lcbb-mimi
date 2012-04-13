@@ -1,9 +1,9 @@
 function msmts = get_substack_msmt(measurements,frames,sliceID,cellID)
-
 % Extract the measurements for a subset of cells (and optionally for a
 % given slice).
+% NOTE: Not too useful... need to get rid of function.
 %
-% SYNOSPSI: msmts = get_msmt_for_cell(measurements,cellID,sliceID)
+% SYNOPSIS: msmts = get_msmt_for_cell(measurements,cellID,sliceID)
 %
 % xies@mit.edu 10/2011.
 
@@ -20,4 +20,6 @@ for i = 1:numel(measurements)
     
     m.data = data;
     msmts(i) = m;
+end
+
 end

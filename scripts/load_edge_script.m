@@ -1,5 +1,7 @@
 %Load data
 folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
+% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
+% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Control inject Series002/Measurements';
 msmts2make = {'myosin','area','vertex-x','vertex-y', ...
     'neighbors','ellipse','centroid'};
 
@@ -17,18 +19,19 @@ majors = extract_msmt_data(EDGEstack,'major axis','on',zslice);
 minors = extract_msmt_data(EDGEstack,'minor axis','on',zslice);
 orientations = extract_msmt_data(EDGEstack,'orientation','on',zslice);
 anisotropies = extract_msmt_data(EDGEstack,'anisotropy-xy','on',zslice);
-coronal_area = extract_msmt_data(EDGEstack,'corona area','on',zslice);
+coronals_area = extract_msmt_data(EDGEstack,'corona area','on',zslice);
 
-[num_frames,num_z,num_cells] = size(areas);
+[num_frames,num_cells] = size(areas);
 
 %% Smooth some data
 transition_frame = 60;
 
 areas_sm = smooth2a(areas,1,0);
 myosins_sm = smooth2a(squeeze(myosins),1,0);
-coronal_area_sm = smooth2a(coronal_area,1,0);
+coronal_areas_sm = smooth2a(coronals_area,1,0);
 orientations_sm = smooth2a(orientations,1,0);
 
-areas_rate = -central_diff_multi(areas_sEDGEstack,1,1);
-myosins_rate = central_diff_multi(myosins_sm);
+areas_rate = -central_diff_multi(areas_sm,1:num_frames);
+myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
 anisotropies_rate = central_diff_multi(anisotropies);
+coronal_areas_rate = -central_diff_multi(coronals_area);
