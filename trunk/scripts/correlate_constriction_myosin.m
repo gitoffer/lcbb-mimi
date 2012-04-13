@@ -3,18 +3,7 @@
 % xies@mit.edu Jan 2012
 %% Generate correlations
 
-areas_sm = smooth2a(squeeze(areas),1,0);
-myosins_sm = smooth2a(squeeze(myosins),1,0);
-% anisotropy_sm = smooth2a(squeeze(anisotropys),1,0);
-% perimeters_sm = smooth2a(squeeze(perimeters),1,0);
-% orientations_sm = smooth2a(squeeze(orientations),1,0);
-
-areas_rate = -central_diff_multi(areas_sm,1,1);
-myosins_rate = central_diff_multi(myosins_sm);
-% anisotropys_rate = central_diff(anisotropy_sm);
-% orientations_rate = central_diff(orientations_sm);
-
-wt = 7;
+wt = 10;
 correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
 
 %% Plot myosin, area, rates and average correlation

@@ -9,6 +9,10 @@ function cell_structs = edge2cell(measurements,frames,sliceID)
 %                 indices or the string 'all'. Default is 'all'.
 %        sliceID - (optional) only load these Z slices. Either an array of
 %                 indices or the string 'all'. Default is 'all'.
+% OUTPUT: cell_structs - 1-by-num_cell structure array where fields are the
+%                measurement names
+%
+% xies@mit.edu
 
 N = size(measurements(1).data,3);
 if ~exist('frames','var'), frames = 'all'; end
@@ -24,4 +28,5 @@ for i = 1:N-1
     m1 = {m1.data};
     cell_structs(i) = cell2struct(m1,measurement_names,2);
 end
+
 end

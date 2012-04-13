@@ -27,13 +27,18 @@ else
 end
 
 % colorbar range
-max_measurement = nanmax(measurement(:));
-min_measurement = nanmin(measurement(:));
+if ~isfield(handle,'caxis')
+    max_measurement = nanmax(measurement(:));
+    min_measurement = nanmin(measurement(:));
+else
+    min_measurement = handle.caxis(1);
+    max_measurement = handle.caxis(2);
+end
 
 % Sets the movie size to be 1/4 of screen.
 set(0,'Units','pixels')
 scnsize = get(0,'ScreenSize');
-fig1 = figure;
+fig1 = figure(1);
 position = get(fig1,'Position');
 outerpos = get(fig1,'OuterPosition');
 borders = outerpos - position;

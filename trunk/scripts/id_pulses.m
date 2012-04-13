@@ -1,35 +1,18 @@
 %ID_PULSES
-% Tries to find myosin pulses
-
-folder2load = '/Users/Imagestation/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements/';
-msmt2make = {'area','myosin_intensity','vertex-x','vertex-y','identity of neighbors'};
-
-m = load_edge_data(folder2load,msmt2make{:});
-areas = extract_msmt_data(m,'area','on');
-myosins = extract_msmt_data(m,'myosin intensity','on');
-neighborID = extract_msmt_data(m,'identity of neighbors','off');
-
-[num_frames,num_z,num_cells] = size(areas);
 %% Generate correlations
 % areas = areas(40:end,:,:);
 % myosin = myosin(40:end,:,:);
-zslice = 2;
 
-areas_sm = smooth2a(squeeze(areas(:,zslice,:)),1,0);
-myosins_sm = smooth2a(squeeze(myosins(:,zslice,:)),1,0);
-
-areas_rate = -central_diff_multi(areas_sm,1,1);
-myosins_rate = central_diff_multi(myosins_sm);
-
-wt = 20;
+wt = 10;
 correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
+pcolor(correlations)
+figure,errorbar(-wt:wt,nanmean(correlations,1),nanstd(correlations,1,1));
 
 %% Get individual correlations
-zslice = 1;
 cellID = 80;
 
-area_sm = smooth2a(squeeze(areas(:,zslice,cellID)),1,0);
-myosin_sm = smooth2a(squeeze(myosins(:,zslice,cellID)),1,0);
+area_sm = smooth2a(squeeze(areas(:,cellID)),1,0);
+myosin_sm = smooth2a(squeeze(myosins(:,cellID)),1,0);
 
 area_rate = -central_diff_multi(area_sm,1,1);
 myosin_rate = central_diff_multi(myosin_sm,1,1);
@@ -51,7 +34,7 @@ figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
 
 %% Interpolate, bg subtract, and fit Gaussians
-cellID = randi(82);
+cellID = 61;
 myosin_sm = myosins_sm(:,cellID);
 myosin_interp = interp_and_truncate_nan(myosin_sm);
 x = 1:numel(myosin_interp);
@@ -59,12 +42,12 @@ myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
 % myosin_nobg = myosin_nobg - min(myosin_nobg(:));
 
 lb = [0 0 0];
-ub = [Inf Inf 20];
+ub = [Inf num_frames 20];
 gauss_p = iterative_gaussian_fit(myosin_nobg,x,0.1,lb,ub);
 figure;
-h = plot(synthesize_gaussians(1:59,gauss_p));
-hold on,plot(myosin_interp,'r-');
+h = plot(myosin_interp,'r-');
 hold on,plot(myosin_nobg,'g-');
+hold on,plot(synthesize_gaussians(1:59,gauss_p));
 legend('Fitted peaks','Original signal','BG subtraction')
 title(['Cell #' num2str(cellID)]);
 saveas(h,['~/Desktop/Pulse finding/cell_' num2str(cellID)]);
@@ -77,21 +60,28 @@ for i = 1:num_cells
         myosin_interp = interp_and_truncate_nan(myosin_sm);
         x = 1:numel(myosin_interp);
         myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
-        myosin_nobg = myosin_nobg - min(myosin_nobg(:));
+%         myosin_nobg = myosin_nobg - min(myosin_nobg(:));
         
         lb = [0 0 0];
-        ub = [Inf Inf 20];
+        ub = [Inf num_frames 20];
         gauss_p = iterative_gaussian_fit(myosin_nobg,x,0.1,lb,ub);
-        pulse_locations = synthesize_gaussians(1:num_frames,gauss_p) > 500;
-%         keyboard
-        peaks(pulse_locations,i) = 1;
+        left = max(fix(gauss_p(2,:)) - fix(gauss_p(3,:)),1);
+        right = min(fix(gauss_p(2,:)) + fix(gauss_p(3,:)),num_frames);
+%         if i == 61
+%             keyboard
+%         end
+        for j = 1:numel(left)
+            %             keyboard
+            peaks(left(j):right(j),i) = 1;
+        end
+        
     end
 end
 
 %% Plot peaks and the neighbors' peaks
 
-cellID =79;
-neighbors = neighborID{10,zslice,cellID};
+cellID =60;
+neighbors = neighborID{1,cellID};
 % plot(peaks(:,center),'k-');
 % hold on;
 figure
@@ -103,10 +93,17 @@ plot(p_neighb,'r-');
 subplot(2,1,2);
 pcolor(peaks(:,neighbors)');
 
+%%
 
-%% Plot cell correlation as in time
-X = 1000;
-Y = 400;
-max_corr = nanmax(correlations,[],2);
-max_corr = max_corr(:,ones(1,num_frames));
-F = draw_measurement_on_cells(peaks,myosins_rate',X,Y,.19);
+peaks = logical(peaks);
+
+response = areas_rate.*peaks;
+response(response == 0) = NaN;
+
+
+
+
+
+
+
+
