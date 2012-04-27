@@ -14,6 +14,8 @@ function signal_nobg = bgsutract4myosin(signal,method,params)
 % domain of signal
 x = params{1};
 
+% turn off display
+opt = optimset('display','off');
 switch method
     case 'linear'
         p = polyfit(x,signal,2);
@@ -22,7 +24,7 @@ switch method
         % find extrema as the best first guess
         [height,max] = extrema(signal);
         guess = [height(1) max(1) 2];
-        p = lsqcurvefit(@lsq_gauss1d,guess,x,signal);
+        p = lsqcurvefit(@lsq_gauss1d,guess,x,signal,[],[],opt);
         % evaluate the fitted gaussian
         bg = lsq_gauss1d(p,x);
     otherwise

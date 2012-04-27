@@ -65,4 +65,4 @@ for i = 1:num_cells
 end
 
 max_corr = max_corr(ones(1,num_frames),:);
-F = draw_measurement_on_cells(m,max_corr,X,Y,.19);
+F = draw_measurement_on_cells(EDGEstack,max_corr,X,Y,.19);

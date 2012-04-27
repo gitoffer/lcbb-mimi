@@ -1,15 +1,14 @@
 %
-tobe_correlated = response;
+tobe_correlated = myosins_rate;
 
 tobe_measured = myosins_rate(1:end,:);
 [num_frames,num_cells] = size(tobe_measured);
-meas_name = 'Myosin rate';
+meas_name = 'myosin rate';
 
 [meas_n,cells_w_neighb] = neighbor_msmt(tobe_measured,neighborID(1,:));
 num_foci = numel(cells_w_neighb);
 
 %% Plot average dynamic correlation between focall cell and its neighbors
-
 
 % Parameters
 wt = 7;
@@ -46,10 +45,10 @@ pcolor(x,y,avg_dynamic_corr),colorbar,axis equal tight;
 title(['Dynamic correlation between neighbors for ' meas_name]);
 
 %% Plot measurement for focal cell and its neighbors
-focal_cell = 33;
+focal_cell = 34;
 
 figure
-subplot(2,1,1),plot(tobe_measured(:,focal_cell),'k-')
+subplot(2,1,1),plot(tobe_correlated(:,focal_cell),'k-')
 title([meas_name ' for cell #' num2str(focal_cell)]);
 [x,y] = meshgrid(1:num_frames,neighborID{1,focal_cell});
 subplot(2,1,2),plot(1:num_frames,meas_n{focal_cell}');
@@ -61,10 +60,10 @@ xlabel('Time (frames)');
 %% Plot dynamic correlation between focal cell and its neighbors
 figure,
 
-focal_cell = 59;
+focal_cell = 34;
 % plot focal and neighbor behavior
 subplot(3,1,1),
-plot(tobe_measured(:,focal_cell),'k-','LineWidth',5);
+plot(tobe_correlated(:,focal_cell),'k-','LineWidth',5);
 hold on;plot(meas_n{focal_cell});
 names = cellstr(num2str(neighborID{1,focal_cell}));
 legend('Focal cell', names{:});
@@ -85,6 +84,7 @@ title('Average cross-correlation')
 %% Calculate or plot
 
 % Get Pearson's correlation for neighboring cells
+handle.display = 0;
 handle.vertex_x = vertices_x;
 handle.vertex_y = vertices_y;
 handle.savename = '~/Desktop/Neighbor behavior/pearsons_myosin_rate (all)/cell_';
@@ -112,30 +112,46 @@ for j = 1:numel(cells_w_neighb)
 end
 
 %% Get neighbor angles
-% num =
-cellIDs = select_cells(centroids_x,centroids_y,[80 120],[30 50]);
-[IDs,num] = intersect(cells_w_neighb,cellIDs);
+
+% cellIDs = select_cells(centroids_x,centroids_y,[80 120],[30 50]);
+% [IDs,num] = intersect(cells_w_neighb,cellIDs);
 num = 1:num_foci;
 
-max_corr = cell2mat(pearsons(num));
-tobe_plotted = max_corr(:);
+tobe_plotted = cell2mat(pearsons(num));
+tobe_plotted = tobe_plotted(:);
 
 centroid_x_neighbor = neighbor_msmt(centroids_x,neighborID(1,:));
 centroid_y_neighbor = neighbor_msmt(centroids_y,neighborID(1,:));
 
 angles = get_neighbor_angle(centroids_x,centroids_y, ...
-    centroid_x_neighbor,centroid_y_neighbor,cells_w_neighb,...
-    deg2rad(orientations));
+    centroid_x_neighbor,centroid_y_neighbor,cells_w_neighb)
+%     deg2rad(orientations));
 
 angles_mat = cell2mat(angles(num))';
 % angles_mat = rad_flip_quadrant(angles_mat);
 
 thresh = 0;
+figure
 polar(angles_mat(tobe_plotted>thresh),tobe_plotted(tobe_plotted>thresh),'r*');
 hold on;
 polar(angles_mat(tobe_plotted<-thresh),-tobe_plotted(tobe_plotted<-thresh),'b*');
 ylabel(meas_name)
 hold off
+
+%% Get angular histograms of quantiles
+
+y33 = quantile(tobe_plotted,.33)
+y66 = quantile(tobe_plotted,.66)
+nbins = 0:pi/3:2*pi-pi/3;
+% nbins = 6;
+
+showsub( ...
+    @rose,{angles_mat(tobe_plotted>y66),nbins},'Top 66-quantile','ylabel(''Correlations'')', ...
+    @rose,{angles_mat(tobe_plotted<y33),nbins},'Bottom 33-quantile','', ...
+    @rose,{angles_mat(tobe_plotted>y33 & tobe_plotted<y66),nbins},'33-66 quantile','', ...
+    @rose,{angles_mat,nbins},'All cells','' ...
+);
+suptitle(['Neighbor angle distribution for ' meas_name ' correlations'])
 
 %%
 

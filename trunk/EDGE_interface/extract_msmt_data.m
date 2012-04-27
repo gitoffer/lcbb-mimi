@@ -27,7 +27,9 @@ if ~isempty(m)
         data = m.data;
     end
 else
-    error('edge:msmt_not_found',['Found no measurement called ' name_to_extract])
+    warning('edge:msmt_not_found',['Found no measurement called ' name_to_extract])
+    data = [];
+    varargout{1} = 0;
 end
 
 [~,num_slices,~] = size(data);
