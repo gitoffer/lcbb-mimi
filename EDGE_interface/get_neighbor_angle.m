@@ -30,7 +30,7 @@ for i = 1:num_foci
             theta = bsxfun(@minus,theta,orientations(:,c));
         end
         
-        angles{i} = nanmean(theta(1:30,:));
+        angles{i} = nanmean(theta(10:30,:));
 %     end
 
 end

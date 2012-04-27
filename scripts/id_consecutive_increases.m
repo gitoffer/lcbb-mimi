@@ -13,7 +13,7 @@ input = myosins_rate; input(~roi) = NaN;
 response = areas_rate; response(~roi) = NaN;
 imagesc(areas_rate'),caxis([-5 5]),colorbar,xlabel('Time'),ylabel('Cells');
 title('Smoothed constriction rate');
-figure,imagesc(response_2'),xlabel('Time'),ylabel('Cells'),caxis([-5 5]),colorbar;
+figure,imagesc(response'),xlabel('Time'),ylabel('Cells'),caxis([-5 5]),colorbar;
 title('Constriction rates masked by myosin increasing regions');
 
 %% Plot PDF distributinos

@@ -9,15 +9,13 @@ function pearsons = neighbor_cell_pearson(meas_cell,meas_neighb,focal_cells,neig
 %           indexed by the focal cell
 %        focal_cells - index of focal cells
 %        neighborID - cell array of indeces of neighor cells
-%(optional) handle - if defined, will display movie. Required structure
+%        handle - diplay turned on, will display movie. Required structure
 %                    fields:
-%                       vertex-x, vertex-y, savename
-% To JUST display the correlations
+%                       vertex-x, vertex-y, savename, display (bool)
 %
 % xies@mit.edu March 2012
 
-
-if nargin == 5, display = 1; else display = 0; end
+display = handle.display;
 num_frames = size(meas_cell,1);
 
 num_foci = numel(focal_cells);

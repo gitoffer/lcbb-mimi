@@ -1,19 +1,18 @@
-function h = plot_pdf(observations,nbins,varargin)
+function h = plot_cdf(observations,nbins,varargin)
 %PLOT_PDF
-% GIven a vector OBSERVATIONS of dimensions 1xD, where there are D
-% observations of a random variable, plot the probability density function
-% of the variable.
+% Given a vector OBSERVATIONS of dimensions 1xD, where there are D
+% observations of a random variable, plot the cumulative probability
+% functionof the variable.
 %
-% SYNOPSIS: h = plot_pdf(x,nbins,patch_options)
+% SYNOPSIS: h = plot_cdf(x,nbins,patch_options)
 % INPUT: x - observed variable
 %        nbins - number of bins (default = 30)
 %        patch_options - e.g. 'facecolor','red'
 % OUTPUT: h - figure handle
 % 
-% See also: PLOT_CDF
+% See also: PLOT_PDF
 %
 % xies@mit.edu March 2012.
-
 
 switch nargin
     case 0
@@ -27,9 +26,10 @@ if isrow(observations)
 end
 
 [counts,bins] = hist(observations,nbins);
-prob_mass = sum(counts);
-counts = bsxfun(@rdivide,counts,prob_mass);
-bar(bins,counts);
+cdf = cumsum(counts);
+normalization_factors = sum(counts,1);
+cdf = cdf./normalization_factors(ones(1,size(counts,1)),:);
+plot(bins,cdf);
 
 h = findobj(gca,'Type','patch');
 if nargin > 2

@@ -1,12 +1,16 @@
 %Load data
-folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
+% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
+folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/2color_4 013012/Measurements';
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Control inject Series002/Measurements';
 msmts2make = {'myosin','area','vertex-x','vertex-y', ...
-    'neighbors','ellipse','centroid'};
+    'neighbors','ellipse_properties','centroid'};
 
 EDGEstack = load_edge_data(folder2load,msmts2make{:});
-zslice = 2;
+beep;
+
+%%
+zslice = 1;
 
 areas = extract_msmt_data(EDGEstack,'area','on',zslice);
 myosins = extract_msmt_data(EDGEstack,'myosin intensity','on',zslice);
@@ -19,19 +23,46 @@ majors = extract_msmt_data(EDGEstack,'major axis','on',zslice);
 minors = extract_msmt_data(EDGEstack,'minor axis','on',zslice);
 orientations = extract_msmt_data(EDGEstack,'orientation','on',zslice);
 anisotropies = extract_msmt_data(EDGEstack,'anisotropy-xy','on',zslice);
-coronals_area = extract_msmt_data(EDGEstack,'corona area','on',zslice);
+coronal_areas = extract_msmt_data(EDGEstack,'corona area','on',zslice);
+coronal_areas = coronal_areas - areas;
 
 [num_frames,num_cells] = size(areas);
 
-%% Smooth some data
 transition_frame = 60;
 
 areas_sm = smooth2a(areas,1,0);
 myosins_sm = smooth2a(squeeze(myosins),1,0);
-coronal_areas_sm = smooth2a(coronals_area,1,0);
+coronal_areas_sm = smooth2a(coronal_areas,1,0);
 orientations_sm = smooth2a(orientations,1,0);
 
 areas_rate = -central_diff_multi(areas_sm,1:num_frames);
 myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
 anisotropies_rate = central_diff_multi(anisotropies);
-coronal_areas_rate = -central_diff_multi(coronals_area);
+coronal_areas_rate = -central_diff_multi(coronal_areas);
+
+%%
+handle.z = 2;
+handle.EDGEstack = EDGEstack;
+handle.io.save_dir = '~/Desktop/Embryo 4';
+
+handle.myo_area_corr.wt = 10;
+
+handle.neighbor_focus.wt = 10;
+handle.neighbor_focus.focal_measurement = 'areas_rate';
+handle.neighbor_focus.focal_name = 'constriction rate';
+handle.neighbor_focus.neighbor_measurement = 'myosins_rate';
+handle.neighbor_focus.neighbor_name = 'myosins rate';
+
+handle.neighbor_focus.pearsons.display = 0;
+
+handle.neighbor_focus.neighbor_angles.angle_data = 'pearsons';
+handle.neighbor_focus.neighbor_angles.theta_bins = 0:pi/3:2*pi-pi/3;
+
+handle.peak_gauss.display = 5;
+handle.peak_gauss.caxis = [-3 3];
+
+handle.peak_consecutive.display = 1;
+handle.peak_consecutive.count_threshold = 3;
+handle.peak_consecutive.caxis = [-3 3];
+
+data = post_EDGE(handle);
