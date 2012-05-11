@@ -1,5 +1,4 @@
 
-
 %% Finds consecutive runs of increasing myosin; segments the myosin data
 % using hysteresis thresholding
 

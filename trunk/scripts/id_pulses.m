@@ -1,4 +1,5 @@
-%ID_PULSES
+%%ID_PULSES
+
 %% Generate correlations
 % areas = areas(40:end,:,:);
 % myosin = myosin(40:end,:,:);
@@ -34,7 +35,7 @@ figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
 
 %% Interpolate, bg subtract, and fit Gaussians
-cellID = 61;
+cellID = 51;
 myosin_sm = myosins_sm(:,cellID);
 myosin_interp = interp_and_truncate_nan(myosin_sm);
 x = 1:numel(myosin_interp);
@@ -46,10 +47,12 @@ ub = [Inf num_frames 20];
 gauss_p = iterative_gaussian_fit(myosin_nobg,x,0.1,lb,ub);
 figure;
 h = plot(myosin_interp,'r-');
-hold on,plot(myosin_nobg,'g-');
+myosin_nobg_rect = myosin_nobg;
+myosin_nobg_rect(myosin_nobg < 0) = 0;
+hold on,plot(myosin_nobg_rect,'g-');
 hold on,plot(synthesize_gaussians(1:59,gauss_p));
-legend('Fitted peaks','Original signal','BG subtraction')
-title(['Cell #' num2str(cellID)]);
+legend('Original myosin signal','BG subtracted and rectified','Fitted peaks')
+title(['Myosin intensity in cell #' num2str(cellID)]);
 saveas(h,['~/Desktop/Pulse finding/cell_' num2str(cellID)]);
 
 %% Fit Gaussians for all

@@ -1,7 +1,7 @@
 %
-tobe_correlated = myosins_rate;
+tobe_correlated = areas_rate;
 
-tobe_measured = myosins_rate(1:end,:);
+tobe_measured = areas_rate(1:end,:);
 [num_frames,num_cells] = size(tobe_measured);
 meas_name = 'myosin rate';
 
@@ -124,7 +124,7 @@ centroid_x_neighbor = neighbor_msmt(centroids_x,neighborID(1,:));
 centroid_y_neighbor = neighbor_msmt(centroids_y,neighborID(1,:));
 
 angles = get_neighbor_angle(centroids_x,centroids_y, ...
-    centroid_x_neighbor,centroid_y_neighbor,cells_w_neighb)
+    centroid_x_neighbor,centroid_y_neighbor,cells_w_neighb);
 %     deg2rad(orientations));
 
 angles_mat = cell2mat(angles(num))';
@@ -140,10 +140,10 @@ hold off
 
 %% Get angular histograms of quantiles
 
-y33 = quantile(tobe_plotted,.33)
-y66 = quantile(tobe_plotted,.66)
-nbins = 0:pi/3:2*pi-pi/3;
-% nbins = 6;
+y33 = quantile(tobe_plotted,.33);
+y66 = quantile(tobe_plotted,.66);
+nbins = 0:pi/4:2*pi-pi/4;
+nbins = 20;
 
 showsub( ...
     @rose,{angles_mat(tobe_plotted>y66),nbins},'Top 66-quantile','ylabel(''Correlations'')', ...

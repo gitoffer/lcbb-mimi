@@ -24,7 +24,7 @@ for i = 1:4:nargin
     data = varargin{i+1};
     fig_title = varargin{i+2};
     gca_opt = varargin{i+3};
-    subplot(num_columns,num_rows,ceil(i/4));
+    subplot(num_rows,num_columns,ceil(i/4));
     feval(plot_method,data{:});
     eval(gca_opt);
     title(fig_title);
