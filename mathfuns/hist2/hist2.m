@@ -23,7 +23,9 @@ function [histmat,xedges,yedges]  = hist2(x, y, xedges, yedges)
 % xedges_ = logspace(0,log10(3),64)-2; yedges_ = linspace(-1,1,64);
 % histmat_ = hist2(x, y, xedges_, yedges_);
 % figure; pcolor(xedges_,yedges_,histmat_'); colorbar ; axis square tight ;
-
+%
+% See also: hist, hist3
+%
 % Modified by xies@mit to include default behavior
 % University of Debrecen, PET Center/Laszlo Balkay 2006
 % email: balkay@pet.dote.hu

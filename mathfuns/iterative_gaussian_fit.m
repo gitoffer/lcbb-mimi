@@ -14,7 +14,7 @@ end
 
 switch nargin
     case 2
-        alpha = 0.05; lb = []; ub = [];
+        alpha = 0.1; lb = []; ub = [];
     case 3
         lb = []; ub = [];
 end
