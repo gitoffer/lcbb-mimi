@@ -22,7 +22,7 @@ end
 T = length(curve);
 
 [height,max] = extrema(curve);
-guess = [height(1) max(1) 2];
+guess = [height(1) max(1) 2]; % initial guesss
 significant = 1;
 S_null = Inf;
 heights = []; peaks = []; vars = [];

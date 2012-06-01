@@ -18,6 +18,6 @@ for i = 1:4:nargin
     feval(plot_method,data{:});
     eval(gca_opt);
     title(fig_title);
-    xlabel(xaxis_title);
-    ylabel(yaxis_title);
+%     xlabel(xaxis_title);
+%     ylabel(yaxis_title);
 end

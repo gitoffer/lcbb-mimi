@@ -1,4 +1,4 @@
-function signal_int = interp_and_truncate_nan(signal)
+function [signal_int] = interp_and_truncate_nan(signal)
 
 X = 1:numel(signal);
 signal_int = interp1(X(~isnan(signal)),signal(~isnan(signal)),X);
