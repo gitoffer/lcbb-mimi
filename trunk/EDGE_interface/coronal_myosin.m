@@ -1,26 +1,26 @@
+%% MYOSIN
 
-%%
 wt = 7;
 transition = 30;
 
 %%
-area_coronal_corr = nanxcorr(areas_rate,coronal_areas_rate,wt);
-[area_coronal_corr2,cells2plot] = delete_nan_rows(area_coronal_corr,1);
+myosin_coronal_corr = nanxcorr(myosins_rate,coronal_masked_mr,wt);
+[myosin_coronal_corr,cells2plot] = delete_nan_rows(myosin_coronal_corr,1);
 [x,y] = meshgrid((-wt:wt)*8,1:numel(cells2plot));
-pcolor(x,y,area_coronal_corr2),shading flat;colorbar
+pcolor(x,y,myosin_coronal_corr),shading flat
 figure
 showsub( ...
-    @pcolor,{x,y,area_coronal_corr2},'Dynamic correlation between coronal area v. area','colorbar,axis equal tight;colorbar;', ...
-    @errorbar,{-wt:wt,nanmean(area_coronal_corr2),nanstd(area_coronal_corr2)},'Average correlation','' ...
+    @pcolor,{x,y,myosin_coronal_corr},'Dynamic correlation between coronal myosin v. myosin','axis equal tight;colorbar;', ...
+    @errorbar,{-wt:wt,nanmean(myosin_coronal_corr),nanstd(myosin_coronal_corr)},'Average correlation','' ...
     );
 
 %% early
 
-area_coronal_corr_early = nanxcorr(areas_rate(1:30,:),coronal_areas_rate(1:30,:),wt);
-[area_coronal_corr_early2,cells2plot] = delete_nan_rows(area_coronal_corr_early,1);
+myosin_coronal_corr_early = nanxcorr(myosins_rate(1:30,:),coronal_myosins_rate(1:30,:),wt);
+[myosin_coronal_corr_early,cells2plot] = delete_nan_rows(myosin_coronal_corr_early,1);
 [x,y] = meshgrid((-wt:wt)*8,1:numel(cells2plot));
 figure
-pcolor(x,y,area_coronal_corr_early2)
+pcolor(x,y,myosin_coronal_corr_early)
 colorbar
 shading flat
 % title('Time-resolved correlation between dA_{cor}/dt and dA_{foc}/dt');
@@ -29,23 +29,23 @@ shading flat
 % shading flat
 figure
 showsub( ...
-    @pcolor,{x,y,area_coronal_corr_early2},'Dynamic correlation between coronal area v. area','axis equal tight;colorbar;', ...
-    @errorbar,{-wt:wt,nanmean(area_coronal_corr_early2),nanstd(area_coronal_corr_early2)},'Average correlation','' ...
+    @pcolor,{x,y,myosin_coronal_corr_early},'Dynamic correlation between coronal myosin v. myosin','axis equal tight;colorbar;', ...
+    @errorbar,{-wt:wt,nanmean(myosin_coronal_corr_early),nanstd(area_coronal_corr_early)},'Average correlation','' ...
     );
 
 %% late
 
-area_coronal_corr_late = nanxcorr(areas_rate(31:end,:),coronal_areas_rate(31:end,:),wt);
-[area_coronal_corr_late2,cells2plot] = delete_nan_rows(area_coronal_corr_late,1);
+myosin_coronal_corr_late = nanxcorr(myosins_rate(31:end,:),coronal_myosins_rate(31:end,:),wt);
+[myosin_coronal_corr_late,cells2plot] = delete_nan_rows(myosin_coronal_corr_late,1);
 [x,y] = meshgrid((-wt:wt)*8,1:numel(cells2plot));
 figure
-pcolor(x,y,area_coronal_corr_late2),colorbar
+pcolor(x,y,myosin_coronal_corr_late),colorbar
 shading flat
 % title('Time-resolved correlation between dA_{cor}/dt and dA_{foc}/dt in late stage');
 figure
 showsub( ...
-    @pcolor,{x,y,area_coronal_corr_late2},'Dynamic correlation between coronal area v. area','axis equal tight;colorbar;', ...
-    @errorbar,{-wt:wt,nanmean(area_coronal_corr_late2),nanstd(area_coronal_corr_late2)},'Average correlation','' ...
+    @pcolor,{x,y,myosin_coronal_corr_late},'Dynamic correlation between coronal myosin v. myosin','axis equal tight;colorbar;', ...
+    @errorbar,{-wt:wt,nanmean(myosin_coronal_corr_late),nanstd(myosin_coronal_corr_late)},'Average correlation','' ...
     );
 
 %%
@@ -87,4 +87,3 @@ figure,
 plot(-wt:wt,area_coronal_corr_late(cellID,:));
 
 figure,plot(signal(:,cellID))
-

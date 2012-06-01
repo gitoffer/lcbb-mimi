@@ -5,8 +5,8 @@
 % myosin = myosin(40:end,:,:);
 
 wt = 10;
-correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
-pcolor(correlations)
+correlations = nanxcorr(myosins_rate_nonfuzzy,areas_rate,wt,1);
+figure,pcolor(correlations)
 figure,errorbar(-wt:wt,nanmean(correlations,1),nanstd(correlations,1,1));
 
 %% Get individual correlations
@@ -35,78 +35,114 @@ figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
 
 %% Interpolate, bg subtract, and fit Gaussians
-cellID = 51;
-myosin_sm = myosins_sm(:,cellID);
+cellID = 36;
+
+myosin_sm = myosins_sm_norm(1:30,cellID);
+myosin_rate = myosins_rate(1:30,cellID);
 myosin_interp = interp_and_truncate_nan(myosin_sm);
 x = 1:numel(myosin_interp);
-myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
-% myosin_nobg = myosin_nobg - min(myosin_nobg(:));
+myosin_nobg = myosin_interp;
+% myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
+myosin_nobg_rect = myosin_nobg;
+% myosin_nobg_rect(myosin_nobg < 0) = 0;
 
 lb = [0 0 0];
 ub = [Inf num_frames 20];
-gauss_p = iterative_gaussian_fit(myosin_nobg,x,0.1,lb,ub);
+gauss_p = iterative_gaussian_fit(myosin_nobg_rect,x,0.1,lb,ub);
+
 figure;
-h = plot(myosin_interp,'r-');
-myosin_nobg_rect = myosin_nobg;
-myosin_nobg_rect(myosin_nobg < 0) = 0;
+h1 = plot(myosin_sm,'r-');
 hold on,plot(myosin_nobg_rect,'g-');
-hold on,plot(synthesize_gaussians(1:59,gauss_p));
-legend('Original myosin signal','BG subtracted and rectified','Fitted peaks')
-title(['Myosin intensity in cell #' num2str(cellID)]);
-saveas(h,['~/Desktop/Pulse finding/cell_' num2str(cellID)]);
+hold on,plot(synthesize_gaussians(1:30,gauss_p));
+hold on,plot(peaks(:,cellID));
+legend('Original myosin signal','Myosin rectified','Fitted peaks')
+title(['Myosin rate in cell #' num2str(cellID)]);
+saveas(h1,['~/Desktop/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);
 
 %% Fit Gaussians for all
-peaks = zeros(size(myosins_sm));
+peaks_rate = zeros(size(myosins_sm));
+myosins_sm_norm = bsxfun(@rdivide,myosins_sm,nanmax(myosins_sm));
 for i = 1:num_cells
-    myosin_sm = myosins_sm(:,i);
-    if numel(myosin_sm(~isnan(myosin_sm))) > 1 && any(myosin_sm > 0)
+    
+    myosin_sm = myosins_rate(1:30,i);
+    if numel(myosin_sm(~isnan(myosin_sm))) > 20 && any(myosin_sm > 0)
         myosin_interp = interp_and_truncate_nan(myosin_sm);
         x = 1:numel(myosin_interp);
         myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
-%         myosin_nobg = myosin_nobg - min(myosin_nobg(:));
+        myosin_nobg_rect = myosin_nobg;
+        myosin_nobg_rect(myosin_nobg < 0) = 0;
         
         lb = [0 0 0];
         ub = [Inf num_frames 20];
-        gauss_p = iterative_gaussian_fit(myosin_nobg,x,0.1,lb,ub);
-        left = max(fix(gauss_p(2,:)) - fix(gauss_p(3,:)),1);
-        right = min(fix(gauss_p(2,:)) + fix(gauss_p(3,:)),num_frames);
-%         if i == 61
-%             keyboard
-%         end
-        for j = 1:numel(left)
-            %             keyboard
-            peaks(left(j):right(j),i) = 1;
-        end
-        
+        gauss_p = iterative_gaussian_fit(myosin_nobg_rect,x,0.1,lb,ub);
+        %         left = max(fix(gauss_p(2,:)) - fix(gauss_p(3,:)),1);
+        %         right = min(fix(gauss_p(2,:)) + fix(gauss_p(3,:)),num_frames);
+        % %         if i == 61
+        % %             keyboard
+        % %         end
+        %         for j = 1:numel(left)
+        %             %             keyboard
+        %             peaks(left(j):right(j),i) = 1;
+        %         end
+        %         keyboard
+        foo = synthesize_gaussians(x,gauss_p);
+        peaks_rate(foo>std(foo)/2,i) = 1;
     end
 end
 
 %% Plot peaks and the neighbors' peaks
 
-cellID =60;
-neighbors = neighborID{1,cellID};
-% plot(peaks(:,center),'k-');
-% hold on;
+cellID = 6;
+neighbor_peak_hand = neighbor_msmt(peaks_hand,neighborID);
 figure
 subplot(2,1,1);
-plot(peaks(:,cellID));
+plot(peaks_hand(:,cellID));
 hold on
-p_neighb = sum(peaks(:,neighbors),2)./6;
+p_neighb = sum(neighbor_peak_hand{cellID},2)/size(neighbor_peak_hand{cellID},2);
 plot(p_neighb,'r-');
 subplot(2,1,2);
-pcolor(peaks(:,neighbors)');
+pcolor(neighbor_peak_hand{cellID}');
 
-%%
+%% Try to correlate self peaks and neighbor peaks?
 
-peaks = logical(peaks);
+wt = 7;
+neighbor_peak_hand = neighbor_msmt(peaks_hand,neighborID);
+peaks_corr = nan(num_cells,2*wt+1);
 
-response = areas_rate.*peaks;
-response(response == 0) = NaN;
+for cellID = 1:num_cells
+    
+    if any(neighbor_peak_hand{cellID} ~= 0)
+        
+        p_neighb = sum(neighbor_peak_hand{cellID},2)/size(neighbor_peak_hand{cellID},2);
+        
+        peaks_corr(cellID,:) = nanxcorr(peaks_hand(:,cellID),p_neighb,wt);
+        
+    end
+end
+figure,pcolor(-wt:wt,1:num_cells,peaks_corr),colorbar
 
+%% Posterior probability?
 
+p_neighb_me = nan(num_cells,10);
+coupling = zeros(num_cells);
 
+for cellID = 1:num_cells
+    
+    if any(neighbor_peak_hand{cellID} ~= 0)
+        for j = 1:numel(neighborID{1,cellID})
+            %         p_neighb = sum(neighbor_peak_hand{cellID},2)/size(neighbor_peak_hand{cellID},2);
+            %         p_neighb = sum(any(neighbor_peak_hand{cellID},2))/num_frames;
+            p_me = sum(peaks_hand(:,cellID))/num_frames;
+            p_joint = sum(neighbor_peak_hand{cellID}(:,j) & peaks_hand(:,cellID))/num_frames;
+            p_neighb_me(cellID,j) = p_joint/p_me;
+            my_neighb = neighborID{1,cellID};
+            coupling(cellID,my_neighb(j)) = p_joint/p_me;
+        end
+    end
+    
+end
 
-
-
+plot(p_neighb_me,'b*')
+figure,pcolor(coupling)
 
 

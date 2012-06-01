@@ -70,7 +70,8 @@ for i = 1:num_frames
             
             % Draw cell boundary if specified
             vert_x = vertices_x{i,j}; vert_y = vertices_y{i,j};
-            patch(vert_x,vert_y,color);
+            obj = patch(vert_x,vert_y,color);
+%             alpha(obj,.5);
             
             hold on
             axis equal ij fill

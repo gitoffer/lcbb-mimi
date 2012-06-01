@@ -30,14 +30,15 @@ for j = 1:num_foci
     neighbor_corrcoef = nan(1,1+numel(neighbor_cells));
     for i = 1:numel(neighbor_cells)
         neighbor_cell_meas = meas_neighb{focal_cell}(:,i);
-        neighbor_corrcoef(i+1) = nan_pearsoncorr(neighbor_cell_meas,focal_cell_meas);
+        neighbor_corrcoef(i+1) = nan_pearsoncorr(neighbor_cell_meas',focal_cell_meas');
     end
     neighbor_corrcoef(1) = NaN;
     
     % Plot as movie
     if display
         handle.todraw = [focal_cell neighbor_cells'];
-        handle.m = neighbor_corrcoef(ones(1,num_frames),:);
+%         handle.todraw = 1:numel(neighbor_cells);
+        handle.m = neighbor_corrcoef(ones(1,2),:);
         handle.title = ['Pearson''s correlation between cell #' num2str(focal_cell) ' and its neighbors'];
         F = draw_measurement_on_cell_small(handle);
         movie2avi(F,[handle.savename num2str(focal_cell)]);

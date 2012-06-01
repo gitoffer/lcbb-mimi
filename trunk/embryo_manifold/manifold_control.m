@@ -21,11 +21,11 @@
 %
 % xies@mit Jan 2012.
 
-clear variables; clc; close all
+clear variables; clc; close all;
 % Image filename, with extension but no directory path
-io.file='SqhGFPmCherryGap43_7_tcrop.tif';
+io.file='manifold_test.tif';
 % Directory path for image
-io.path  = '~/Desktop/Mimi/Data/01-30-2012/7/';
+io.path  = '~/Desktop/';
 % Directory path for target output images
 io.write_path = '~/Desktop/';
 % Strings for writing/reading TIFF sequences
@@ -35,42 +35,42 @@ io.write_path = '~/Desktop/';
 % First image in sequence to analyse
 io.t0 = 1;
 % Last image in sequence to read
-io.tf = 80;
+io.tf = 1;
 
 io.write2file = 1;
 
 %%
-DEBUGGING = 0;
+DEBUGGING = 1;
 
 %% Image properties
-im_params.X = 1000; % Image size
+im_params.X = 400; % Image size
 im_params.Y = 400;
-im_params.Z = 10; % Total Z-slices
-im_params.T = 80; % Total frames
+im_params.Z = 7; % Total Z-slices
+im_params.T = 1; % Total frames
 im_params.num_channels = 2; % Number of channels
 im_params.myo_ch = 1;
 im_params.mem_ch = 2;
-im_params.support = 1024*2;
+im_params.support = 1024*2; % Gaussian filter kernel support size
 
 % Embryo-specific processing parameters (these need to be tweaked every time)
-th_params.Nx = 1;
-th_params.Ny = 1;
-th_params.perc = 1; % Top percentile to threshold myosin
+th_params.Nx = 1; % Number of sub-thresholds in x-direction
+th_params.Ny = 1; % Same but for y-direction
+th_params.perc = 10; % Top percentile to threshold myosin
 th_params.bin_number = 500; % bin-number for CDF calculations
-th_params.filter_size = 30; % Gaussian size for smoothing the thresholded myosin
+th_params.filter_size = 20; % Gaussian size for smoothing the thresholded myosin
 th_params.prefilter = 1;
 th_params.display = 'off';
 
 % Smoothing filter size for blurring the discrete Z-index
 manifold_params.support = 1024*2; % Kernel support size for Gaussian filters - powers of 2 for FFT fastness
-manifold_params.smoothing = 20;
-manifold_params.avg_slice = 4;
-manifold_params.display = 'off'; % Turn on to visualize the manifold
+manifold_params.smoothing = 50;
+manifold_params.avg_slice = 2;
+manifold_params.display = 'on'; % Turn on to visualize the manifold
 
 % Membrane masking parameters
 mem_params.mem_mask = 'off';
 mem_params.mask_thickness = 5;
-mem_params.display = 'off';
+mem_params.display = 'on';
 
 % Manifold extraction parameters
 extract_params.n_levels = 2;
@@ -110,7 +110,7 @@ for t = io.t0 : io.tf
     % Threshold myosin
     myosin_thresh = raw_myosin.*(raw_myosin > local_thresholds);
     if DEBUGGING
-        figure,showsub(@imagesc,{max(raw_myosin,[],3)},'Raw myosin','colorbar,axis equal tight;',...
+        figure,showsub(@imagesc,{max(raw_myosin,[],3)},'Raw myosin (max int proj)','colorbar,axis equal tight;',...
             @imagesc,{local_thresholds(:,:,1)},'Threhold','colorbar,axis equal tight',...
             @imagesc,{max(raw_myosin > local_thresholds,[],3)},'Mask','colorbar,axis equal tight',...
             @imagesc,{max(myosin_thresh,[],3)},'Thresholded myosin','colorbar,axis equal tight'...
@@ -121,7 +121,8 @@ for t = io.t0 : io.tf
     % Generate manifold
     manifold = get_manifold(myosin_thresh,manifold_params,im_params);
     if DEBUGGING
-        imagesc(manifold);
+        figure,imagesc(manifold),colorbar;
+        title('Final manifold')
         keyboard
     end
     

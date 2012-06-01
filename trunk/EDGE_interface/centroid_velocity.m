@@ -1,8 +1,9 @@
-function [vx,vy] = centroid_velocity(x,y,frames,disp)
+function [vx,vy,varargout] = centroid_velocity(x,y,frames,disp)
 %CENTROID VELOCITY Calculate the velocity of the centroids X,Y for a set of
 %cells.
 %
 % USE: [Vx,Vy] = centroid_velocity(x,y,frames)
+% USE: [Vx,Vy] = centroid_velocity(x,y,frames,'on') Turn on display
 
 [T,N] = size(x);
 
@@ -14,8 +15,8 @@ y = y(frames,:);
 
 T = numel(frames);
 
-vx = diff(x,1);
-vy = diff(y,1);
+vx = central_diff_multi(x,1);
+vy = central_diff_multi(y,1);
 
 % v = sqrt(vx.^2 + vy.^2);
 if strcmpi(disp,'on')
@@ -30,8 +31,9 @@ if strcmpi(disp,'on')
         drawnow;
         F(i) = getframe;
     end
-    movie2avi(F,'cell_centroid_velocities');
+	varargout{1} = F;
     
 end
+
 
 end

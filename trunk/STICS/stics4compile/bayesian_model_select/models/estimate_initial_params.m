@@ -97,7 +97,8 @@ switch model_name
         b0(1) = G_inf;
         lb = -Inf;
         ub = Inf;
-        
+    otherwise
+        error('Unsupported model name.')
 end
 
 bar = {b0,lb,ub};

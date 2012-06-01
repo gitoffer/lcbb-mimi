@@ -1,9 +1,9 @@
 %
-tobe_correlated = areas_rate;
+tobe_correlated = myosins_rate;
 
-tobe_measured = areas_rate(1:end,:);
+tobe_measured = myosins_rate(1:end,:);
 [num_frames,num_cells] = size(tobe_measured);
-meas_name = 'myosin rate';
+meas_name = 'constriction rate';
 
 [meas_n,cells_w_neighb] = neighbor_msmt(tobe_measured,neighborID(1,:));
 num_foci = numel(cells_w_neighb);
@@ -45,7 +45,7 @@ pcolor(x,y,avg_dynamic_corr),colorbar,axis equal tight;
 title(['Dynamic correlation between neighbors for ' meas_name]);
 
 %% Plot measurement for focal cell and its neighbors
-focal_cell = 34;
+focal_cell = 57;
 
 figure
 subplot(2,1,1),plot(tobe_correlated(:,focal_cell),'k-')
@@ -60,18 +60,18 @@ xlabel('Time (frames)');
 %% Plot dynamic correlation between focal cell and its neighbors
 figure,
 
-focal_cell = 34;
+focal_cell = 57;
 % plot focal and neighbor behavior
 subplot(3,1,1),
 plot(tobe_correlated(:,focal_cell),'k-','LineWidth',5);
-hold on;plot(meas_n{focal_cell});
-names = cellstr(num2str(neighborID{1,focal_cell}));
+hold on;plot(meas_n{focal_cell}(:,[2 5]));
+names = cellstr(num2str(neighborID{1,focal_cell}([2 3],:)));
 legend('Focal cell', names{:});
 title(['Cell' num2str(focal_cell) ' and neighbor ' meas_name])
 
 % plot correlation
-subplot(3,1,2),plot(-wt:wt,squeeze(dynamic_corr{find(cells_w_neighb == focal_cell)})')
-names = cellstr(num2str(neighborID{1,focal_cell}));
+subplot(3,1,2),plot(-wt:wt,squeeze(dynamic_corr{find(cells_w_neighb == focal_cell)}([2 5],:))')
+names = cellstr(num2str(neighborID{1,focal_cell}([5 3],:)));
 legend(names{:});
 title(['Neighbor-to-focal cell cross-correlation in ' meas_name])
 
@@ -82,13 +82,14 @@ errorbar(-wt:wt,avg_dynamic_corr(focal_cell,:),std_dynamic_corr(focal_cell,:))
 title('Average cross-correlation')
 
 %% Calculate or plot
-
 % Get Pearson's correlation for neighboring cells
-handle.display = 0;
+handle.display = 1;
 handle.vertex_x = vertices_x;
 handle.vertex_y = vertices_y;
-handle.savename = '~/Desktop/Neighbor behavior/pearsons_myosin_rate (all)/cell_';
-pearsons = neighbor_cell_pearson(tobe_measured,meas_n,cells_w_neighb,neighborID,handle);
+handle.savename = '~/Desktop/Embryo 4/neighbor_focus/cells/myosin rate_myosin rate/cell_';
+
+pearsons = neighbor_cell_pearson(tobe_measured, ...
+    meas_n,42,neighborID,handle);
 
 %% Plot measurement on cells (for comparison to above)
 
@@ -108,7 +109,7 @@ for j = 1:numel(cells_w_neighb)
     handle.vertex_y = vertices_y;
     handle.title = ['Contraction rates of cell #' num2str(focal_cell) ' and its neighbors'];
     F = draw_measurement_on_cell_small(handle);
-    movie2avi(F,['~/Desktop/Neighbor behavior/contraction_rate (all)/cell_' num2str(focal_cell)]);
+    movie2avi(F,['~/Desktop/Embryo 4/contraction_rate (all)/cell_' num2str(focal_cell)]);
 end
 
 %% Get neighbor angles

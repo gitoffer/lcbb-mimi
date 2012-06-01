@@ -15,15 +15,14 @@ function [meas_n,ind] = neighbor_msmt(meas,neighborID)
 %
 % xies@mit.edu April 2012.
 
-meas_n = cell(size(neighborID));
-
 [~,num_cells] = size(neighborID);
+meas_n = cell(1,num_cells);
 ind = [];
 
 for i = 1:num_cells
-    if ~isnan(neighborID{i})
+    if ~isnan(neighborID{1,i})
         % if there are neighbors, put them into matrix
-        meas_n{i} = meas(:,neighborID{i});
+        meas_n{i} = meas(:,neighborID{1,i});
         % 
         ind = [ind i];
     else

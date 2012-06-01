@@ -6,8 +6,14 @@ function corrcoef = nan_pearsoncorr(a,b)
 %
 % xies@mit.edu March 2012.
 
-covMat = nancov(a,b);
-covMat = covMat./nanstd(a)./nanstd(b);
-corrcoef = covMat(1,2);
+N = size(b,1);
+
+corrcoef = zeros(1,N);
+for i = 1:N
+    covMat = nancov(a,b(i,:));
+    variances = diag(covMat);
+    covMat = covMat./sqrt(variances*variances');
+    corrcoef(i) = covMat(1,2);
+end
 
 end
