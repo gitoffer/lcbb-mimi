@@ -1,7 +1,7 @@
-%
-tobe_correlated = myosins_rate;
+%%
+tobe_correlated = areas_sm;
 
-tobe_measured = myosins_rate(1:end,:);
+tobe_measured = areas_sm(1:end,:);
 [num_frames,num_cells] = size(tobe_measured);
 meas_name = 'constriction rate';
 
@@ -45,7 +45,7 @@ pcolor(x,y,avg_dynamic_corr),colorbar,axis equal tight;
 title(['Dynamic correlation between neighbors for ' meas_name]);
 
 %% Plot measurement for focal cell and its neighbors
-focal_cell = 57;
+focal_cell = 2;
 
 figure
 subplot(2,1,1),plot(tobe_correlated(:,focal_cell),'k-')
@@ -60,7 +60,7 @@ xlabel('Time (frames)');
 %% Plot dynamic correlation between focal cell and its neighbors
 figure,
 
-focal_cell = 57;
+focal_cell = 2;
 % plot focal and neighbor behavior
 subplot(3,1,1),
 plot(tobe_correlated(:,focal_cell),'k-','LineWidth',5);
@@ -83,13 +83,13 @@ title('Average cross-correlation')
 
 %% Calculate or plot
 % Get Pearson's correlation for neighboring cells
-handle.display = 1;
+handle.display = 0;
 handle.vertex_x = vertices_x;
 handle.vertex_y = vertices_y;
-handle.savename = '~/Desktop/Embryo 4/neighbor_focus/cells/myosin rate_myosin rate/cell_';
+handle.savename = '~/Desktop/cta/neighbor_self/cells/cell_';
 
 pearsons = neighbor_cell_pearson(tobe_measured, ...
-    meas_n,42,neighborID,handle);
+    meas_n,cells_w_neighb,neighborID,handle);
 
 %% Plot measurement on cells (for comparison to above)
 
@@ -121,12 +121,12 @@ num = 1:num_foci;
 tobe_plotted = cell2mat(pearsons(num));
 tobe_plotted = tobe_plotted(:);
 
-centroid_x_neighbor = neighbor_msmt(centroids_x,neighborID(1,:));
-centroid_y_neighbor = neighbor_msmt(centroids_y,neighborID(1,:));
+centroid_x_neighbor = neighbor_msmt(centroids_x,neighborID(38,:));
+centroid_y_neighbor = neighbor_msmt(centroids_y,neighborID(38,:));
 
 angles = get_neighbor_angle(centroids_x,centroids_y, ...
-    centroid_x_neighbor,centroid_y_neighbor,cells_w_neighb);
-%     deg2rad(orientations));
+    centroid_x_neighbor,centroid_y_neighbor,cells_w_neighb,...
+    deg2rad(orientations));
 
 angles_mat = cell2mat(angles(num))';
 % angles_mat = rad_flip_quadrant(angles_mat);
@@ -141,8 +141,8 @@ hold off
 
 %% Get angular histograms of quantiles
 
-y33 = quantile(tobe_plotted,.33);
-y66 = quantile(tobe_plotted,.66);
+y33 = quantile(tobe_plotted,.33)
+y66 = quantile(tobe_plotted,.66)
 nbins = 0:pi/4:2*pi-pi/4;
 nbins = 20;
 

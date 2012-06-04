@@ -28,13 +28,13 @@ vertices_x = extract_msmt_data(EDGEstack,'vertex-x','off',zslice);
 vertices_y = extract_msmt_data(EDGEstack,'vertex-y','off',zslice);
 % majors = extract_msmt_data(EDGEstack,'major axis','on',zslice);
 % minors = extract_msmt_data(EDGEstack,'minor axis','on',zslice);
-% orientations = extract_msmt_data(EDGEstack,'orientation','on',zslice);
-% anisotropies = extract_msmt_data(EDGEstack,'anisotropy-xy','on',zslice);
-% coronal_areas = get_corona_measurement(areas,neighborID);
+orientations = extract_msmt_data(EDGEstack,'orientation','on',zslice);
+anisotropies = extract_msmt_data(EDGEstack,'anisotropy-xy','on',zslice);
+coronal_areas = get_corona_measurement(areas,neighborID);
 % coronal_myosins = get_corona_measurement(myosins,neighborID);
 
-ignore_list = [89];
-% ignore_list = [22 54 30 36];
+ignore_list = [3 24 38 55 72 87 103 150 163]; %cta
+% ignore_list = [22 54 30 36]; %embryo4
 areas(:,ignore_list) = NaN;
 
 [num_frames,num_cells] = size(areas);
@@ -42,14 +42,14 @@ areas(:,ignore_list) = NaN;
 areas_sm = smooth2a(areas,1,0);
 % myosins_sm = smooth2a(squeeze(myosins),1,0);
 % myosins_nonfuzzy_sm = smooth2a(squeeze(myosins_nonfuzzy),1,0);
-% coronal_areas_sm = smooth2a(coronal_areas,1,0);
+coronal_areas_sm = smooth2a(coronal_areas,1,0);
 % coronal_myosins_sm = smooth2a(coronal_myosins,1,0);
 
 areas_rate = -central_diff_multi(areas_sm,1:num_frames);
 % myosins_rate_nonfuzzy = central_diff_multi(myosins_nonfuzzy_sm,1:num_frames);
 % myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
-% anisotropies_rate = central_diff_multi(anisotropies);
-% coronal_areas_rate = -central_diff_multi(coronal_areas_sm);
+anisotropies_rate = central_diff_multi(anisotropies);
+coronal_areas_rate = -central_diff_multi(coronal_areas_sm);
 % coronal_myosins_rate = central_diff_multi(coronal_myosins_sm);
 
 %%

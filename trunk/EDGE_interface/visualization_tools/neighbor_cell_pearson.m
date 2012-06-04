@@ -38,7 +38,7 @@ for j = 1:num_foci
     if display
         handle.todraw = [focal_cell neighbor_cells'];
 %         handle.todraw = 1:numel(neighbor_cells);
-        handle.m = neighbor_corrcoef(ones(1,2),:);
+        handle.m = neighbor_corrcoef(ones(1,num_frames),:);
         handle.title = ['Pearson''s correlation between cell #' num2str(focal_cell) ' and its neighbors'];
         F = draw_measurement_on_cell_small(handle);
         movie2avi(F,[handle.savename num2str(focal_cell)]);

@@ -75,7 +75,7 @@ for i = 1:num_frames
             
             hold on
             axis equal ij fill
-            axis([20 180 0 80]);
+            axis([0 200 0 100]);
         end
     end
     title(handle.title)
