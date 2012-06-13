@@ -19,6 +19,7 @@ if nargin > 1
     N = numel(varargin);
     index = 0;
 end
+display(['Loading folder ' folder_name]);
 
 p = pwd;
 cd(folder_name);

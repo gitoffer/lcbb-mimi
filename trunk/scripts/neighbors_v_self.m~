@@ -1,13 +1,13 @@
 %%
 tobe_correlated = areas_sm;
-% tobe_correlated(:,c==2) = NaN;
+tobe_correlated(:,c==2) = NaN;
 
 tobe_measured = areas_sm(1:end,:);
-% tobe_measured(:,c==2) = NaN;
+tobe_measured(:,c==2) = NaN;
 [num_frames,num_cells] = size(tobe_measured);
 meas_name = 'constriction rate';
 
-[meas_n,cells_w_neighb] = neighbor_msmt(tobe_measured,neighborID(tref,:));
+[meas_n,cells_w_neighb] = neighbor_msmt(tobe_measured,neighborID(39,:));
 num_foci = numel(cells_w_neighb);
 
 %% Plot average dynamic correlation between focall cell and its neighbors
@@ -88,10 +88,10 @@ title('Average cross-correlation')
 handle.display = 0;
 handle.vertex_x = vertices_x;
 handle.vertex_y = vertices_y;
-% handle.savename = '~/Desktop/cta/neighbor_self/cells/cell_';
+handle.savename = '~/Desktop/cta/neighbor_self/cells/cell_';
 
 pearsons = neighbor_cell_pearson(tobe_measured, ...
-    meas_n,cells_w_neighb,neighborID,tref,handle);
+    meas_n,cells_w_neighb,neighborID,handle);
 
 %% Plot measurement on cells (for comparison to above)
 
@@ -119,6 +119,7 @@ end
 % cellIDs = select_cells(centroids_x,centroids_y,[80 120],[30 50]);
 % [IDs,num] = intersect(cells_w_neighb,cellIDs);
 num = 1:num_foci;
+% num = find(cells_w_neighb == 66);
 
 tobe_plotted = cell2mat(pearsons(num));
 tobe_plotted = tobe_plotted(:);
@@ -130,6 +131,13 @@ angles = get_neighbor_angle(centroids_x,centroids_y, ...
         39);
 angles = angles.*adj;
 distances = squareform(pdist(areas_sm',@nan_pearsoncorr));
+angles_filtered = angles;
+angles_filtered(distances <= 0) = NaN;
+% angles_filtered(c==2,c==2)= NaN;
+% angles = angles_filtered;
+
+% angles(c==2,:) = NaN;
+% angles_ne = neighbor_msmt(angles,neighborID,39);
 
 projections = cell(num_foci,1);
 angle_difference = cell(num_foci,1);
@@ -150,10 +158,10 @@ for i = 1:num_foci
 % %             else
 %                 projections{i}(j,1) = NaN;
 %             end
-%     keyboard
+    keyboard
             angle_difference{i}(j,1) = rad_flip_quadrant(angles(this_cell,this_neighbors(j)))...
                 
-                - atan2(orient_y(39,this_cell),orient_x(39,this_cell));
+                - atan2(orient_y(30,this_cell),orient_x(30,this_cell));
         end
     end
 end

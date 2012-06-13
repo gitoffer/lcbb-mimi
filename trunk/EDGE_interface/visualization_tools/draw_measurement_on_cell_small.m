@@ -64,6 +64,11 @@ for i = 1:num_frames
             if any(j == cells_to_draw) && ...
                     ~isnan(measurement(i,find(cells_to_draw == j)))
                 color = find_color(measurement(i,find(cells_to_draw == j)),min_measurement,max_measurement);
+                %                   if measurement(i,find(cells_to_draw == j)) == 1
+                %                       color = [0 1 1];
+                %                   else
+                %                       color = [1 0 0];
+                %                   end
             else
                 color = [1 1 1];
             end
@@ -71,11 +76,13 @@ for i = 1:num_frames
             % Draw cell boundary if specified
             vert_x = vertices_x{i,j}; vert_y = vertices_y{i,j};
             obj = patch(vert_x,vert_y,color);
-%             alpha(obj,.5);
+            %             alpha(obj,.5);
             
+%             colorbar
             hold on
             axis equal ij fill
             axis([0 200 0 100]);
+            axis off
         end
     end
     title(handle.title)

@@ -1,4 +1,4 @@
-function corrcoef = nan_pearsoncorr(a,b)
+function corrcoef = nan_pearsoncorr(a,b,lag)
 %NANCORRCOEF Calculates the Pearson correlation coefficient for vectors A
 %and B that has NaNs. Only supported for 1D vectors and 2 inputs.
 %
@@ -6,7 +6,11 @@ function corrcoef = nan_pearsoncorr(a,b)
 %
 % xies@mit.edu March 2012.
 
-N = size(b,1);
+if nargin < 3, lag = 0; end
+
+[N,T] = size(b);
+a = a(:,max(1,1-lag):min(T,T-lag));
+b = b(:,max(1,1+lag):min(T,T+lag));
 
 corrcoef = zeros(1,N);
 for i = 1:N

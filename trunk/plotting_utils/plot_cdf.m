@@ -1,4 +1,4 @@
-function h = plot_cdf(observations,nbins,varargin)
+function [h,cdf] = plot_cdf(observations,bins,varargin)
 %PLOT_PDF
 % Given a vector OBSERVATIONS of dimensions 1xD, where there are D
 % observations of a random variable, plot the cumulative probability
@@ -18,17 +18,17 @@ switch nargin
     case 0
         error('Need at least 1 input!');
     case 1
-        nbins = 30;
+        edges = linspace(nanmin(observations(:)),nanmax(observations(:)),30);
 end
 
 if isrow(observations)
     observations = observations';
 end
 
-[counts,bins] = hist(observations,nbins);
+counts = histc(observations,bins);
 cdf = cumsum(counts);
-normalization_factors = sum(counts,1);
-cdf = cdf./normalization_factors(ones(1,size(counts,1)),:);
+normalization_factors = sum(counts(:));
+cdf = bsxfun(@rdivide,cdf,normalization_factors);
 plot(bins,cdf);
 
 h = findobj(gca,'Type','patch');

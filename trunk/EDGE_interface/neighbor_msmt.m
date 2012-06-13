@@ -1,4 +1,4 @@
-function [meas_n,ind] = neighbor_msmt(meas,neighborID)
+function [meas_n,ind] = neighbor_msmt(meas,neighborID,t)
 %NEIGHBOR_MSMT Given a measurement matrix (time x cells) and a cell-array
 % of the cellIDs of neighbors of each focal cells, return a cell-array of
 % the neighbor-measurements arranged by the focal cells.
@@ -15,6 +15,8 @@ function [meas_n,ind] = neighbor_msmt(meas,neighborID)
 %
 % xies@mit.edu April 2012.
 
+if nargin < 3, t = 1;end
+
 [~,num_cells] = size(neighborID);
 meas_n = cell(1,num_cells);
 ind = [];
@@ -22,7 +24,7 @@ ind = [];
 for i = 1:num_cells
     if ~isnan(neighborID{1,i})
         % if there are neighbors, put them into matrix
-        meas_n{i} = meas(:,neighborID{1,i});
+        meas_n{i} = meas(:,neighborID{t,i});
         % 
         ind = [ind i];
     else
