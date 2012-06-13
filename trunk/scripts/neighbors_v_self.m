@@ -1,9 +1,7 @@
 %%
 tobe_correlated = areas_sm;
-% tobe_correlated(:,c==2) = NaN;
 
 tobe_measured = areas_sm(1:end,:);
-% tobe_measured(:,c==2) = NaN;
 [num_frames,num_cells] = size(tobe_measured);
 meas_name = 'constriction rate';
 
@@ -188,7 +186,7 @@ showsub( ...
 );
 suptitle(['Neighbor angle distribution for ' meas_name ' correlations'])
 
-%%
+%% Plot cell measurements onto
 
 for i = 1:2*wt+1
     avg_cell_corr = avg_dynamic_corr(:,i);
