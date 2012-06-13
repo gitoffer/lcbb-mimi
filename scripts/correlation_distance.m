@@ -1,12 +1,3 @@
-% Area rate distance
-% D_area = pdist(areas_rate',@nan_pearsoncorr);
-% D_area = squareform(D_area);
-% D_area(logical(eye(num_cells))) = NaN;
-
-% D_myosins = pdist(myosins_rate',@nan_pearsoncorr);
-% D_myosins = squareform(D_myosins);
-% D_myosins(logical(eye(num_cells))) = NaN;
-
 physical_distance = nan(num_cells);
 for i = 1:num_cells
     for j = 1:num_cells
@@ -19,29 +10,28 @@ end
 physical_distance(logical(eye(num_cells))) = NaN;
 physical_distance = physical_distance*0.1806;
 
-%% Correlation distance
-% mcorr_dist = squareform(pdist(myosins_rate',@nan_pearsoncorr));
-% mcorr_dist(logical(eye(num_cells))) = NaN;
-% figure,pcolor(mcorr_dist),colorbar,axis equal tight
-% mcorr_dist_neighbors = mcorr_dist.*connection_map;
-% figure,hist(mcorr_dist_neighbors(:))
-
 %% Neighbor-connection map
 
-connection_map = nan(num_cells);
+connection_map = adjacency_matrix(neighborID,1);
 
-for i = 1:num_cells
-    my_neighb = neighborID{1,i};
-    if any(~isnan(my_neighb))
-        connection_map(i,my_neighb) = 1;
-    end
-end
-figure,pcolor(connection_map); axis equal tight
+%% Correlation distance
+mcorr_dist = pdist2( ...
+    myosins_rate',myosins_rate',@(x,y) nan_pearsoncorr(x,y,0));
+mcorr_dist(logical(eye(num_cells))) = NaN;
+figure,pcolor(mcorr_dist),colorbar,axis equal tight;
+% Get CDF for all pairs
+bins = linspace(-1,1,15);
+figure,plot_pdf(mcorr_dist(:),bins);
+
+% Get only next-neighbor
+mcorr_dist_neighbors = mcorr_dist.*connection_map;
+figure,pcolor(mcorr_dist_neighbors);
+figure,plot_pdf(mcorr_dist_neighbors(:),bins);
 
 %% Area_correlation distance
 
 acorr_dist = squareform(pdist(areas_sm(1:end,:)', ...
-    @(x,y) nan_pearsoncorr(x,y,1)));
+    @(x,y) nan_pearsoncorr(x,y)));
 acorr_dist(logical(eye(num_cells))) = NaN;
 figure,pcolor(acorr_dist),colorbar,axis equal tight
 figure,hist(acorr_dist(:));
@@ -50,8 +40,8 @@ figure,pcolor(acorr_dist_neighbors)
 figure,hist(acorr_dist_neighbors(:))
 
 %%
-threshold = 0:4:16;
-mean_acorr = zeros(1,numel(threshold));
+threshold = 0:10:30;
+% mean_proj = zeros(1,numel(threshold));
 
 for i = 1:numel(threshold)
     if i == 1
@@ -65,13 +55,25 @@ for i = 1:numel(threshold)
     
     on_cells(on_cells == 0) = NaN;
     
-    thresholded_acorr = acorr_dist.*on_cells;
-    mean_acorr(i) = nanmean(thresholded_acorr(:));
+    thresholded_acorr = ang_diff1.*on_cells;
+    mean_proj(i,:) = nanmean(thresholded_acorr(:));
     
 end
 
+%%
+index = 0;
+for lag = -10:10
+    index = index + 1;
+    dist = pdist2(myosins_rate',myosins_rate',@(x,y) nan_pearsoncorr(x,y,lag));
+    dist(logical(eye(num_cells))) = 0;
+    dist_neighbor = dist.*connection_map;
+    mmcorr{index} = dist;
+    mmcorr_neighbor{index} = dist_neighbor;
 
-
-
-
-
+    mean_mmcorr(index) = nanmean(dist(:));
+    mean_mmcorr_neighbor(index) = nanmean(dist_neighbor(:));
+    
+    std_mmcorr(index) = nanstd(dist(:));
+    std_mmcorr_neighbor(index) = nanstd(dist_neighbor(:));
+    
+end

@@ -1,4 +1,4 @@
-function pearsons = neighbor_cell_pearson(meas_cell,meas_neighb,focal_cells,neighborID,handle)
+function pearsons = neighbor_cell_pearson(meas_cell,meas_neighb,focal_cells,neighborID,tref,handle)
 %NEIGHBOR_CELL_PEARSON Calculate the Pearson's correlation between a set of
 % focal_cells and their neighbors for any given measurement made on the
 % embryo. e.g. constriction rate, myosin accumulation rate, etc.
@@ -23,7 +23,7 @@ pearsons = cell(1,num_foci);
 for j = 1:num_foci
     % get j-th focal cell information
     focal_cell = focal_cells(j);
-    neighbor_cells = neighborID{1,focal_cell};
+    neighbor_cells = neighborID{tref,focal_cell};
     focal_cell_meas = meas_cell(:,focal_cell);
     
     % calculate neighbor correlations
@@ -40,6 +40,7 @@ for j = 1:num_foci
 %         handle.todraw = 1:numel(neighbor_cells);
         handle.m = neighbor_corrcoef(ones(1,num_frames),:);
         handle.title = ['Pearson''s correlation between cell #' num2str(focal_cell) ' and its neighbors'];
+        handle.caxis = [-1 1];
         F = draw_measurement_on_cell_small(handle);
         movie2avi(F,[handle.savename num2str(focal_cell)]);
     end
