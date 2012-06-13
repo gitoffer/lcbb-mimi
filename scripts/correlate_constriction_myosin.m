@@ -28,7 +28,6 @@ cellID = 61;
 area_sm = smooth2a(squeeze(areas(:,cellID)),1,0);
 myosin_sm = smooth2a(squeeze(myosins(:,cellID)),1,0);
 area_rate = -central_diff_multi(area_sm,1,1);
-area_rate = areas_rate_neg(:,cellID);
 myosin_rate = central_diff_multi(myosin_sm,1,1);
 
 h = figure(1);showsub(@plot,{1:num_frames,area_sm},['Cell area for cell #' num2str(cellID)],'', ...
@@ -44,32 +43,6 @@ correlation = nanxcorr(area_rate,myosin_rate,wt,1);
 figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
 
-%% Interpolate NaNs and truncate NaNs
-myosin_interp = interp_and_truncate_nan(myosin_sm);
-
-%% Plot correlations individually
-cellID = 72;
-center = plot_corr_myo_area(areas,myosins,6);
-n1 = plot_corr_myo_area(areas,myosins,5);
-
-%% Plot cell correlation as in time
-X = 1000;
-Y = 400;
-signal = correlations;
-signal(isnan(signal)) = 0;
-max_corr = zeros(1,num_cells);
-for i = 1:num_cells
-    [p,resnorm,~,flag] = lsqcurvefit(@lsq_gauss1d,[.2 0 2],-wt:wt,signal(i,:),...
-        [0 -wt -wt],[1 wt wt]);
-    if flag > 0 && resnorm < sum(signal(i,:))/2
-        max_corr(i) = p(1);
-    end
-end
-
-max_corr = max_corr(ones(1,num_frames),:);
-F = draw_measurement_on_cells(EDGEstack,max_corr,X,Y,.19);
-
-%%
 %%
 
 win = 20;
