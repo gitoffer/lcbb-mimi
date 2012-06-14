@@ -83,10 +83,10 @@ title('Average cross-correlation')
 
 %% Calculate or plot
 % Get Pearson's correlation for neighboring cells
-handle.display = 0;
+handle.display = 1;
 handle.vertex_x = vertices_x;
 handle.vertex_y = vertices_y;
-% handle.savename = '~/Desktop/cta/neighbor_self/cells/cell_';
+handle.savename = '~/Desktop/cta/neighbor_self/cells/cell_';
 
 pearsons = neighbor_cell_pearson(tobe_measured, ...
     meas_n,cells_w_neighb,neighborID,tref,handle);
