@@ -1,28 +1,26 @@
-function MI = mutual_info(X,Y,nX,nY)
+function MI = mutual_info(pXY)
+%MUTUAL_INFO Calculates the mutual information for two variables X,Y
+% given their joint distributions, p(X,Y). The first dimension is assumed
+% to be X. NaN values not tolerated. Discrete variables.
+%
+% SYNOPSISI: MI = mutual_infor(joint_distribution);
+%
+% xies@mit.eud June 2012.
 
-if nargin < 3, nX = 10; nY = 10; end
+if size(pXY,1) ~= size(pXY,2), error('The two random variables must have the same size'); end
 
-binsX = linspace(nanmin(X),nanmax(X),nX);
-binsY = linspace(nanmin(Y),nanmax(Y),nY);
+% Get the marginal probability distributions
+pX = sum(pXY,1); pY = sum(pXY,2);
 
-pX = histc(X,binsX);
-pX = pX./nansum(pX);
-pY = histc(Y,binsY);
-pY = pY./nansum(pY);
+pX(pX == 0) = NaN; pY(pY == 0) = NaN;
 
-pXY = hist2(X,Y,binsX,binsY);
-pXY = pXY./nansum(pXY(:));
-
-loggand = bsxfun(@rdivide,pXY,pX);
-loggand = bsxfun(@rdivide,loggand',pY)';
+loggand = bsxfun(@rdivide, pXY, pX);
+loggand = bsxfun(@rdivide, loggand, pY);
+loggand(loggand == 0) = NaN;
 
 MI = nansum(nansum(pXY.*log(loggand)));
 
-% summand = nansum(bsxfun(@rdivide,log(loggand)',pY),2)';
-% summand = nansum(bsxfun(@rdivide,summand,pX),1);
-
-% MI = summand;
-
-plotyy(binsX,pX,binsY,pY);
+%Unit test
+if MI < 0,keyboard,end
 
 end
