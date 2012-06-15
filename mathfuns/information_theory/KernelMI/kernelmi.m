@@ -1,23 +1,27 @@
-function [ I ] = kernelmi( x, y, h, ind )
-% Kernel-based estimate for mutual information I(X, Y)
+function [ I,h ] = kernelmi( x, y, h, ind )
+% Kernel-based estimate for mutual information I(X, Y), using the
+% Radial-basis kernel (RBK).
 % h - kernel width; ind - subset of data on which to estimate MI
 
 [Nx, Mx]=size(x);
 [Ny, My]=size(y);
 
 if any([Nx Ny My] ~= [1 1 Mx])
-    error('Bad sizes of arguments');
+    error('X and Y must column vectors with the same dimensions.');
 end
 
-if nargin < 3
+switch nargin
+	case 2
     % Yields unbiased estiamte when Mx->inf 
     % and low MSE for two joint gaussian variables
     alpha = 0.25;
     h = (Mx + 1) / sqrt(12) / Mx ^ (1 + alpha);
-end
-
-if nargin < 4
     ind = 1:Mx;
+	case 3
+		ind = 1:Mx;
+    case 4
+	otherwise
+		error('Wrong number of inputs.');
 end
 
 % Copula-transform variables
