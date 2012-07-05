@@ -5,7 +5,7 @@
 % myosin = myosin(40:end,:,:);
 
 wt = 10;
-correlations = nanxcorr(myosins_rate_nonfuzzy,areas_rate,wt,1);
+correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
 figure,pcolor(correlations)
 figure,errorbar(-wt:wt,nanmean(correlations,1),nanstd(correlations,1,1));
 
@@ -35,7 +35,7 @@ figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
 
 %% Interpolate, bg subtract, and fit Gaussians
-cellID = 36;
+cellID = 16;
 
 myosin_sm = myosins_sm_norm(1:30,cellID);
 myosin_rate = myosins_rate(1:30,cellID);
@@ -60,11 +60,11 @@ title(['Myosin rate in cell #' num2str(cellID)]);
 saveas(h1,['~/Desktop/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);
 
 %% Fit Gaussians for all
-peaks_rate = zeros(size(myosins_sm));
+peaks = zeros(size(myosins_sm));
 myosins_sm_norm = bsxfun(@rdivide,myosins_sm,nanmax(myosins_sm));
 for i = 1:num_cells
     
-    myosin_sm = myosins_rate(1:30,i);
+    myosin_sm = myosins_sm(1:30,i);
     if numel(myosin_sm(~isnan(myosin_sm))) > 20 && any(myosin_sm > 0)
         myosin_interp = interp_and_truncate_nan(myosin_sm);
         x = 1:numel(myosin_interp);
@@ -86,7 +86,7 @@ for i = 1:num_cells
         %         end
         %         keyboard
         foo = synthesize_gaussians(x,gauss_p);
-        peaks_rate(foo>std(foo)/2,i) = 1;
+        peaks(foo>std(foo)/2,i) = 1;
     end
 end
 

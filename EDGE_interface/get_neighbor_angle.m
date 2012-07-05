@@ -1,4 +1,4 @@
-function angles = get_neighbor_angle(cx,cy,time)
+function angles = get_neighbor_angle(cx,cy,tref)
 %GET_NEIGHBOR_ANGLE
 % Given the centroids of all cells, will return NxN-array of the angles between all 
 % pairs of cells, for a given reference time (e.g. tref = 1, default);
@@ -26,7 +26,7 @@ for i = 1:num_cells
 %             theta = bsxfun(@minus,theta,orientations(:,c));
 %         end
         
-        angles(i,j) = nanmean(theta(time,:));
+        angles(i,j) = nanmean(theta(tref,:));
     end
     
 end

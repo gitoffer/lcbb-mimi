@@ -7,7 +7,7 @@ function [h,cdf] = plot_cdf(observations,bins,varargin)
 % SYNOPSIS: h = plot_cdf(x,nbins,patch_options)
 % INPUT: x - observed variable
 %        nbins - number of bins (default = 30)
-%        patch_options - e.g. 'facecolor','red'
+%        line_options - e.g. 'linestyle','r-'
 % OUTPUT: h - figure handle
 % 
 % See also: PLOT_PDF
@@ -18,7 +18,7 @@ switch nargin
     case 0
         error('Need at least 1 input!');
     case 1
-        edges = linspace(nanmin(observations(:)),nanmax(observations(:)),30);
+        bins = linspace(nanmin(observations(:)),nanmax(observations(:)),30);
 end
 
 if isrow(observations)
@@ -29,11 +29,11 @@ counts = histc(observations,bins);
 cdf = cumsum(counts);
 normalization_factors = sum(counts(:));
 cdf = bsxfun(@rdivide,cdf,normalization_factors);
-plot(bins,cdf);
 
-h = findobj(gca,'Type','patch');
 if nargin > 2
-    set(h,varargin{:});
+    plot(bins,cdf,varargin{:});
+else
+    plot(bins,cdf);
 end
 
 % for i = 1:num_var

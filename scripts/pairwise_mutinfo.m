@@ -1,14 +1,15 @@
 %% Pairwise mutual information
 
-nbins = 20;
+nbins = 15;
 
 MIk = nan(num_cells);
 MIh = nan(num_cells);
+MIf = nan(num_cells);
 
 for i = 1:num_cells
     for j = 1:num_cells
-        if count_nans(myosins_rate(:,i)) > 5 && count_nans(myosins_rate(:,j)) > 5
-            MIk(i,j) = kernelmi(myosins_rate(:,i)',myosins_rate(:,j)');
+        if count_nonans(myosins_rate(:,i)) > 5 && count_nonans(myosins_rate(:,j)) > 5
+            [MIk(i,j),h] = kernelmi(myosins_rate(:,i)',myosins_rate(:,j)',.1);
             pXY = get_joint_dist(myosins_rate(:,i),myosins_rate(:,j),nbins,nbins);
             MIh(i,j) = mutual_info(pXY);
         end
@@ -19,4 +20,4 @@ MIh(logical(eye(num_cells))) = NaN;
 
 %% Plot results
 
-scatter(MIk(:),MIh(:))
+scatter(MIk(:),MIh(:));
