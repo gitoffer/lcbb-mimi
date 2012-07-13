@@ -1,10 +1,10 @@
 function movie = draw_measurement_on_cells(EDGEstack,measurement,X,Y,um_per_px)
 %DRAW_MEASUREMENT_ON_CELLS Generate a movie of segmented cells with the
-%cells colored by some input measurement
+%cells colored by some input measurement (e.g. area). Will return a pixel
+%image, instead of a scalable "vector" image with the PATCH object.
 %
 % USE: movie = draw_measurement_on_cells(EDGEstack,measurement,X,Y,um_per_px);
 %
-
 
 % Preallocate
 [num_frames,num_cells] = size(measurement);
