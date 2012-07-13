@@ -1,4 +1,4 @@
-function F = draw_measurement_on_cell_small(handle)
+function F = draw_measurement_on_subset_cells(handle)
 %DRAW_MEAUSREMENT_ON_CELL_SMALL Color-in a measurement on a small subset of
 %cells using patch objects and cell vertices.
 %
@@ -47,15 +47,14 @@ pos1 = [edge, scnsize(4)/2, scnsize(3)/2 - edge, scnsize(4)/2];
 set(fig1,'OuterPosition',pos1)
 axis fill
 
+% Preallocate movie
 F(1:num_frames) = struct('cdata', [],...
     'colormap', []);
 
 % plot cells as polygon using patch object
 for i = 1:num_frames
     clf
-    
     for j = 1:num_cells
-        %         this_cell = data(i,j,:);
         if any(isnan(vertices_x{i,j}))
             continue
         else
