@@ -1,4 +1,15 @@
 function F = draw_cell_pairs(vx,vy,cx,cy,colors)
+%DRAW_CELL_PAIRS Makes a movie of an embryo given the vertices, the
+%centroids, and a relating variable between next-neighbor cells in the
+%embryo.
+%
+% SYNOPSIS: F = draw_cell_pairs(vx,vy,cx,cy,pair_colors);
+% INPUT: vx,vy - the coordinates of the veritices of the cells
+%        cx,cy - the coordinates of the centroids
+%        pair_colors - the relating variable betweeen pairs (N x N) where N
+%        is the number of cells.
+%
+% xies@mit.edu Aug 2012
 
 [num_frames,num_cells] = size(cx);
 
