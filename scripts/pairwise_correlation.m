@@ -22,14 +22,16 @@ mcorr_dist = pdist2( ...
     myosins_rate(1:50,:)',myosins_rate(1:50,:)',@(x,y) nan_pearsoncorr(x,y,0));
 mcorr_dist(logical(eye(num_cells))) = NaN;
 mcorr_dist(logical(triu(ones(num_cells)))) = NaN;
-figure,pcolor(mcorr_dist),colorbar,axis equal tight;
+figure,pcolor(mcorr_dist),colorbar,axis equal tight;shading flat;
+xlabel('Cells');ylabel('Cells');
 % Get CDF for all pairs
 bins = linspace(-1,1,15);
 figure,plot_pdf(mcorr_dist(:),bins);
 
 % Get only next-neighbor
 mcorr_dist_neighbors = mcorr_dist.*adj;
-figure,pcolor(mcorr_dist_neighbors);
+figure,pcolor(mcorr_dist_neighbors);axis equal tight;shading flat;
+xlabel('Cells');ylabel('Cells');
 figure,plot_pdf(mcorr_dist_neighbors(:),bins);
 
 %% Area_correlation distance

@@ -1,4 +1,4 @@
-function F = draw_measurement_on_subset_cells(handle)
+function F = draw_measurement_on_cells_patch(handle)
 %DRAW_MEAUSREMENT_ON_CELL_SMALL Color-in a measurement on a small subset of
 %cells using patch objects and cell vertices.
 %
@@ -62,7 +62,8 @@ for i = 1:num_frames
             % get color according to measurement range
             if any(j == cells_to_draw) && ...
                     ~isnan(measurement(i,find(cells_to_draw == j)))
-                color = find_color(measurement(i,find(cells_to_draw == j)),min_measurement,max_measurement);
+                color = find_color(measurement(i,find(cells_to_draw == j)),min_measurement,max_measurement,...
+                    256,@jet);
             else
                 color = [1 1 1];
             end
