@@ -1,4 +1,13 @@
 function showsub_vert(varargin)
+%SHOWSUB_VERT Subplots with arbitrary graphic methods (e.g. pcolor, plot, mesh,
+%imagesc, etc.) Will link axis by default.
+%
+% The input order is: @graphing_method, {arguments}, title, options
+%
+% SYNOPSIS:
+% showsub(@imshow,{image,[]},'Title 1','colorbar',...);
+%
+% xies@mit Jan 2012
 
 if mod(nargin,4) ~= 0, error('Input in the format {@plot_method,data,title,gca_opt...}'); end
 

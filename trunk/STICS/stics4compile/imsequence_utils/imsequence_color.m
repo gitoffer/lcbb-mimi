@@ -48,7 +48,7 @@ for j = 1:num_frame
         axis equal;
         colorbar;
         %axis normal;
-        axis tight;
+        axis xy off;
         if nargin > 2
             title(movie_title);
         end

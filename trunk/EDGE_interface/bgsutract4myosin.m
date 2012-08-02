@@ -24,7 +24,7 @@ switch method
         % find extrema as the best first guess
         [height,max] = extrema(signal);
         guess = [height(1) max(1) 2];
-        p = lsqcurvefit(@lsq_gauss1d,guess,x,signal,[],[],opt);
+        p = lsqcurvefit(@lsq_gauss1d,guess,x,signal,[-Inf 30],[Inf Inf],opt);
         % evaluate the fitted gaussian
         bg = lsq_gauss1d(p,x);
     otherwise

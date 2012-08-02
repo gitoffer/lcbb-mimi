@@ -24,7 +24,7 @@ figure,showsub_vert(@imagesc,{([-wt wt])*8,[1 num_cells], correlations},'Cross-c
 %% Plot individual correlations
 zslice = 1;
 
-cellID = 61;
+cellID = 6;
 area_sm = smooth2a(squeeze(areas(:,cellID)),1,0);
 myosin_sm = smooth2a(squeeze(myosins(:,cellID)),1,0);
 area_rate = -central_diff_multi(area_sm,1,1);

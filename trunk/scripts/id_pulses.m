@@ -35,40 +35,50 @@ figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
 
 %% Interpolate, bg subtract, and fit Gaussians
-cellID = 16;
+cellID = 47;
 
-myosin_sm = myosins_sm_norm(1:30,cellID);
+myosin_sm = myosins_sm(1:30,cellID);
 myosin_rate = myosins_rate(1:30,cellID);
 myosin_interp = interp_and_truncate_nan(myosin_sm);
 x = 1:numel(myosin_interp);
-myosin_nobg = myosin_interp;
-% myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
+% myosin_nobg = myosin_interp;
+myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
 myosin_nobg_rect = myosin_nobg;
-% myosin_nobg_rect(myosin_nobg < 0) = 0;
+myosin_nobg_rect(myosin_nobg < 0) = 0;
 
 lb = [0 0 0];
 ub = [Inf num_frames 20];
 gauss_p = iterative_gaussian_fit(myosin_nobg_rect,x,0.1,lb,ub);
 
-figure;
+% figure;
+subplot(2,1,1)
 h1 = plot(myosin_sm,'r-');
+hold on,plot(myosin_rate,'k-');
 hold on,plot(myosin_nobg_rect,'g-');
 hold on,plot(synthesize_gaussians(1:30,gauss_p));
-hold on,plot(peaks(:,cellID));
-legend('Original myosin signal','Myosin rectified','Fitted peaks')
-title(['Myosin rate in cell #' num2str(cellID)]);
-saveas(h1,['~/Desktop/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);
+legend('Original myosin signal','Myosin rate','Rate rectified','Fitted peaks')
+title(['Myosin intensity in cell #' num2str(cellID)]);
+subplot(2,1,2);
+plotyy(1:30,areas_rate(1:30,cellID),1:30,areas_sm(1:30,cellID))
+legend('Constriction rate','Area')
+saveas(h1,['~/Desktop/EDGE Processed/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);
 
 %% Fit Gaussians for all
-peaks = zeros(size(myosins_sm));
+peaks = nan(30,num_cells);
+binary_peaks = nan(30,num_cells);
 myosins_sm_norm = bsxfun(@rdivide,myosins_sm,nanmax(myosins_sm));
+myosins_rate_norm = central_diff_multi(myosins_sm_norm,1:num_frames);
+clear individual_peaks, num_peaks = 0;
+clear peak_locations
+clear peak_cells
 for i = 1:num_cells
     
-    myosin_sm = myosins_sm(1:30,i);
+    myosin_sm = myosins_rate_norm(1:30,i);
     if numel(myosin_sm(~isnan(myosin_sm))) > 20 && any(myosin_sm > 0)
         myosin_interp = interp_and_truncate_nan(myosin_sm);
         x = 1:numel(myosin_interp);
-        myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
+        %         myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
+        myosin_nobg = myosin_interp;
         myosin_nobg_rect = myosin_nobg;
         myosin_nobg_rect(myosin_nobg < 0) = 0;
         
@@ -86,13 +96,43 @@ for i = 1:num_cells
         %         end
         %         keyboard
         foo = synthesize_gaussians(x,gauss_p);
-        peaks(foo>std(foo)/2,i) = 1;
+        if numel(foo) ~= 30, foo = [foo, nan(1,30-numel(foo))]; end
+        peaks(:,i) = foo;
+        gauss_parameters{i} = gauss_p;
+        
+        
+        
+        for j = 1:size(gauss_p,2)
+            if gauss_p(2,j) <= 15
+                
+                num_peaks = num_peaks + 1;
+                left = max(fix(gauss_p(2,j) - 3*gauss_p(3,j)),1);
+                right = min(fix(gauss_p(2,j) + 3*gauss_p(3,j)),num_frames);
+                x = left:right;
+                
+                
+                %             keyboard
+                individual_peaks{num_peaks} = ...
+                    synthesize_gaussians(x,gauss_p(:,j));
+                peak_locations{num_peaks} = x;
+                peak_cells(num_peaks) = i;
+                
+                
+            end
+        end
     end
+end
+
+%%
+
+for i = 1:num_cells
+    this_cell = peaks(:,i);
+    binary_peaks(:,i) = otsu(this_cell);
 end
 
 %% Plot peaks and the neighbors' peaks
 
-cellID = 6;
+cellID = 61;
 neighbor_peak_hand = neighbor_msmt(peaks_hand,neighborID);
 figure
 subplot(2,1,1);
