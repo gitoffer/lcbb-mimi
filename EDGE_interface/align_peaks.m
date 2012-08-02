@@ -1,4 +1,11 @@
 function [aligned_p,varargout] = align_peaks(peaks,locations,cellIDs,measurement)
+%ALIGN_PEAKS Aligns the global maxima of a given set of time-series
+%traces. Will return also a given measurement aligned according to the
+%maxima.
+%
+% SYNOPSIS: [aligned_p,aligned_areas] = align_peaks(peaks,loc,cells,areas)
+%
+% xies@mit.edu Aug 2012
 
 if nargin > 1, other_measurement = 1;
 else other_measurement = 0; end
@@ -16,7 +23,7 @@ center_idx = max_duration + 1;
 for i = 1:num_peaks
     this_peak = peaks{i};
     this_duration = durations(i);
-    num_frames = numel(this_peak);
+%     num_frames = numel(this_peak);
     [~,max_idx] = max(this_peak);
     
 %     keyboard
