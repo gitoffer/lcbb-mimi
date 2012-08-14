@@ -39,7 +39,7 @@ cellID = 47;
 
 myosin_sm = myosins_sm(1:30,cellID);
 myosin_rate = myosins_rate(1:30,cellID);
-myosin_interp = interp_and_truncate_nan(myosin_sm);
+myosin_interp = interp_and_truncate_nan(myosin_rate);
 x = 1:numel(myosin_interp);
 % myosin_nobg = myosin_interp;
 myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
@@ -73,7 +73,7 @@ clear peak_locations
 clear peak_cells
 for i = 1:num_cells
     
-    myosin_sm = myosins_rate_norm(1:30,i);
+    myosin_sm = myosins_sm(1:30,i);
     if numel(myosin_sm(~isnan(myosin_sm))) > 20 && any(myosin_sm > 0)
         myosin_interp = interp_and_truncate_nan(myosin_sm);
         x = 1:numel(myosin_interp);
@@ -99,8 +99,6 @@ for i = 1:num_cells
         if numel(foo) ~= 30, foo = [foo, nan(1,30-numel(foo))]; end
         peaks(:,i) = foo;
         gauss_parameters{i} = gauss_p;
-        
-        
         
         for j = 1:size(gauss_p,2)
             if gauss_p(2,j) <= 15
