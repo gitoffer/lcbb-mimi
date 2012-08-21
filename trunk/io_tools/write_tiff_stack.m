@@ -8,7 +8,7 @@ function write_tiff_stack(imstack,filename)
 
 [~, ~, ext] = fileparts(filename);
 
-if ~strcmpi(ext,'tif'), error('Please provide a .TIF file name.'); end
+if ~strcmpi(ext,'.tif'), error('Please provide a .TIF file name.'); end
 
 [X,Y,N,M,L] = size(imstack);
 imstack = reshape(imstack,X,Y,N*M*L);

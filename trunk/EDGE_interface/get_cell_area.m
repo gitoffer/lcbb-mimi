@@ -10,9 +10,12 @@ max_vx = max(vx);
 % min_vy = min(vy);
 max_vy = max(vy);
 
-bounding_box = [max_vx + 1, max_vy + 1];
+% bounding_box = [max_vx + 1, max_vy + 1];
 
-mask = poly2mask(vx,bvy,bounding_box);
+try mask = poly2mask(vx,vy,ceil(max_vy + 1), ceil(max_vx + 1));
+catch err
+    keyboard
+end
 
 area = numel(mask(logical(mask)));
 

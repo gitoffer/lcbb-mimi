@@ -16,3 +16,5 @@ new_coeff = coeff.*pixels_to_keep;
 
 new_coeff = reshape(new_coeff,X,Y,N);
 im_denoised = wavelet_synthesize(new_coeff,As);
+
+end

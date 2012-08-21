@@ -1,10 +1,10 @@
 %BG_SUBTRACT_MYOSIN script to remove background level of myosin
 
 % Path to the raw myosin stack (TIF)
-path = '~/Desktop/';
+path = '~/Desktop/Mimi/Data/01-30-2012/7/myosin_stack.tif';
 
-num_frames = 114;
-num_slices = 9;
+num_frames = 117;
+num_slices = 10;
 
 %% Load images
 
@@ -18,12 +18,12 @@ raw_myo = permute(raw_myo,[1 2 4 5 3]);
 reference_z = 5;
 reference_t = 1;
 
-end_z = 8;
-end_t = 10;
+end_z = 9;
+end_t = 50;
 
-[~,bg_box] = imcrop(raw_myo(:,:,reference_z,reference_t));
-x0 = bg_box(1); y0 = bg_box(2);
-xf = bg_box(3); yf = bg_box(4);
+[~,bg_box] = imcrop(raw_myo(:,:,reference_z,reference_t),[]);
+x0 = round(bg_box(1)); y0 = round(bg_box(2));
+xf = round(x0+bg_box(3)); yf = round(y0+bg_box(4));
 
 figure(301)
 showsublink( ...
@@ -32,7 +32,7 @@ showsublink( ...
 );
 
 %% Calculate distribution of BG values and determine threshold
-bg = raw_myo(x0:xf,y0:yf,reference_z:end_z,reference_t,end_z);
+bg = raw_myo(y0:yf,x0:xf,reference_z:end_z,reference_t:end_t);
 
 figure(302)
 showsub( ...
@@ -40,10 +40,9 @@ showsub( ...
     @cdfplot,{flat(bg)},'CDF of pixel values', ''...
     );
 
-figure(303)
 imsequence_play(bg);
 
-threshold = mean(bg) + 2*std(bg);
+threshold = mean(flat(bg)) + 4*std(flat(bg));
 
 %% Get and display thresholded myosin image
 
@@ -54,17 +53,16 @@ myosin_max = permute(myosin_max,[1 2 4 3]);
 
 myosin_th = myosin_max.*(myosin_max > threshold);
 
-figure(304)
-showsublink( ...
+figure(303)
+showsub_vertlink( ...
     @imshow,{myosin_max(:,:,display_time),[]},'Max projected myosin','', ...
     @imshow,{myosin_th(:,:,display_time),[]},'Thresholded myosin','' ...
     )
 
-figure(305)
 imsequence_play(myosin_th);
 
 %% Write to a TIF stack
-output_path = '~/Desktop/';
+output_path = '~/Desktop/Mimi/Data/01-30-2012/7/myosin_new_th.TIF';
 
-write_stuff_stack(myosin_th,output_path);
+write_tiff_stack(myosin_th,output_path);
 

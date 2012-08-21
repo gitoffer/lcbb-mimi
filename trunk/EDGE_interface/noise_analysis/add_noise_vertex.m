@@ -13,6 +13,6 @@ vy = round(vy + randn(size(vy))*noise_level);
 new_area = get_cell_area(vx,vy);
 
 delta_area = new_area - old_area;
+delta_area = delta_area/old_area;
 
 end
-
