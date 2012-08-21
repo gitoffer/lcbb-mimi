@@ -35,7 +35,7 @@ figure,plot(-wt:wt,correlation);
 title('Cross correlation between constriction rate and myosin')
 
 %% Interpolate, bg subtract, and fit Gaussians
-cellID = 47;
+cellID = 20;
 
 myosin_sm = myosins_sm(1:30,cellID);
 myosin_rate = myosins_rate(1:30,cellID);
@@ -66,15 +66,18 @@ saveas(h1,['~/Desktop/EDGE Processed/Embryo 4/peak_gauss/cells/cell_' num2str(ce
 %% Fit Gaussians for all
 peaks = nan(30,num_cells);
 binary_peaks = nan(30,num_cells);
-myosins_sm_norm = bsxfun(@rdivide,myosins_sm,nanmax(myosins_sm));
+myosins_sm_norm = bsxfun(@rdivide,myosins_fuzzy_sm,nanmax(myosins_fuzzy_sm));
 myosins_rate_norm = central_diff_multi(myosins_sm_norm,1:num_frames);
 clear individual_peaks, num_peaks = 0;
 clear peak_locations
 clear peak_cells
+clear peak_sizes
+
 for i = 1:num_cells
     
-    myosin_sm = myosins_sm(1:30,i);
-    if numel(myosin_sm(~isnan(myosin_sm))) > 20 && any(myosin_sm > 0)
+    myosin_sm = myosins_rate_norm(1:30,i);
+    if numel(myosin_sm(~isnan(myosin_sm) & myosin_sm ~= 0)) > 20 ...
+            && any(myosin_sm > 0)
         myosin_interp = interp_and_truncate_nan(myosin_sm);
         x = 1:numel(myosin_interp);
         %         myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
@@ -101,20 +104,23 @@ for i = 1:num_cells
         gauss_parameters{i} = gauss_p;
         
         for j = 1:size(gauss_p,2)
-            if gauss_p(2,j) <= 15
+            if gauss_p(2,j) <= 30
                 
                 num_peaks = num_peaks + 1;
-                left = max(fix(gauss_p(2,j) - 3*gauss_p(3,j)),1);
-                right = min(fix(gauss_p(2,j) + 3*gauss_p(3,j)),num_frames);
+%                 left = max(fix(gauss_p(2,j) - 3*gauss_p(3,j)),1);
+                left = max(fix(gauss_p(2,j) - 5),1);
+%                 right = min(fix(gauss_p(2,j) + 3*gauss_p(3,j)),num_frames);
+                right = min(fix(gauss_p(2,j) + 5),num_frames);
                 x = left:right;
                 
-                
-                %             keyboard
+%                 if i == 22
+%                             keyboard
+%                 end
                 individual_peaks{num_peaks} = ...
                     synthesize_gaussians(x,gauss_p(:,j));
                 peak_locations{num_peaks} = x;
                 peak_cells(num_peaks) = i;
-                
+                peak_sizes(num_peaks) = gauss_p(1,j);
                 
             end
         end
