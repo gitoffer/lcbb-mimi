@@ -1,7 +1,8 @@
 %%Load data
 
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';handle.io.save_dir = '~/Desktop/Embryo 7';zslice = 2; tref = 1;ignore_list = [1 2 3 4 5 6 7 8 46 52];
-folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/2color_4 013012/Measurements';handle.io.save_dir = '~/Desktop/EDGE processed/Embryo 4';zslice = 2; tref = 1;ignore_list = [1 12 14 22 74 24 36 79]; %embryo4
+% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/2color_4 013012/Measurements';handle.io.save_dir = '~/Desktop/EDGE processed/Embryo 4';zslice = 2; tref = 1;ignore_list = [1 12 14 22 74 24 36 79]; %embryo4
+folder2load = '/media/Data and Misc/2color_4 013012/Measurements'; handle.io.save_dir = '~/Desktop/EDGE Processed/Embryo 4/'; zslice = 2; tref = 1;ignore_list = [1 12 14 22 74 24 36 79]; %embryo4
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Adam 100411 mat15/Measurements';handle.io.save_dir = '~/Desktop/Mat15';zslice = 1;
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';handle.io.save_dir = '~/Desktop/Twist RNAi 6';zslice = 1;ignore_list = [];
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series022/Measurements';
