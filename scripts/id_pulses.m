@@ -4,16 +4,16 @@
 % areas = areas(40:end,:,:);
 % myosin = myosin(40:end,:,:);
 
-wt = 10;
+wt = 5;
 correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
 figure,pcolor(correlations)
 figure,errorbar(-wt:wt,nanmean(correlations,1),nanstd(correlations,1,1));
 
 %% Get individual correlations
-cellID = 80;
+cellID = 2;
 
-area_sm = smooth2a(squeeze(areas(:,cellID)),1,0);
-myosin_sm = smooth2a(squeeze(myosins(:,cellID)),1,0);
+area_sm = full(smooth2a(squeeze(areas(:,cellID)),1,0));
+myosin_sm = full(smooth2a(squeeze(myosins(:,cellID)),1,0));
 
 area_rate = -central_diff_multi(area_sm,1,1);
 myosin_rate = central_diff_multi(myosin_sm,1,1);
@@ -21,18 +21,15 @@ myosin_rate = central_diff_multi(myosin_sm,1,1);
 wt = 20;
 correlation = nanxcorr(area_rate,myosin_rate,wt,1);
 
-%% Plot individual correlations
-figure,showsub(@plot,{1:num_frames,area_sm},['Cell area for cell #' num2str(cellID)],'', ...
-    @plot,{1:num_frames,myosin_sm},['Myosin found in cell #' num2str(cellID)],'' ...
-    );
-figure,showsub(@plot,{1:num_frames,area_rate,'r-'}, ...
-    ['Constriction in cell #' num2str(cellID)],'', ...
-    @plot,{1:num_frames,myosin_rate,'r-'}, ...
-    ['Myosin change in cell #' num2str(cellID)],'' ...
+figure,showsub_vert(@plotyy,{1:num_frames,area_sm,1:num_frames,area_rate}, ...
+    ['Area in cell #' num2str(cellID)],'legend(''Apical area'',''Constriction rate'')', ...
+    @plotyy,{1:num_frames,myosin_sm,1:num_frames,myosin_rate}, ...
+    ['Myosin in cell #' num2str(cellID)],'legend(''Myosin intensity'',''Myosin rate'')', ...
+    @plot,{-wt:wt,correlation},'Correlation','xlabel(''Frame shift'')' ...
     );
 
-figure,plot(-wt:wt,correlation);
-title('Cross correlation between constriction rate and myosin')
+% figure,plot(-wt:wt,correlation);
+% title('Cross correlation between constriction rate and myosin')
 
 %% Interpolate, bg subtract, and fit Gaussians
 cellID = 20;
