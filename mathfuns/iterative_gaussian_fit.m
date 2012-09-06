@@ -28,6 +28,7 @@ curve = y;
 guess = [height(1) x(max(1)) x(3)-x(1)]; % initial guesss
 significant = 1;
 S_null = sum(curve.^2);
+resnorm_old = sum(curve.^2);
 heights = []; peaks = []; vars = [];
 parameters = [];
 
@@ -45,11 +46,14 @@ while significant
     resnorm = norm(residual);
     
     n_peaks = n_peaks + 1;
-    S_alt = resnorm/(T-3*(n_peaks));
-    test_obs = S_alt/S_null;
+%     S_alt = resnorm/(T-3*(n_peaks));
+%     test_obs = S_alt/S_null;
+    F = ((resnorm_old - resnorm)/3)/(resnorm/(T-(n_peaks*3+1)));
     
-    P = fcdf(test_obs,T-(n_peaks)*3,T-(n_peaks-1)*3);
-    if P < alpha
+    Fcrit = finv(alpha,3,T-(n_peaks)*3-1);
+%     P = fcdf(test_obs,T-(n_peaks)*3,T-(n_peaks-1)*3);
+%     if P < alpha
+    if F >= Fcrit
         % Collect the "significant" parameters
 %         parameters(1,n_peaks) = p(1);
 %         parameters(2,n_peaks) = p(2);
@@ -60,7 +64,7 @@ while significant
         
         % Update the statistics
         significant = 1;
-        S_null = S_alt;
+%         S_null = S_alt;
 %         n_peaks = n_peaks + 1;
         resnorm_old = resnorm;
         old_fit = old_fit + this_fit;

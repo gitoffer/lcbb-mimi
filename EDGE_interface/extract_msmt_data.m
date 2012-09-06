@@ -47,19 +47,39 @@ for i = 1:num_embryos
     data = squeeze(data(:,slice_range,:));
     x{i} = data;
     
+    
+    
 end
 
-data = stitch_embryos(x,input);
+[data,time] = stitch_embryos(x,input);
 
 switch nargout
     case 2, varargout{1} = num_cells;
     case 3
         varargout{1} = num_cells;
+        varargout(2) = time;
+    case 4
+        varargout{1} = num_cells;
+        varargout{2} = time;
         c = [];
         for i = 1:num_embryos
             c = cat(2,c,i*ones(1,num_cells(i)));
         end
-        varargout{2} = c;
+        varargout{3} = c;
+    case 5
+        varargout{1} = num_cells;
+        varargout{2} = time;
+        c = [];
+        cellID = 1:sum(num_cells);
+        for i = 1:num_embryos
+            c = cat(2,c,i*ones(1,num_cells(i)));
+            if i > 1
+                cellID(num_cells(i-1)+1:num_cells(i-1)+num_cells(i)) = 1:num_cells(i);
+            end
+        end
+        
+        varargout{3} = c;
+        varargout{4} = cellID;
 end
 
 end

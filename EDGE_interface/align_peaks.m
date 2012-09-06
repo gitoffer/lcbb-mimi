@@ -1,4 +1,4 @@
-function [aligned_p,varargout] = align_peaks(peaks,locations,cellIDs,measurement)
+function [time,aligned_p,varargout] = align_peaks(pulses,measurement)
 %ALIGN_PEAKS Aligns the global maxima of a given set of time-series
 %traces. Will return also a given measurement aligned according to the
 %maxima.
@@ -10,33 +10,36 @@ function [aligned_p,varargout] = align_peaks(peaks,locations,cellIDs,measurement
 if nargin > 1, other_measurement = 1;
 else other_measurement = 0; end
 
-% [num_frames,num_cells] = size(peaks);
-num_peaks = numel(peaks);
-
-durations = cellfun('length',peaks);
+num_peaks = numel(pulses);
+durations = cellfun('length',{pulses.frame});
 max_duration = max(durations);
 
 aligned_p = nan(num_peaks,2*max_duration + 1);
 aligned_m = nan(num_peaks,2*max_duration + 1);
+time = nan(num_peaks,2*max_duration + 1);
 center_idx = max_duration + 1;
 
 for i = 1:num_peaks
-    this_peak = peaks{i};
+    this_peak = pulses(i).curve;
+    this_peak = this_peak(~isnan(this_peak));
     this_duration = durations(i);
-%     num_frames = numel(this_peak);
+    %     num_frames = numel(this_peak);
     [~,max_idx] = max(this_peak);
     
-%     keyboard
     left_len = max_idx - 1;
-%     right_len = this_duration-max_idx;
+    %     right_len = this_duration-max_idx;
     
     aligned_p(i, ...
         (center_idx - left_len):(center_idx - left_len + this_duration - 1)) ...
         = this_peak;
+    time(i, ...
+        (center_idx - left_len):(center_idx - left_len + this_duration - 1)) ...
+        = pulses(i).aligned_time;
     if other_measurement
+        %         keyboard
         aligned_m(i, ...
             (center_idx - left_len):(center_idx - left_len + this_duration - 1)) ...
-            = measurement(locations{i},cellIDs(i));
+            = measurement(pulses(i).frame,pulses(i).cell);
     end
 end
 

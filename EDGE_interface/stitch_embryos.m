@@ -1,4 +1,4 @@
-function out_data = stitch_embryos(data,input)
+function [out_data,time] = stitch_embryos(data,input)
 
 num_embryos = numel(data);
 left = [input.tref];
@@ -14,7 +14,7 @@ for i = 1:num_embryos
     
     this_data = data{i};
 	
-    if strcmpi(class(data{i}),'cell')
+    if iscell(data{i})
         this_data = padcell(this_data,max_left - left(i),NaN,'pre');
         this_data = padcell(this_data,max_right - right(i),NaN,'post');
 
@@ -26,5 +26,6 @@ for i = 1:num_embryos
     out_data = cat(2,out_data,this_data);
     
 end
+time = -(max_left-1):max_right;
 
 end

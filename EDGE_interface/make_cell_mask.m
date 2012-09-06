@@ -1,4 +1,4 @@
-function mask = make_cell_mask(m,frames,sliceID,cellID,X,Y,um_per_px)
+function mask = make_cell_mask(m,frames,cellID,input)
 %MAKE_CELL_MASK Make a BW mask of a cell based on a cell of interest.
 % NOTE: This is very slow; I've found a better way of doing this.
 %
@@ -18,16 +18,17 @@ function mask = make_cell_mask(m,frames,sliceID,cellID,X,Y,um_per_px)
 % xies@mit Dec 2011.
 
 % if um_per_px not supplied, use 1
-if ~exist('um_per_px','var'), um_per_px = 1; end
+if ~isfield('input','um_per_px'), um_per_px = 1; end
 
 % Extract relevant data from EDGEstack
-vt_x = extract_msmt_data(m,'Vertex-x','off');
-vt_y = extract_msmt_data(m,'Vertex-y','off');
+vt_x = extract_msmt_data(m,'Vertex-x','off',input);
+vt_y = extract_msmt_data(m,'Vertex-y','off',input);
 
-vt_x = vt_x(frames,sliceID,cellID);
-vt_y = vt_y(frames,sliceID,cellID);
+vt_x = vt_x(frames,cellID);
+vt_y = vt_y(frames,cellID);
 
 % Construct mask
+X = input.X; Y = input.Y;
 mask = zeros(Y,X,numel(frames));
 for i = 1:numel(frames)
     x = vt_x{i}./um_per_px;

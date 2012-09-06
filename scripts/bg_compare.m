@@ -5,7 +5,7 @@ input_bg.zslice = 1; input_bg.tref = 1; input_bg.ignore_list = [];
 msmts2make = {'myosin','membranes--basic_2d--area', ...
     'Membranes--vertices--Vertex-y','Membranes--vertices--Vertex-x',...
     'Membranes--basic_2d--Centroid-x','Membranes--basic_2d--Centroid-y',...
-    'Membranes--vertices--Identity of neighbors'}
+    'Membranes--vertices--Identity of neighbors'};
 EDGEstack_bg = load_edge_data({input_bg.folder2load},msmts2make{:});
 
 %%
@@ -22,7 +22,7 @@ bg = bg + 1; cr = cr + 1; % pseudocounts
 relative = cr./bg;
 relative_sm = smooth(relative);
 
-significant_cr = zeros(num_frames,sum(num_cells));
+significant_cr = nan(num_frames,sum(num_cells));
 for j = 1:num_cells
     for i = 1:num_frames
         idx = findnearest(areas_rate(i,j), xi);
