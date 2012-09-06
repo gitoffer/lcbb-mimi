@@ -1,19 +1,29 @@
 %%Load data
 
-clear EDGEstack input;
+clear input input_twist;
 
-input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
-input(1).zslice = 2; input(1).tref = 30; input(1).ignore_list = [1 2 3 4 5 6 7 8 46 52];
-handle.io.save_dir = '~/Desktop/Embryo 7';
-
-input(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/2color_4 013012/Measurements';
-input(2).zslice = 2; input(2).tref = 15; input(2).ignore_list = [1 12 14 22 74 24 36 79]; %embryo4
+% input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
+% input(1).zslice = 2; input(1).tref = 30; input(1).ignore_list = [1 2 3 4 5 6 7 8 46 52];
+% input(1).dt = 7.4; input(1).um_per_px = .1806; input(1).X = 1000; input(1).Y = 400;
+% handle.io.save_dir = '~/Desktop/Embryo 7';
+% 
+input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/2color_4 013012/Measurements';
+input(1).zslice = 2; input(1).tref = 15; input(1).ignore_list = [1 12 14 22 74 24 36 79]; %embryo4
+input(1).dt = 6.7; input(1).um_per_px = .1806; input(1).X = 1044; input(1).Y = 400;
 handle.io.save_dir = '~/Desktop/EDGE processed/Embryo 4';
+
+% input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Adam 100411 mat15/Measurements';
+% input(1).zslice = 3; input(1).tref = 50; input(1).ignore_list = [];
+% input(1).dt = 4.2; input(1).um_per_px = .18; input(1).X = 380; input(1).Y = 1000;
 
 % folder2load = '/media/Data and Misc/2color_4 013012/Measurements'; handle.io.save_dir = '~/Desktop/EDGE Processed/Embryo 4/'; zslice = 2; tref = 1;ignore_list = [1 12 14 22 74 24 36 79]; %embryo4
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Adam 100411 mat15/Measurements';handle.io.save_dir = '~/Desktop/Mat15';zslice = 1;
-% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';handle.io.save_dir = '~/Desktop/Twist RNAi 6';zslice = 1;ignore_list = [54];
-% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series022/Measurements';
+input_twist(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
+input_twist(1).zslice = 1; input_twist(1).tref = 1; input_twist(1).ignore_list = []; %embryo4
+input_twist(1).dt = 8;
+input_twist(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series022/Measurements';
+input_twist(2).zslice = 1; input_twist(2).tref = 1; input_twist(2).ignore_list = []; %embryo4
+input_twist(2).dt = 8;
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Control inject Series002/Measurements';
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cytoD control/Measurements';
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/control cytoD 2/Measurements';
@@ -24,14 +34,19 @@ msmts2make = {'myosin','membranes--basic_2d--area', ...
     'Membranes--vertices--Vertex-y','Membranes--vertices--Vertex-x',...
     'Membranes--basic_2d--Centroid-x','Membranes--basic_2d--Centroid-y',...
     'Membranes--vertices--Identity of neighbors', ...
-    'Myosin--myosin_intensity_fuzzy--Myosin intensity fuzzy'};
-
-EDGEstack = load_edge_data({input.folder2load},msmts2make{:});
-beep;
+    'Myosin--myosin_intensity_fuzzy--Myosin intensity fuzzy',...
+    'Membranes--ellipse_properties--Anisotropy-xy'};
 
 %%
 
-[areas,num_cells,c] = extract_msmt_data(EDGEstack,'area','on',input);
+EDGEstack = load_edge_data({input.folder2load},msmts2make{:});
+EDGEstack_twist = load_edge_data({input_twist.folder2load},msmts2make{:});
+beep;
+
+%%
+num_embryos = numel(input);
+
+[areas,num_cells,t,c,IDs] = extract_msmt_data(EDGEstack,'area','on',input);
 myosins_fuzzy = extract_msmt_data(EDGEstack,'myosin intensity fuzzy','on',input);
 myosins = extract_msmt_data(EDGEstack,'myosin intensity fuzzy','on',input);
 centroids_x = extract_msmt_data(EDGEstack,'centroid-x','on',input);
@@ -42,8 +57,8 @@ vertices_y = extract_msmt_data(EDGEstack,'vertex-y','off',input);
 % majors = extract_msmt_data(EDGEstack,'major axis','on',input);
 % minors = extract_msmt_data(EDGEstack,'minor axis','on',input);
 % orientations = extract_msmt_data(EDGEstack,'orientation','on',input);
-% anisotropies = extract_msmt_data(EDGEstack,'anisotropy-xy','on',input);
- 
+anisotropies = extract_msmt_data(EDGEstack,'anisotropy-xy','on',input);
+
 % myosins(:,ignore_list) = nan;
 % myosins_fuzzy(:,ignore_list) = nan;
 % areas(:,ignore_list) = nan;
@@ -66,35 +81,49 @@ myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
 % coronal_areas_rate = -central_diff_multi(coronal_areas_sm);
 % coronal_myosins_rate = central_diff_multi(coronal_myosins_sm);
 
+time_mat = zeros(size(myosins_sm));
+for i = 1:num_embryos
+    time_mat(:,c==i) = repmat((t.*input(i).dt)',[1 numel(c(c==i))]);
+end
+
 %%
-handle.z = zslice;
-handle.EDGEstack = EDGEstack;
 
-handle.myo_area_corr.wt = 10;
+[areas,num_cells,t,c] = extract_msmt_data(EDGEstack_twist,'area','on',input_twist);
+% myosins_fuzzy = extract_msmt_data(EDGEstack_twist,'myosin intensity fuzzy','on',input_twist);
+myosins = extract_msmt_data(EDGEstack_twist,'myosin intensity fuzzy','on',input_twist);
+centroids_x = extract_msmt_data(EDGEstack_twist,'centroid-x','on',input_twist);
+centroids_y = extract_msmt_data(EDGEstack_twist,'centroid-y','on',input_twist);
+neighborID = extract_msmt_data(EDGEstack_twist,'identity of neighbors','off',input_twist);
+vertices_x = extract_msmt_data(EDGEstack_twist,'vertex-x','off',input_twist);
+vertices_y = extract_msmt_data(EDGEstack_twist,'vertex-y','off',input_twist);
+% majors = extract_msmt_data(EDGEstack_twist,'major axis','on',input_twist);
+% minors = extract_msmt_data(EDGEstack_twist,'minor axis','on',input_twist);
+% orientations = extract_msmt_data(EDGEstack_twist,'orientation','on',input_twist);
+anisotropies = extract_msmt_data(EDGEstack_twist,'anisotropy-xy','on',input_twist);
+ 
+% myosins(:,ignore_list) = nan;
+% myosins_fuzzy(:,ignore_list) = nan;
+% areas(:,ignore_list) = nan;
+% anisotropies(:,ignore_list) = nan;
 
-handle.neighbor_focus.wt = 10;
-handle.neighbor_focus.focal_measurement = 'areas_rate';
-handle.neighbor_focus.focal_name = 'constriction rate';
-handle.neighbor_focus.neighbor_measurement = 'myosins_rate';
-handle.neighbor_focus.neighbor_name = 'myosins rate';
+% coronal_areas = get_corona_measurement(areas,neighborID,tref);
+% coronal_myosins = get_corona_measurement(myosins,neighborID);
+num_frames = size(areas,1);
 
-handle.neighbor_focus.pearsons.display = 0;
+areas_sm = smooth2a(areas,1,0);
+myosins_sm = smooth2a(squeeze(myosins),1,0);
+myosins_fuzzy_sm = smooth2a(squeeze(myosins_fuzzy),1,0);
+% coronal_areas_sm = smooth2a(coronal_areas,1,0);
+% coronal_myosins_sm = smooth2a(coronal_myosins,1,0);
 
-handle.neighbor_focus.neighbor_angles.angle_data = 'pearsons';
-handle.neighbor_focus.neighbor_angles.theta_bins = 0:pi/3:2*pi-pi/3;
+areas_rate = -central_diff_multi(areas_sm,1:num_frames);
+% myosins_rate_fuzzy = central_diff_multi(myosins_fuzzy_sm,1:num_frames);
+myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
+% anisotropies_rate = central_diff_multi(anisotropies);
+% coronal_areas_rate = -central_diff_multi(coronal_areas_sm);
+% coronal_myosins_rate = central_diff_multi(coronal_myosins_sm);
 
-handle.peak_gauss.display.allresponse = 0;
-handle.peak_gauss.display.positive = 0;
-handle.peak_gauss.display.negative = 0;
-handle.peak_gauss.caxis = [-3 3];
-
-handle.peak_consecutive.display.allresponse = 0;
-handle.peak_consecutive.display.positive = 0;
-handle.peak_consecutive.display.negative = 0;
-handle.peak_consecutive.count_threshold = 3;
-handle.peak_consecutive.caxis = [-3 3];
-
-handle.corona.wt = 6;
-handle.corona.ignore = [73 15];
-
-data = EDGE_processing(handle);
+time_mat = zeros(size(myosins_sm));
+for i = 1:num_embryos
+    time_mat(:,c==i) = repmat((t.*input_twist(i).dt)',[1 numel(c(c==i))]);
+end

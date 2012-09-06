@@ -5,20 +5,20 @@ function showsub_vert(varargin)
 % The input order is: @graphing_method, {arguments}, title, options
 %
 % SYNOPSIS:
-% showsub(@imshow,{image,[]},'Title 1','colorbar',...);
+% showsub(@imshow,{image,[]},'Title 1','colorbar',...,num_rows);
 %
 % xies@mit Jan 2012
 
-if mod(nargin,4) ~= 0, error('Input in the format {@plot_method,data,title,gca_opt...}'); end
+if mod(nargin,4) ~= 1, error('Input in the format {@plot_method,data,title,gca_opt...}'); end
 
 N = (nargin-1)/4;
-num_rows = 3;
+num_rows = varargin{end};
 num_columns = ceil(N/num_rows);
 
 % xaxis_title = 'Distance (\mum)';
 % yaxis_title = 'SCF';
 
-for i = 1:4:nargin
+for i = 1:4:nargin-1
     plot_method = varargin{i};
     data = varargin{i+1};
     fig_title = varargin{i+2};
