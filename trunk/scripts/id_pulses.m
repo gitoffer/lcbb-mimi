@@ -1,7 +1,7 @@
 %%ID_PULSES
 
 %% Interpolate, bg subtract, and fit Gaussians
-cellID = 17;
+cellID = 62;
 
 myosin_sm = myosins_sm(1:30,cellID);
 myosin_rate = myosins_rate(1:30,cellID);
@@ -15,7 +15,7 @@ myosin_nobg_rect(myosin_nobg < 0) = 0;
 t = (1:numel(myosin_interp))*input(1).dt;
 
 lb = [0 0 10];
-ub = [Inf t(end) 20];
+ub = [Inf t(end) 40];
 gauss_p = iterative_gaussian_fit(myosin_nobg_rect,t,0.05,lb,ub);
 
 n_peaks = size(gauss_p,2)
