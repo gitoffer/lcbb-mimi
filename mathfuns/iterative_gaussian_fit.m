@@ -20,60 +20,52 @@ switch nargin
 end
 
 T = length(y);
-old_fit = zeros(size(y));
-curve = y;
+
+% Initial guess
+[height,max] = extrema(y);
+guess = [height(1);x(max(1));x(3)-x(1)];
 
 % Initialize
-[height,max] = extrema(curve);
-guess = [height(1) x(max(1)) x(3)-x(1)]; % initial guesss
 significant = 1;
-S_null = sum(curve.^2);
-resnorm_old = sum(curve.^2);
-heights = []; peaks = []; vars = [];
-parameters = [];
-
+resnorm_old = sum(y.^2);
 n_peaks = 0;
+% heights = []; peaks = []; vars = [];
+
 % Suppress display
 opt = optimset('Display','off');
 
 % While significant by F-test, fit 1 more gaussian
 while significant
-
-    p = lsqcurvefit(@lsq_gauss1d,guess,x,curve,lb,ub,opt);
-    this_fit = lsq_gauss1d(p,x);
     
-    residual = this_fit + old_fit - y;
-    resnorm = norm(residual);
+    [p,resnorm,residual] = lsqcurvefit(@synthesize_gaussians,guess,x,y,lb,ub,opt);
+    this_fit = synthesize_gaussians(p,x);
     
     n_peaks = n_peaks + 1;
-%     S_alt = resnorm/(T-3*(n_peaks));
-%     test_obs = S_alt/S_null;
-    F = ((resnorm_old - resnorm)/3)/(resnorm/(T-(n_peaks*3+1)));
     
-    Fcrit = finv(alpha,3,T-(n_peaks)*3-1);
-%     P = fcdf(test_obs,T-(n_peaks)*3,T-(n_peaks-1)*3);
-%     if P < alpha
+    F = ((resnorm_old-resnorm)/3)/(resnorm/(T-n_peaks*3-1));
+%     F = (resnorm/(T-n_peaks*3))/(resnorm_old/(T-n_peaks*3-3))
+    Fcrit = finv(1-alpha,3,T-n_peaks*3-1);
+%     P = fcdf(F,T-n_peaks*3-3,T-n_peaks*3)
+
     if F >= Fcrit
+%     if P < alpha
         % Collect the "significant" parameters
-%         parameters(1,n_peaks) = p(1);
-%         parameters(2,n_peaks) = p(2);
-%         parameters(3,n_peaks) = p(3);
-        heights = [heights p(1)];
-        peaks = [peaks p(2)];
-        vars = [vars p(3)];
+        parameters = p;
         
-        % Update the statistics
+        % Updapte the statistics
         significant = 1;
-%         S_null = S_alt;
-%         n_peaks = n_peaks + 1;
-        resnorm_old = resnorm;
-        old_fit = old_fit + this_fit;
         
-        % The new 'curve to fit' is the residual
-%         residual(residual>0) = 0;
-        curve = -residual;
-        [height,max] = extrema(curve);
-        guess = [height(1) x(max(1)) x(3)-x(1)];
+        resnorm_old = resnorm;
+%         old_fit = this_fit;
+        
+        % Guess the new n+1 peak parameters from the residuals
+        [height,max] = extrema(-residual);
+        if numel(height) > 0
+            guess = cat(2,guess,[height(1);x(max(1));x(3)-x(1)]);
+        else
+            significant = 0;
+            break
+        end
         
     else
         significant = 0;
@@ -81,8 +73,6 @@ while significant
     
 end
 
-parameters(1,:) = heights;
-parameters(2,:) = peaks;
-parameters(3,:) = vars;
+if ~exist('parameters','var'), parameters = []; end
 
 end
