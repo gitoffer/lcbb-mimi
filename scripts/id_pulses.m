@@ -1,7 +1,7 @@
 %%ID_PULSES
 
 %% Interpolate, bg subtract, and fit Gaussians
-cellID = 62;
+cellID = 67;
 
 myosin_sm = myosins_sm(1:30,cellID);
 myosin_rate = myosins_rate(1:30,cellID);
@@ -14,8 +14,8 @@ myosin_nobg_rect(myosin_nobg < 0) = 0;
 % time domain
 t = (1:numel(myosin_interp))*input(1).dt;
 
-lb = [0 0 10];
-ub = [Inf t(end) 40];
+lb = [0;0;10];
+ub = [Inf;t(end);25];
 gauss_p = iterative_gaussian_fit(myosin_nobg_rect,t,0.05,lb,ub);
 
 n_peaks = size(gauss_p,2)
@@ -27,9 +27,9 @@ title('Original myosin time-series');
 subplot(2,1,2)
 h2 = plot(t,myosin_rate,'k-');
 hold on,plot(t,myosin_nobg_rect,'g-');
-hold on,plot(t,synthesize_gaussians(t,gauss_p));
+hold on,plot(t,synthesize_gaussians(gauss_p,t));
 legend('Myosin rate','Rate rectified','Fitted peaks')
-title(['Myosin intensity in cell #' num2str(cellID)]);
+title(['Myosin rate in cell #' num2str(cellID)]);
 % plotyy(1:30,areas_rate(1:30,cellID),1:30,areas_sm(1:30,cellID))
 % legend('Constriction rate','Area')
 % saveas(h1,['~/Desktop/EDGE Processed/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);
