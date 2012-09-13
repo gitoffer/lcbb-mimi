@@ -28,7 +28,7 @@ guess = [height(1);x(max(1));x(3)-x(1)];
 % Initialize
 significant = 1;
 resnorm_old = sum(y.^2);
-n_peaks = 0;
+n_peaks = 0; LB = lb; UB = ub;
 % heights = []; peaks = []; vars = [];
 
 % Suppress display
@@ -37,7 +37,7 @@ opt = optimset('Display','off');
 % While significant by F-test, fit 1 more gaussian
 while significant
     
-    [p,resnorm,residual] = lsqcurvefit(@synthesize_gaussians,guess,x,y,lb,ub,opt);
+    [p,resnorm,residual] = lsqcurvefit(@synthesize_gaussians,guess,x,y,LB,UB,opt);
     this_fit = synthesize_gaussians(p,x);
     
     n_peaks = n_peaks + 1;
@@ -54,9 +54,12 @@ while significant
         
         % Updapte the statistics
         significant = 1;
-        
         resnorm_old = resnorm;
-%         old_fit = this_fit;
+        
+        % Update the constraints
+        LB = cat(2,LB,lb);
+        UB = cat(2,UB,ub);
+        
         
         % Guess the new n+1 peak parameters from the residuals
         [height,max] = extrema(-residual);
