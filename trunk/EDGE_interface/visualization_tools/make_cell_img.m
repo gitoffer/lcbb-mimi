@@ -18,8 +18,13 @@ end
 for i = 1:numel(frames)
     F = zeros(box(4)+1,box(3)+1,3);
     for j = 1:numel(channels)
+        
         this_folder = [path '/' channels{j}];
         cd( this_folder );
+        if strcmpi(channels{j},'Membranes'),
+            this_folder = [this_folder '/Raw']; % Only use the raw membranes
+        end
+        
         filename = image_filename(frames(i),sliceID,this_folder);
         im = imread(filename);
         
@@ -46,6 +51,8 @@ function box = find_bounding_box(vx,vy)
     width = ceil(right - left + 1);
     height = ceil(top - bottom + 1);
     
-    box = [left-10 bottom-10 width+20 height+20];
+    side_length = max(width,height) + 15;
+    
+    box = [left-10 bottom-10 side_length side_length];
     
 end
