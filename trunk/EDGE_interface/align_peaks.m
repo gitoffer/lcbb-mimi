@@ -20,7 +20,7 @@ time = nan(num_peaks,2*max_duration + 1);
 center_idx = max_duration + 1;
 
 for i = 1:num_peaks
-    this_peak = pulses(i).curve;
+    this_peak = pulses(i).curve_padded;
     this_peak = this_peak(~isnan(this_peak));
     this_duration = durations(i);
     %     num_frames = numel(this_peak);

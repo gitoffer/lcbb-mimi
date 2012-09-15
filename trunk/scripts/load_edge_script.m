@@ -8,7 +8,7 @@ clear input input_twist;
 % handle.io.save_dir = '~/Desktop/Embryo 7';
 % 
 input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/2color_4 013012/Measurements';
-input(1).zslice = 2; input(1).tref = 15; input(1).ignore_list = [1 12 14 22 74 24 36 79]; %embryo4
+input(1).zslice = 2; input(1).tref = 15; input(1).ignore_list = [1 12 14 74 24 36 79]; %embryo4
 input(1).dt = 6.7; input(1).um_per_px = .1806; input(1).X = 1044; input(1).Y = 400;
 handle.io.save_dir = '~/Desktop/EDGE processed/Embryo 4';
 

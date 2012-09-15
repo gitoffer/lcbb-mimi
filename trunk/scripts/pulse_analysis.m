@@ -22,7 +22,9 @@ showsub_vert( ...
 [sorted_sizes,sortedID] = sort([pulse.size],2,'descend');
 cond = sortedID(1:10);
 
-aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
+aligned_area_norm = aligned_area
+% aligned_area_norm = bsxfun(@minus,aligned_area,nanmin(aligned_area,[],2));
+% aligned_area_norm = bsxfun(@rdivide,aligned_area_norm,nanmax(aligned_area_norm,[],2));
 
 figure
 % C = rand(numel(cond),3);
@@ -46,9 +48,9 @@ legend(labels)
 
 %%
 
-cond1 = sortedID(1:10);
-cond2 = sortedID(11:20);
-cond3 = sortedID(21:end);
+cond1 = sortedID(6:10);
+% cond2 = sortedID(11:20);
+% cond3 = sortedID(21:end);
 % cond4 = sortedID(51:end);
 
 figure
@@ -59,10 +61,20 @@ figure
 % errorbar(x,nanmean(aligned_area_norm(cond4,:)), ...
 %     nanstd(aligned_area_norm(cond4,:)),'g-')
 hold on
-errorbar(x,nanmean(aligned_area_norm(cond3,:)),...
-    nanstd(aligned_area_norm(cond3,:)),'b-')
-errorbar(x,nanmean(aligned_area_norm(cond2,:)),...
-    nanstd(aligned_area_norm(cond2,:)),'k-')
+% errorbar(x,nanmean(aligned_area_norm(cond3,:)),...
+%     nanstd(aligned_area_norm(cond3,:)),'b-')
+% errorbar(x,nanmean(aligned_area_norm(cond2,:)),...
+%     nanstd(aligned_area_norm(cond2,:)),'k-')
 errorbar(x,nanmean(aligned_area_norm(cond1,:)),...
     nanstd(aligned_area_norm(cond1,:)),'r-')
 legend(['Rest (41-' num2str(num_peaks) ')'],'Top 21-30','Top 11-20','Top 10');
+
+%%
+
+for cellID = 1:num_cells
+    F = make_cell_img(vertices_x,vertices_y,1:60,4,cellID,input,{'Membranes','Myosin'});
+    if isstruct(F)
+        movie2avi(F,['~/Desktop/EDGE processed/Embryo 4/cell_movies/cell_' num2str(cellID) '_t1-60']);
+    end
+end
+

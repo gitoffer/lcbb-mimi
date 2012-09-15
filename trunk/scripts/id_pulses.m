@@ -1,7 +1,8 @@
 %%ID_PULSES
 
-%% Interpolate, bg subtract, and fit Gaussians
-cellID = 67;
+%% Interpolate, and fit Gaussians for single cells
+% cellID = randi(num_cells);
+cellID = 54;
 
 myosin_sm = myosins_sm(1:30,cellID);
 myosin_rate = myosins_rate(1:30,cellID);
@@ -17,26 +18,27 @@ t = (1:numel(myosin_interp))*input(1).dt;
 lb = [0;0;10];
 ub = [Inf;t(end);25];
 gauss_p = iterative_gaussian_fit(myosin_nobg_rect,t,0.05,lb,ub);
+fitted_y = synthesize_gaussians(gauss_p,t);
 
-n_peaks = size(gauss_p,2)
+n_peaks = size(gauss_p,2);
 
-% figure;
+figure;
 subplot(2,1,1)
-h1 = plot(t,myosin_sm,'r-');
+h1 = plot((1:30),myosin_sm,'r-');
 title('Original myosin time-series');
 subplot(2,1,2)
-h2 = plot(t,myosin_rate,'k-');
-hold on,plot(t,myosin_nobg_rect,'g-');
-hold on,plot(t,synthesize_gaussians(gauss_p,t));
-legend('Myosin rate','Rate rectified','Fitted peaks')
+h2 = plot((1:30),myosin_rate,'k-');
+hold on,plot(1:30,myosin_nobg_rect,'g-');
+hold on,plot(1:30,cell_fits(1:30,cellID));
+legend('Myosin rate','Rate rectified',['Fitted peaks (' num2str(n_peaks) ')'])
 title(['Myosin rate in cell #' num2str(cellID)]);
-% plotyy(1:30,areas_rate(1:30,cellID),1:30,areas_sm(1:30,cellID))
+% plotyy(1:30,areas_rate(1:30,cellID),1:300,areas_sm(1:30,cellID))
 % legend('Constriction rate','Area')
-% saveas(h1,['~/Desktop/EDGE Processed/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);
+saveas(h1,['~/Desktop/EDGE Processed/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);
 
-%%
+%% Fit for all cells
 
-[pulse,cell_fits] = fit_gaussian_peaks(myosins_rate,time_mat,[-200 300],IDs,c);
+[pulse,cell_fits] = fit_gaussian_peaks(myosins_rate,time_mat,[-300 300],IDs,c);
 num_peaks = numel(pulse);
 
 %% Try to correlate self peaks and neighbor peaks?
