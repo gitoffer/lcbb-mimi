@@ -27,7 +27,7 @@ dF = zeros(size(F));
 for i = 1:N
     signal = F(:,i);
     X = 1:numel(signal);
-    if numel(signal(~isnan(signal))) > 1
+    if numel(signal(~isnan(signal))) > 5
         signal = interp1(X(~isnan(signal)),signal(~isnan(signal)),X);
     end
     dF(:,i) = central_diff(signal,x);

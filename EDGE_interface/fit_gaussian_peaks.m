@@ -21,6 +21,7 @@ function [pulse,varargout] = fit_gaussian_peaks(Y,time,timeframe,cellID,c)
 min_t = timeframe(1);
 max_t = timeframe(2);
 
+% Keep track of total number
 num_peaks = 0;
 
 if nargout > 1, cell_fit = 1; else cell_fit = 0; end
@@ -31,28 +32,35 @@ end
 
 for i = 1:num_cells
     
+    % Need to convert frame to actual time using the time bounds given
     t = time(:,i);
     f0 = find(min_t < t, 1, 'first');
     ff = find(max_t > t, 1, 'last');
     frame = f0:ff;
     
+    % Generate "true time" vector, t
     t = t(min_t < t & t < max_t);
     if any(t ~= time(frame,i)), error('Wrong time indexing... ERROR!'); end
     
+    % Crop the curve using time bounds
     y = Y(f0:ff,i);
     
+    % Reject any curves without at least 20 data points
     if numel(y(~isnan(y))) > 20 && any(y > 0)
         
+        % Interpolate and rectify
         y = interp_and_truncate_nan(y);
-        y = y.*(y>0);
+        y(y < 0) = 0;
         t = t(1:numel(y))';
         
-        lb = [0 t(1) 0];
-        ub = [Inf t(end) t(4)-t(1)];
+        % Establish the lower bounds of the constraints
+        lb = [0;t(1)-abs(t(2)-t(1));10];
+        ub = [Inf;t(end);25];
         
-        gauss_p = iterative_gaussian_fit(y,t,0.2,lb,ub);
+        gauss_p = iterative_gaussian_fit(y,t,0.05,lb,ub);
+        
         if cell_fit
-            this_fit = synthesize_gaussians(t,gauss_p);
+            this_fit = synthesize_gaussians(gauss_p,t);
 %             if ff - f0 + 1 ~= size(t)
 %                 ff = ff - (ff+f0-1-numel(t));
 %             end
@@ -60,7 +68,7 @@ for i = 1:num_cells
         end
         
         for j = 1:size(gauss_p,2)
-            if gauss_p(2,j) > -300
+            if gauss_p(2,j) <= 0
                 
                 l = 5;
                 r = 10;
@@ -71,7 +79,7 @@ for i = 1:num_cells
                 right = min(shift + findnearest(gauss_p(2,j),t) + r,num_frames);
                 
                 x = time(left:right,i);
-                fitted_y = synthesize_gaussians(x,gauss_p(:,j));
+                fitted_y = synthesize_gaussians(gauss_p(:,j),x);
                 
                 pulse(num_peaks).curve = fitted_y;
                 pulse(num_peaks).aligned_time = x - gauss_p(2,j);
