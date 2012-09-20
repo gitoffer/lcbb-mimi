@@ -88,7 +88,9 @@ end
 
 %%
 
-[areas,num_cells,t,c] = extract_msmt_data(EDGEstack_twist,'area','on',input_twist);
+num_embryos = numel(input_twist);
+
+[areas,num_cells,t,c,IDs] = extract_msmt_data(EDGEstack_twist,'area','on',input_twist);
 % myosins_fuzzy = extract_msmt_data(EDGEstack_twist,'myosin intensity fuzzy','on',input_twist);
 myosins = extract_msmt_data(EDGEstack_twist,'myosin intensity fuzzy','on',input_twist);
 centroids_x = extract_msmt_data(EDGEstack_twist,'centroid-x','on',input_twist);
@@ -127,3 +129,6 @@ time_mat = zeros(size(myosins_sm));
 for i = 1:num_embryos
     time_mat(:,c==i) = repmat((t.*input_twist(i).dt)',[1 numel(c(c==i))]);
 end
+
+
+
