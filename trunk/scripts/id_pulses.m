@@ -1,11 +1,12 @@
 %%ID_PULSES
 
 %% Interpolate, and fit Gaussians for single cells
-% cellID = randi(num_cells);
-cellID = 54;
+cellID = randi(sum(num_cells));
+% cellID = 89;
+cellID = 21;
 
-myosin_sm = myosins_sm(1:30,cellID);
-myosin_rate = myosins_rate(1:30,cellID);
+myosin_sm = myosins_sm(1:end,cellID);
+myosin_rate = myosins_rate(1:end,cellID);
 myosin_interp = interp_and_truncate_nan(myosin_rate);
 % myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
 myosin_nobg = myosin_interp;
@@ -13,9 +14,9 @@ myosin_nobg_rect = myosin_nobg;
 myosin_nobg_rect(myosin_nobg < 0) = 0;
 
 % time domain
-t = (1:numel(myosin_interp))*input(1).dt;
+t = ((1:numel(myosin_interp))-input(1).tref)*input(1).dt;
 
-lb = [0;0;10];
+lb = [0;t(1);10];
 ub = [Inf;t(end);25];
 gauss_p = iterative_gaussian_fit(myosin_nobg_rect,t,0.05,lb,ub);
 fitted_y = synthesize_gaussians(gauss_p,t);
@@ -24,14 +25,17 @@ n_peaks = size(gauss_p,2);
 
 figure;
 subplot(2,1,1)
-h1 = plot((1:30),myosin_sm,'r-');
-title('Original myosin time-series');
+h1 = plot(((1:num_frames)-input_twist(1).tref)*input_twist(1).dt,myosin_sm,'r-');
+title(['Original myosin time-series in cell #' num2str(cellID)]);
 subplot(2,1,2)
-h2 = plot((1:30),myosin_rate,'k-');
-hold on,plot(1:30,myosin_nobg_rect,'g-');
-hold on,plot(1:30,cell_fits(1:30,cellID));
+h2 = plot(((1:num_frames)-input_twist(1).tref)*input_twist(1).dt,myosin_rate,'k-');
+hold on,plot(t,myosin_nobg_rect,'g-');
+hold on,plot(((1:num_frames)-input_twist(1).tref)*input_twist(1).dt,cell_fits(:,cellID));
 legend('Myosin rate','Rate rectified',['Fitted peaks (' num2str(n_peaks) ')'])
 title(['Myosin rate in cell #' num2str(cellID)]);
+
+figure,
+normplot((myosin_nobg_rect-synthesize_gaussians(gauss_p,t)).^2);
 % plotyy(1:30,areas_rate(1:30,cellID),1:300,areas_sm(1:30,cellID))
 % legend('Constriction rate','Area')
 saveas(h1,['~/Desktop/EDGE Processed/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);

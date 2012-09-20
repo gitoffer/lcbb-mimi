@@ -57,6 +57,10 @@ for i = 1:numel(frames)
         filename = image_filename(frames(i),sliceID,this_folder);
         im = imread(filename);
         
+        ker = fspecial('gaussian',10,1);
+        im = imfilter(im,ker,'symmetric');
+        im = rescale(double(im),0,2^8-1);
+        
         F(:,:,j) = imcrop(im,box);
         
     end

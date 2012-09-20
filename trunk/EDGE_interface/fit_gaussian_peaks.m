@@ -55,7 +55,10 @@ for i = 1:num_cells
         
         % Establish the lower bounds of the constraints
         lb = [0;t(1)-abs(t(2)-t(1));10];
-        ub = [Inf;t(end);25];
+        try ub = [Inf;t(end);25];
+        catch err
+            keyboard
+        end
         
         gauss_p = iterative_gaussian_fit(y,t,0.05,lb,ub);
         
@@ -68,9 +71,9 @@ for i = 1:num_cells
         end
         
         for j = 1:size(gauss_p,2)
-            if gauss_p(2,j) <= 0
+            if gauss_p(2,j) > -300
                 
-                l = 5;
+                l = 7;
                 r = 10;
                 
                 num_peaks = num_peaks + 1;

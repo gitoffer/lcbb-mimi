@@ -58,11 +58,11 @@ for i = 1:20
 end
 
 %%
-clf
+figure
 for i = 1:10
     for j = unique(num_peaks(i,:))
         foo = num_peaks(i,:);
-        h(i) = draw_circle([peak_separation(i,1)*10 (j)*100],numel(foo(foo==j))/3,1000,'--');
+        h(i) = draw_circle([i*100 (j)*100],numel(foo(foo==j))/3,1000,'--');
         %         set(h(i),'color',C(i,:));
         axis equal
         hold on
@@ -77,8 +77,8 @@ C = hsv(5);
 
 % delta_k = bsxfun(@minus,num_peaks,k');
 delta_k = num_peaks - 2;
-for i = 1:5
-    scatter(min_peak_size(i,:),delta_k(i,:) + .1*i,100,C(i,:),'filled');
+for i = 1:3
+    scatter(peak_separation(i,:),delta_k(i,:) + .1*i,100,C(i,:),'filled');
     hold on
     xlabel('Mean separation between peaks (sec)');
     ylabel('\Delta k, difference between inferred number of peaks and actual k')
@@ -93,20 +93,21 @@ showsub_vert(...
     3);
 
 %%
-clear peak_separation num_peaks
 
-k = 2;
-bg_myosin = nanmean(smooth2a(myosins_sm,5,0),2)';
-bg_myosin = bg_myosin(1:30);
-x = (1:30)*sec_per_frame;
+clear peak_separation num_peaks series rates all_p
 
-for i = 1
-    for j = 1:1
-        mu = [50 160+10];
-        %         mu = [100 100+8*i];
+k = 1;
+bg_myosin = nanmean(smooth2a(smooth2a(smooth2a(myosins_sm,10,0),10,0),10,0),2)';
+bg_myosin = bg_myosin(1:50);
+x = (1:50)*sec_per_frame;
+
+for i = 1:10
+    for j = 1:100
+        
+        mu = [200];
         %         mu = randi(floor(max(x))-32, [1 k])+16;
         sigma = 16*ones(1,k);
-        A = [100 500];
+        A = 100*i;
         params = cat(1,A,mu,sigma);
         
         noise_size = 10;
@@ -114,25 +115,29 @@ for i = 1
         
         % Make the curve-to-fit
         y = synthesize_gaussians(params,x) + noise + bg_myosin;
-        %         foo(j,:) = y;
         dy = central_diff(y,x);
         dy(dy < 0) = 0;
         
-        %         bar(j,:) = dy;
-        
         [p] = iterative_gaussian_fit(dy,x,.01,[0 0 10],[Inf max(x) 20]);
-        
-        figure
-        plotyy(x,y,x,dy),legend('Simulated myosin','Simulated myosin rate')
-        figure
-        plotyy(x,dy,x,synthesize_gaussians(p,x));
         
         %     residuals(i,j,:) = y - synthesize_gaussians(p,x);
         %     resnorm(i,j) = sum(residuals(i,j,:).^2);
-        %
-        separation = min(diff(sort(mu,'ascend')));
-        peak_separation(i,j) = separation;
-        min_peak_size(i,j) = max(A)/min(A);
+        
+        series(i,j,:) = y;
+        rates(i,j,:) = dy;
+        all_p{i,j} = p;
+        
+        if j == 1
+            figure
+            [ax,h1,h2] = plotyy(x,dy,x,y);
+            hold on,plot(x,synthesize_gaussians(p,x),'r-');
+            legend('Simulated myosin rate','Pulses fitted','Simulated myosin rate');
+            title(['Fitted myosin at center separation ' num2str(16*i) ' sec'])
+        end
+        
+%         separation = min(diff(sort(mu,'ascend')));
+%         peak_separation(i,j) = separation;
+        %         peak_ratio(i,j) = max(A)/min(A);
         %     noise_level(i,j) = noise_size;
         num_peaks(i,j) = size(p,2);
         %         title(['Separation ' num2str(separation), ' sec']);

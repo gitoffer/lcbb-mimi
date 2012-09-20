@@ -22,8 +22,8 @@ showsub_vert( ...
 [sorted_sizes,sortedID] = sort([pulse.size],2,'descend');
 cond = sortedID(1:10);
 
-aligned_area_norm = aligned_area
-% aligned_area_norm = bsxfun(@minus,aligned_area,nanmin(aligned_area,[],2));
+% aligned_area_norm = aligned_area
+aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
 % aligned_area_norm = bsxfun(@rdivide,aligned_area_norm,nanmax(aligned_area_norm,[],2));
 
 figure
@@ -33,6 +33,7 @@ cells = [pulse(cond).cellID];
 locs = [pulse(cond).center_frame];
 embs = [pulse(cond).embryo];
 clear labels
+
 for i = 1:numel(cond)
     labels{i} = ['Embryo ' num2str(embs(i)) ...
         ', Cell ' num2str(cells(i)) ...
@@ -48,26 +49,27 @@ legend(labels)
 
 %%
 
-cond1 = sortedID(6:10);
-% cond2 = sortedID(11:20);
-% cond3 = sortedID(21:end);
-% cond4 = sortedID(51:end);
+cond1 = sortedID(1:50);
+cond2 = sortedID(51:100);
+cond3 = sortedID(101:150);
+cond4 = sortedID(151:200);
 
 figure
-x = (-16:16)*7;
-plot(x,aligned_area_norm(cond1,:)')
+x = (-18:18)*8;
+plot(x,aligned_area_norm(cond4,:)')
 
 figure
-% errorbar(x,nanmean(aligned_area_norm(cond4,:)), ...
-%     nanstd(aligned_area_norm(cond4,:)),'g-')
+errorbar(x,nanmean(aligned_area_norm(cond4,:)), ...
+    nanstd(aligned_area_norm(cond4,:)),'g-')
 hold on
-% errorbar(x,nanmean(aligned_area_norm(cond3,:)),...
-%     nanstd(aligned_area_norm(cond3,:)),'b-')
-% errorbar(x,nanmean(aligned_area_norm(cond2,:)),...
-%     nanstd(aligned_area_norm(cond2,:)),'k-')
+errorbar(x,nanmean(aligned_area_norm(cond3,:)),...
+    nanstd(aligned_area_norm(cond3,:)),'b-')
+errorbar(x,nanmean(aligned_area_norm(cond2,:)),...
+    nanstd(aligned_area_norm(cond2,:)),'k-')
 errorbar(x,nanmean(aligned_area_norm(cond1,:)),...
     nanstd(aligned_area_norm(cond1,:)),'r-')
-legend(['Rest (41-' num2str(num_peaks) ')'],'Top 21-30','Top 11-20','Top 10');
+legend(['Top 151-200'],...
+    'Top 101-150','Top 51-100','Top 50');
 
 %%
 
