@@ -1,13 +1,13 @@
 %%ID_PULSES
 
 %% Interpolate, and fit Gaussians for single cells
-cellID = randi(sum(num_cells));
-% cellID = 89;
-cellID = 21;
+cellID = randi(sum(num_cells(1)));
+% cellID = 56;
+% cellID = 78;
 
-myosin_sm = myosins_sm(1:end,cellID);
+myosin_sm = myosins(1:end,cellID);
 myosin_rate = myosins_rate(1:end,cellID);
-myosin_interp = interp_and_truncate_nan(myosin_rate);
+myosin_interp = interp_and_truncate_nan(myosin_sm);
 % myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
 myosin_nobg = myosin_interp;
 myosin_nobg_rect = myosin_nobg;
@@ -17,22 +17,41 @@ myosin_nobg_rect(myosin_nobg < 0) = 0;
 t = ((1:numel(myosin_interp))-input(1).tref)*input(1).dt;
 
 lb = [0;t(1);10];
-ub = [Inf;t(end);25];
-gauss_p = iterative_gaussian_fit(myosin_nobg_rect,t,0.05,lb,ub);
+ub = [Inf;t(end);20];
+gauss_p = iterative_gaussian_fit(myosin_interp,t,0.01,lb,ub,'on');
 fitted_y = synthesize_gaussians(gauss_p,t);
+%%
 
-n_peaks = size(gauss_p,2);
+n_peaks = size(gauss_p,2)-1
+x = ((1:60)-input(1).tref)*input(1).dt;
 
 figure;
 subplot(2,1,1)
-h1 = plot(((1:num_frames)-input_twist(1).tref)*input_twist(1).dt,myosin_sm,'r-');
+h1 = plot(x,myosin_sm,'r-');
 title(['Original myosin time-series in cell #' num2str(cellID)]);
 subplot(2,1,2)
-h2 = plot(((1:num_frames)-input_twist(1).tref)*input_twist(1).dt,myosin_rate,'k-');
-hold on,plot(t,myosin_nobg_rect,'g-');
-hold on,plot(((1:num_frames)-input_twist(1).tref)*input_twist(1).dt,cell_fits(:,cellID));
-legend('Myosin rate','Rate rectified',['Fitted peaks (' num2str(n_peaks) ')'])
+h2 = plot(t,myosin_interp,'k-');
+hold on,plot(t,lsq_exponential(gauss_p(:,1),t),'k-');
+hold on,plot(t,synthesize_gaussians_withbg(gauss_p,t),'r-');
+
+% Plot individual peaks
+C = varycolor(n_peaks);
+C = C(randperm(n_peaks),:);
+for i = 1:n_peaks
+    hold on
+    plot(t,synthesize_gaussians(gauss_p(:,1+i),t),'Color',C(i,:));
+end
+% hold on,plot(x,cell_fits(:,cellID));
+% legend('Myosin rate','Rate rectified',['Fitted peaks (' num2str(n_peaks) ')'])
 title(['Myosin rate in cell #' num2str(cellID)]);
+
+%% Make movie
+figure
+P = plot_peak_color(gauss_p(:,2:end),t);
+F = make_cell_img(vertices_x,vertices_y,1:60,4,IDs(cellID),input(c(cellID)),{'Membranes','Myosin'},P);
+movie2avi(F,['~/Desktop/EDGE processed/Embryo 4/cell_movies/cell_' num2str(cellID) '_1-60']);
+
+%%
 
 figure,
 normplot((myosin_nobg_rect-synthesize_gaussians(gauss_p,t)).^2);
@@ -42,7 +61,7 @@ saveas(h1,['~/Desktop/EDGE Processed/Embryo 4/peak_gauss/cells/cell_' num2str(ce
 
 %% Fit for all cells
 
-[pulse,cell_fits] = fit_gaussian_peaks(myosins_rate,time_mat,[-300 300],IDs,c);
+[pulse,cell_fits] = fit_gaussian_peaks(myosins,time_mat,[-300 1000],IDs,c,'on');
 num_peaks = numel(pulse);
 
 %% Try to correlate self peaks and neighbor peaks?

@@ -42,7 +42,7 @@ showsub( ...
 
 imsequence_play(bg);
 
-threshold = mean(flat(bg)) + 4*std(flat(bg));
+threshold = mean(flat(bg)) + 2*std(flat(bg));
 
 %% Get and display thresholded myosin image
 
@@ -62,7 +62,7 @@ showsub_vertlink( ...
 % imsequence_play(myosin_th);
 
 %% Write to a TIF stack
-output_path = '~/Desktop/Mimi/Data/01-30-2012/4/myosin_th_1_4.TIF';
+output_path = '~/Desktop/Mimi/Data/01-30-2012/4/myosin_th_1_4_2sigma.TIF';
 
 write_tiff_stack(myosin_th,output_path);
 

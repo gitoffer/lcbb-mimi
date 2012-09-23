@@ -22,8 +22,8 @@ showsub_vert( ...
 [sorted_sizes,sortedID] = sort([pulse.size],2,'descend');
 cond = sortedID(1:10);
 
-% aligned_area_norm = aligned_area
 aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
+% aligned_area_norm = bsxfun(@minus,aligned_area,aligned_area(:,19));
 % aligned_area_norm = bsxfun(@rdivide,aligned_area_norm,nanmax(aligned_area_norm,[],2));
 
 figure
@@ -44,19 +44,20 @@ showsub_vert(@plot,{[pulse(cond).aligned_time_padded],[pulse(cond).curve_padded]
     @plot,{time(cond,:)',aligned_area_norm(cond,:)'},'Area','', ...
     @plot,{time(cond,:)',aligned_myosin(cond,:)'},'Myosin intensity','xlabel(''Aligned frames (not corrected for frame rate)'')',...
     3);
+
 suptitle(['Top 5 peaks (out of ' num2str(num_peaks) ')'])
 legend(labels)
 
 %%
 
-cond1 = sortedID(1:50);
-cond2 = sortedID(51:100);
-cond3 = sortedID(101:150);
-cond4 = sortedID(151:200);
+cond1 = sortedID(1:30);
+cond2 = sortedID(31:60);
+cond3 = sortedID(61:90);
+cond4 = sortedID(91:150);
 
 figure
 x = (-18:18)*8;
-plot(x,aligned_area_norm(cond4,:)')
+plot(x,aligned_area_norm(cond1,:)')
 
 figure
 errorbar(x,nanmean(aligned_area_norm(cond4,:)), ...

@@ -38,14 +38,20 @@ end
 
 if ~isempty(varargin)
     measurement = varargin{1};
-    measurement = measurement./nanmax(measurement).*250;
-    if numel(measurement) ~= numel(frames)
-        error('Measurement array size must be the same as the number of desired frames');
+    measurement = measurement./nanmax(measurement(:)).*150;
+    if size(measurement,2) == 3
+        colorized = 1;
+    else
+        colorized = 0;
+        if numel(measurement) ~= numel(frames)
+            error('Measurement array size must be the same as the number of desired frames');
+        end
     end
+
 end
 
 for i = 1:numel(frames)
-    F = zeros(box(4)+1,box(3)+1,3);
+    F = zeros(box(4)*2+2,box(3)*2+2,3);
     for j = 1:numel(channels)
         
         this_folder = [path '/' channels{j}];
@@ -61,14 +67,22 @@ for i = 1:numel(frames)
         im = imfilter(im,ker,'symmetric');
         im = rescale(double(im),0,2^8-1);
         
-        F(:,:,j) = imcrop(im,box);
+        F(:,:,j) = imresize(imcrop(im,box),2);
         
     end
     if ~isempty(varargin)
         if ~isnan(vx{i})
             mask = poly2mask(vx{i}-box(1),vy{i}-box(2),box(4)+1,box(3)+1);
-            mask = mask*measurement(i);
-            F(:,:,3) = mask;
+            if colorized
+                mask = mask(:,:,ones(1,3));
+                foo = measurement(i,:);
+                foo = shiftdim(foo,-1);
+                mask = mask.*foo(ones(size(mask,1),1),ones(size(mask,2),1),:);
+                F = F + imresize(mask,2);
+            else
+                mask = mask*measurement(i);
+                F(:,:,3) = imresize(mask,2);
+            end
         end
     end
     

@@ -1,4 +1,4 @@
-function [pulse,varargout] = fit_gaussian_peaks(Y,time,timeframe,cellID,c)
+function [pulse,varargout] = fit_gaussian_peaks(Y,time,timeframe,cellID,c,bg)
 %FIT_GAUSSIAN_PEAKS Fits peaks as Gaussians, and puts the information into
 %a useful format.
 %
@@ -16,6 +16,10 @@ function [pulse,varargout] = fit_gaussian_peaks(Y,time,timeframe,cellID,c)
 %         pulse.time - the actual real-time
 %
 % xies@mit.edu Aug 2012.
+
+if nargin < 6, bg = 'off'; end
+if strcmpi(bg,'on'), background = 1;
+else background = 0; end
 
 [num_frames,num_cells] = size(Y);
 min_t = timeframe(1);
@@ -60,7 +64,7 @@ for i = 1:num_cells
             keyboard
         end
         
-        gauss_p = iterative_gaussian_fit(y,t,0.05,lb,ub);
+        gauss_p = iterative_gaussian_fit(y,t,0.05,lb,ub,bg);
         
         if cell_fit
             this_fit = synthesize_gaussians(gauss_p,t);
@@ -70,7 +74,9 @@ for i = 1:num_cells
             fits(f0:(f0+numel(t) - 1),i) = this_fit;
         end
         
-        for j = 1:size(gauss_p,2)
+        if background, idx = 2; else, idx = 1; end
+        
+        for j = idx:size(gauss_p,2)
             if gauss_p(2,j) > -300
                 
                 l = 7;
