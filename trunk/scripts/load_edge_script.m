@@ -2,15 +2,16 @@
 
 clear input input_twist;
 
-% input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
-% input(1).zslice = 2; input(1).tref = 30; input(1).ignore_list = [1 2 3 4 5 6 7 8 46 52];
-% input(1).dt = 7.4; input(1).um_per_px = .1806; input(1).X = 1000; input(1).Y = 400;
-% handle.io.save_dir = '~/Desktop/Embryo 7';
-% 
 input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/2color_4 013012/Measurements';
 input(1).zslice = 2; input(1).tref = 15; input(1).ignore_list = [1 12 14 74 24 36 79]; %embryo4
-input(1).dt = 6.7; input(1).um_per_px = .1806; input(1).X = 1044; input(1).Y = 400;
+input(1).dt = 6.7; input(1).um_per_px = .1806; input(1).X = 1044; input(1).Y = 400; input(1).T = 60;
 handle.io.save_dir = '~/Desktop/EDGE processed/Embryo 4';
+
+input(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
+input(2).zslice = 2; input(2).tref = 30; input(2).ignore_list = [1 2 3 4 5 6 7 8 46 52];
+input(2).dt = 7.4; input(2).um_per_px = .1806; input(2).X = 1000; input(2).Y = 400; input(2).T = 80;
+handle.io.save_dir = '~/Desktop/Embryo 7';
+% 
 
 % input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Adam 100411 mat15/Measurements';
 % input(1).zslice = 3; input(1).tref = 50; input(1).ignore_list = [];
@@ -20,10 +21,10 @@ handle.io.save_dir = '~/Desktop/EDGE processed/Embryo 4';
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Adam 100411 mat15/Measurements';handle.io.save_dir = '~/Desktop/Mat15';zslice = 1;
 input_twist(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
 input_twist(1).zslice = 1; input_twist(1).tref = 1; input_twist(1).ignore_list = []; %embryo4
-input_twist(1).dt = 8;
+input_twist(1).dt = 8; input_twist(1).T = 100;
 input_twist(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series022/Measurements';
 input_twist(2).zslice = 1; input_twist(2).tref = 1; input_twist(2).ignore_list = []; %embryo4
-input_twist(2).dt = 8;
+input_twist(2).dt = 8; input_twist(2).T = 70;
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Control inject Series002/Measurements';
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cytoD control/Measurements';
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/control cytoD 2/Measurements';
@@ -34,7 +35,7 @@ msmts2make = {'myosin','membranes--basic_2d--area', ...
     'Membranes--vertices--Vertex-y','Membranes--vertices--Vertex-x',...
     'Membranes--basic_2d--Centroid-x','Membranes--basic_2d--Centroid-y',...
     'Membranes--vertices--Identity of neighbors', ...
-    'Myosin--myosin_intensity_fuzzy--Myosin intensity fuzzy',...
+    'Myosin--myosin_intensity--Myosin intensity fuzzy',...
     'Membranes--ellipse_properties--Anisotropy-xy'};
 
 %%
@@ -43,7 +44,8 @@ EDGEstack = load_edge_data({input.folder2load},msmts2make{:});
 EDGEstack_twist = load_edge_data({input_twist.folder2load},msmts2make{:});
 beep;
 
-%%
+%% Load WT embryos
+
 num_embryos = numel(input);
 
 [areas,num_cells,t,c,IDs] = extract_msmt_data(EDGEstack,'area','on',input);
@@ -56,7 +58,7 @@ vertices_x = extract_msmt_data(EDGEstack,'vertex-x','off',input);
 vertices_y = extract_msmt_data(EDGEstack,'vertex-y','off',input);
 % majors = extract_msmt_data(EDGEstack,'major axis','on',input);
 % minors = extract_msmt_data(EDGEstack,'minor axis','on',input);
-% orientations = extract_msmt_data(EDGEstack,'orientation','on',input);
+% orientations = extract_msmt_data(EDGEstack,'identity of neighbors','off',input);
 anisotropies = extract_msmt_data(EDGEstack,'anisotropy-xy','on',input);
 
 % myosins(:,ignore_list) = nan;
@@ -81,12 +83,14 @@ myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
 % coronal_areas_rate = -central_diff_multi(coronal_areas_sm);
 % coronal_myosins_rate = central_diff_multi(coronal_myosins_sm);
 
+max_tref = max([input.tref]);
 time_mat = zeros(size(myosins_sm));
 for i = 1:num_embryos
     time_mat(:,c==i) = repmat((t.*input(i).dt)',[1 numel(c(c==i))]);
+    input(i).lag = max_tref- input(i).tref;
 end
 
-%%
+%% Load twist embryos
 
 num_embryos = numel(input_twist);
 
@@ -125,9 +129,11 @@ myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
 % coronal_areas_rate = -central_diff_multi(coronal_areas_sm);
 % coronal_myosins_rate = central_diff_multi(coronal_myosins_sm);
 
+max_tref = max([input_twist.tref]);
 time_mat = zeros(size(myosins_sm));
 for i = 1:num_embryos
     time_mat(:,c==i) = repmat((t.*input_twist(i).dt)',[1 numel(c(c==i))]);
+    input_twist(i).lag = max_tref- input_twist(i).tref;
 end
 
 
