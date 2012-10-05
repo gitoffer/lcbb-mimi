@@ -1,12 +1,19 @@
 %%ID_PULSES
 
 %% Interpolate, and fit Gaussians for single cells
-cellID = randi(sum(num_cells(1)));
-% cellID = 56;
-% cellID = 78;
+% for i = 1:sum(num_cells)
+    cellID = 54;
+% cellID = randi(sum(num_cells));
+% cellID = 75;
+% cellID = 52;
 
 myosin_sm = myosins(1:end,cellID);
 myosin_rate = myosins_rate(1:end,cellID);
+
+% if numel(myosin_sm(~isnan(myosin_sm))) < 30
+%     
+% end
+
 myosin_interp = interp_and_truncate_nan(myosin_sm);
 % myosin_nobg = bgsutract4myosin(myosin_interp,'gaussian',{x});
 myosin_nobg = myosin_interp;
@@ -14,42 +21,67 @@ myosin_nobg_rect = myosin_nobg;
 myosin_nobg_rect(myosin_nobg < 0) = 0;
 
 % time domain
-t = ((1:numel(myosin_interp))-input(1).tref)*input(1).dt;
+t = time_mat(1:numel(myosin_interp),cellID)';
 
 lb = [0;t(1);10];
-ub = [Inf;t(end);20];
+ub = [nanmax(myosin_interp);t(end);30];
 gauss_p = iterative_gaussian_fit(myosin_interp,t,0.01,lb,ub,'on');
-fitted_y = synthesize_gaussians(gauss_p,t);
-%%
 
-n_peaks = size(gauss_p,2)-1
-x = ((1:60)-input(1).tref)*input(1).dt;
+fitted_y = synthesize_gaussians(gauss_p,t);
+
+% Generate plots
+n_peaks = size(gauss_p,2) -1
+% n_peaks = size(cells{cellID},2)-1
+x = time_mat(:,cellID)';
 
 figure;
-subplot(2,1,1)
+h = subplot(2,1,1);
 h1 = plot(x,myosin_sm,'r-');
-title(['Original myosin time-series in cell #' num2str(cellID)]);
-subplot(2,1,2)
+title(['Myosin time-series in cell #' num2str(cellID)]);
+subplot(2,1,2);
 h2 = plot(t,myosin_interp,'k-');
-hold on,plot(t,lsq_exponential(gauss_p(:,1),t),'k-');
-hold on,plot(t,synthesize_gaussians_withbg(gauss_p,t),'r-');
+hold on,plot(t,lsq_exponential(gauss_p(:,1),t),'g-');
+hold on,plot(t,fitted_y,'r-'); 
 
 % Plot individual peaks
 C = varycolor(n_peaks);
 C = C(randperm(n_peaks),:);
 for i = 1:n_peaks
     hold on
-    plot(t,synthesize_gaussians(gauss_p(:,1+i),t),'Color',C(i,:));
+    plot(t,synthesize_gaussians(gauss_p(:,i+1),t),'Color',C(i,:));
+%     plot(t,synthesize_gaussians(cells{cellID}(:,i+1),t),'Color',C(i,:));
 end
 % hold on,plot(x,cell_fits(:,cellID));
 % legend('Myosin rate','Rate rectified',['Fitted peaks (' num2str(n_peaks) ')'])
-title(['Myosin rate in cell #' num2str(cellID)]);
+title(['Detected pulses']);
 
+% if c(cellID) == 1, var_name = '006'; else var_name = '022'; end
+% saveas(gcf,['~/Desktop/EDGE processed/Twist ' var_name '/detected_pulses/cell_' num2str(IDs(cellID))],'fig');
+% saveas(gcf,['~/Desktop/EDGE processed/Twist ' var_name '/detected_pulses/cell_' num2str(IDs(cellID))],'eps2');
+
+if c(cellID) == 1, var_name = '4'; else var_name = '7'; end
+saveas(gcf,['~/Desktop/EDGE processed/Embryo ' var_name '/detected_pulses/cell_' num2str(IDs(cellID))],'fig');
+saveas(gcf,['~/Desktop/EDGE processed/Embryo ' var_name '/detected_pulses/cell_' num2str(IDs(cellID)) '.eps'],'epsc');
+
+close(gcf)
+% end
 %% Make movie
+
 figure
-P = plot_peak_color(gauss_p(:,2:end),t);
-F = make_cell_img(vertices_x,vertices_y,1:60,4,IDs(cellID),input(c(cellID)),{'Membranes','Myosin'},P);
-movie2avi(F,['~/Desktop/EDGE processed/Embryo 4/cell_movies/cell_' num2str(cellID) '_1-60']);
+% cellID = 54;
+
+P = plot_peak_color(gauss_p(:,2:end),x);
+
+F = make_cell_img(vertices_x,vertices_y,...
+     1:80,4,(cellID),input(c(cellID)),...
+     {'Membranes','Myosin'},P);
+
+ % Save movie (to appropriate folder)
+% if c(cellID) == 1, var_name = '006'; else var_name = '022'; end
+% movie2avi(F,['~/Desktop/EDGE processed/Twist ' var_name '/cell_movies/cell_' num2str(IDs(cellID))]);
+
+if c(cellID) == 1, var_name = '4'; else var_name = '7'; end
+movie2avi(F,['~/Desktop/EDGE processed/Embryo ' var_name '/cell_movies/cell_' num2str(IDs(cellID))]);
 
 %%
 
@@ -60,8 +92,10 @@ normplot((myosin_nobg_rect-synthesize_gaussians(gauss_p,t)).^2);
 saveas(h1,['~/Desktop/EDGE Processed/Embryo 4/peak_gauss/cells/cell_' num2str(cellID)]);
 
 %% Fit for all cells
+opt.alpha = 0.01;
+opt.bg = 'on';
 
-[pulse,cell_fits] = fit_gaussian_peaks(myosins,time_mat,[-300 1000],IDs,c,'on');
+[pulse,cell_fits,cells] = fit_gaussian_peaks(myosins,time_mat,[-300 1000],IDs,c,opt);
 num_peaks = numel(pulse);
 
 %% Try to correlate self peaks and neighbor peaks?

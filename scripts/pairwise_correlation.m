@@ -12,7 +12,7 @@ physical_distance = physical_distance*0.1806;
 
 %% Neighbor-connection map
 
-adj = adjacency_matrix(neighborID,1);
+adj = adjacency_matrix(neighborID,find(time_mat==0,1));
 angles = rad_flip_quadrant(get_neighbor_angle(centroids_x,centroids_y,1));
 horizontal_adj = adj; horizontal_adj(abs(angles) > pi/6) = NaN;
 vertical_adj = adj; vertical_adj(abs(angles) < pi/6) = NaN;
@@ -20,19 +20,36 @@ vertical_adj = adj; vertical_adj(abs(angles) < pi/6) = NaN;
 %% Myosin correlation distance
 mcorr_dist = pdist2( ...
     myosins_rate(1:50,:)',myosins_rate(1:50,:)',@(x,y) nan_pearsoncorr(x,y,0));
-mcorr_dist(logical(eye(num_cells))) = NaN;
-mcorr_dist(logical(triu(ones(num_cells)))) = NaN;
-figure,pcolor(mcorr_dist),colorbar,axis equal tight;shading flat;
-xlabel('Cells');ylabel('Cells');
+
+
+% Delete diagonals
+mcorr_dist(logical(eye(sum(num_cells)))) = NaN;
+% Find only local ones
+mcorr_dist_neighbors = mcorr_dist.*adj;
+mcorr_dist_neighbors(logical(triu(ones(sum(num_cells))))) = NaN;
+% Delete neighbor-pairs
+mcorr_dist(~isnan(adj)) = NaN;
+% Delete upper triangle
+mcorr_dist(logical(tril(ones(sum(num_cells))))) = NaN;
+% Delete off-embryo blocks
+for i = 1:num_embryos
+    mcorr_dist(c==i,c~=i) = NaN;
+end
 % Get CDF for all pairs
 bins = linspace(-1,1,15);
-figure,plot_pdf(mcorr_dist(:),bins);
+figure,h = plot_pdf(mcorr_dist(:),bins);
+set(h,'facecolor','red');
+hold on,plot_pdf(mcorr_dist_neighbors(:),bins);
+hold off
 
-% Get only next-neighbor
-mcorr_dist_neighbors = mcorr_dist.*adj;
-figure,pcolor(mcorr_dist_neighbors);axis equal tight;shading flat;
+mcorr_dist0 = mcorr_dist; mcorr_dist0(isnan(mcorr_dist)) = 0;
+mcorr_dist_neighbors0 = mcorr_dist_neighbors; mcorr_dist_neighbors0(isnan(mcorr_dist_neighbors)) = 0;
+
+myosin_correlations_matrix = mcorr_dist0 + mcorr_dist_neighbors0;
+myosin_correlations_matrix(myosin_correlations_matrix==0) = NaN;
+figure,h = pcolor(myosin_correlations_matrix),colorbar,axis equal tight;shading flat;
+set(gca,'Xtick',[0 cumsum(num_cells)']);
 xlabel('Cells');ylabel('Cells');
-figure,plot_pdf(mcorr_dist_neighbors(:),bins);
 
 %% Area_correlation distance
 
