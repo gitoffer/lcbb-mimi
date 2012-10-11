@@ -20,4 +20,6 @@ for i = 1:N
     corrcoef(i) = covMat(1,2);
 end
 
+corrcoef = 1-corrcoef;
+
 end

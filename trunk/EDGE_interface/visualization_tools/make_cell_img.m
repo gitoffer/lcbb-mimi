@@ -1,11 +1,11 @@
-function G = make_cell_img(vx,vy,frames,sliceID,cellID,input,channels,varargin)
+function G = make_cell_img(h)
 %MAKE_CELL_IMG Crops out a cell segmented by EDGE from the raw image
 %stacks.
 %
 % USAGE: F = make_cell_img(vx,vy,frames,sliceID,cellID,input,channels)
 %
 % INPUT: vx, vy - cell arrays of vertex coordinates exported by EDGE
-%        frames - a vector of frames to include in the movie
+%        frames - a vector of frames to include in the movie (padded)
 %        sliceID - the ORIGINAL slice number in the movie imported by EDGE
 %        cellID - the cell you want to make a movie of
 %        channels - the names of the image channels you want to use... as
@@ -15,15 +15,25 @@ function G = make_cell_img(vx,vy,frames,sliceID,cellID,input,channels,varargin)
 %
 % xies@mit.edu 2012.
 
-path = fileparts(input.folder2load);
+input = h.input;
+frames = h.frames2load;
+channels = h.channels;
+sliceID = h.sliceID;
+cellID = h.cellID;
 
-vx = vx(frames,cellID);
-vy = vy(frames,cellID);
+path = fileparts(input.folder2load);
+vx = h.vx(:,cellID);
+vy = h.vy(:,cellID);
+
+% Correct for lag
+movie_frames = frames(~isnan(frames));
+frames = find(~isnan(frames));
+
 % num_frames = size(vx);
 
 box = find_bounding_box(vx,vy);
 
-% F = zeros(box(4)+1,box(3)+1,numel(frames),numel(channels));
+% If all NaN
 if cellfun(@(x) any(isnan(x)),vx)
     warning(['No non-NaN values for cell # ' int2str(cellID) '.']);
     G = [];
@@ -36,23 +46,29 @@ elseif numel(channels) == 3 && ~isempty(varargin)
     error('Cannot display the 3 specified channels as well as an additional measurement.');
 end
 
-if ~isempty(varargin)
-    measurement = varargin{1};
-    measurement = measurement./nanmax(measurement(:)).*150;
+% Colored measurements?
+if isfield(h,'measurement')
+	measurement = h.measurement;
+    measurement = measurement./nanmax(measurement(:)).*240;
     if size(measurement,2) == 3
         colorized = 1;
     else
         colorized = 0;
-        if numel(measurement) ~= numel(frames)
-            error('Measurement array size must be the same as the number of desired frames');
-        end
+%         if numel(measurement) ~= numel(movie_frames)
+%             error('Measurement array size must be the same as the number of desired frames');
+%         end
     end
 
 end
 
-for i = 1:numel(frames)
-    F = zeros(box(4)*2+2,box(3)*2+2,3);
+% Load all the FRAMES
+for i = 1:numel(movie_frames)
+    F = zeros(box(4)+1,box(3)+1,3);
+    
+    % Load specified channels
     for j = 1:numel(channels)
+        
+        p = pwd;
         
         this_folder = [path '/' channels{j}];
         cd( this_folder );
@@ -60,36 +76,52 @@ for i = 1:numel(frames)
             this_folder = [this_folder '/Raw']; % Only use the raw membranes
         end
         
-        filename = image_filename(frames(i),sliceID,this_folder);
+        filename = image_filename(movie_frames(i),sliceID,this_folder);
         im = imread(filename);
         
         ker = fspecial('gaussian',10,1);
         im = imfilter(im,ker,'symmetric');
         im = rescale(double(im),0,2^8-1);
         
-        F(:,:,j) = imresize(imcrop(im,box),2);
+        F(:,:,j) = imcrop(im,box);
+        
+        cd(p);
         
     end
-    if ~isempty(varargin)
-        if ~isnan(vx{i})
-            mask = poly2mask(vx{i}-box(1),vy{i}-box(2),box(4)+1,box(3)+1);
+    
+    if all(~isnan(vx{frames(i)}))
+        mask = poly2mask(vx{frames(i)}-box(1),...
+            vy{frames(i)}-box(2),...
+            box(4)+1,box(3)+1);
+        
+        if isfield(h,'measurement')
+            % make colored polygon if measurement is 3-channels
             if colorized
                 mask = mask(:,:,ones(1,3));
-                foo = measurement(i,:);
+                foo = measurement(frames(i),:);
                 foo = shiftdim(foo,-1);
                 mask = mask.*foo(ones(size(mask,1),1),ones(size(mask,2),1),:);
-                F = F + imresize(mask,2);
+                F = F + mask;
             else
-                mask = mask*measurement(i);
-                F(:,:,3) = imresize(mask,2);
+                mask = mask*measurement(frames(i));
+                F(:,:,3) = mask;
             end
+        end
+        
+        % Make border
+        if strcmpi(h.border,'on')
+            border = bwperim(mask(:,:,1));
+            F(:,:,1) = F(:,:,1) + border.*2^8-1;
+            F(:,:,2) = F(:,:,2) + border.*2^8-1;
+            F(:,:,3) = F(:,:,3) + border.*2^8-1;
         end
     end
     
-    imshow(cast(F,'uint8'));
-    title(['Frame ' int2str(frames(i)) ]);
+    imshow(cast(F,'uint8'),'Border','loose');
+    title(['Time: ' int2str((movie_frames(i)-input.tref)*input.dt) ' (sec)']);
     
     G(i) = getframe(gca);
+    
 end
 
 end

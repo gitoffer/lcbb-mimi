@@ -3,7 +3,7 @@ function [time,aligned_p,varargout] = align_peaks(pulses,measurement)
 %traces. Will return also a given measurement aligned according to the
 %maxima.
 %
-% SYNOPSIS: [aligned_p,aligned_areas] = align_peaks(peaks,loc,cells,areas)
+% SYNOPSIS: [time,aligned_p,aligned_areas] = align_peaks(peaks,loc,cells,areas)
 %
 % xies@mit.edu Aug 2012
 

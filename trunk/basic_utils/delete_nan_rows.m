@@ -2,6 +2,8 @@ function [data,rows_left] = delete_nan_rows(data,dim)
 %DELETE_NAN_ROWS Returns the rows/cols from a matrix which are not all
 %NaNs.
 %
+% USAGE: [data,rows_left] = delete_nan_rows(data,dim)
+%
 % xies@mit.edu Aug 2012.
 
 [n,m] = size(data);
