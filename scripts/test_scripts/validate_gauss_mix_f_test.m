@@ -2,7 +2,7 @@
 sec_per_frame = 6;
 x = (0:60)*sec_per_frame;
 
-clear peak_separation num_peaks
+clear peak_separation num_peaks bg_amplitude_ratio
 
 num_peaks = zeros(10,10,100);
 
@@ -21,12 +21,12 @@ for l = 1:10
             A = ones(1,k)*100;
             params = cat(1,A,mu,sigma);
             
-            noise_size = 10*l;
+            noise_size = 10;
             noise = randn(size(x))*noise_size;
             
             % Make the curve-to-fit
             y = synthesize_gaussians(params,x) + noise;
-            y = y + lsq_exponential([20 2 500],x);
+            y = y + lsq_exponential([25*l 2 500],x);
             
             [p] = iterative_gaussian_fit(y,x,.01,[0;0;10],[Inf;max(x);30],'on');
             fitted_y = synthesize_gaussians_withbg(p,x);
@@ -35,10 +35,12 @@ for l = 1:10
             
             separation = min(diff(sort(mu,'ascend')));
             delta_mu_sigma_ratio(l,i) = 10*(l);
-            noise_level_amplitude_ratio(l,i) = noise_size/A(1);
+            bg_amplitude_ratio(l,i) = noise_size/A(1);
             num_peaks(l,i,j) = size(p,2)-1;
             
-            
+            if i == 10
+                [j,i]
+            end
         end
     end
 end
@@ -51,14 +53,14 @@ for i = 1:10
         foo = num_peaks(l,i,:);
         %         h(i) = draw_circle([i*100 (j)*100],numel(foo(foo==j))/3,1000,'--');
         %         set(h(i),'color',C(i,:));
-        perc_accurate(l,i) = numel(foo(foo == k))/20;
+        perc_accurate(l,i) = numel(foo(foo == k))/100;
         axis equal
         hold on
     end
 end
-imagesc(delta_mu_sigma_ratio(:,1),noise_level_amplitude_ratio(:,1),perc_accurate);
+pcolor(perc_accurate);
 xlabel('\Delta\mu/\sigma')
-ylabel('A/n_l')
+ylabel('A/Background')
 
 %%
 

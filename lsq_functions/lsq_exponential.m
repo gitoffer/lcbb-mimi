@@ -5,6 +5,6 @@ A = params(1);
 center = params(2);
 lambda = params(3);
 
-y = A*exp((t-center)/lambda);
+y = A*exp((t)/lambda) + center;
 
 end

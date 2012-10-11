@@ -40,10 +40,8 @@ guess = [height(1);x(max(1));x(3)-x(1)];
 % Initialize
 if background
     significant = 1;
+    resnorm_old = sum(y.^2);
     guess_bg = [1;x(1);30];
-    parameters = lsqcurvefit(@lsq_exponential,guess_bg,x,y,[0 -Inf 0],[Inf Inf Inf],opt);
-    residuals = lsq_exponential(parameters,x) - y;
-    resnorm_old = sum(residuals.^2);
     
     n_peaks = 0;
     LB = cat(2,[0;-Inf;0],lb);
@@ -69,9 +67,9 @@ while significant
     
     n_peaks = n_peaks + 1;
     
-    F = ((resnorm_old-resnorm)/3)/(resnorm/(T-n_peaks*3-1));
+    F = ((resnorm_old-resnorm)/3)/(resnorm/(T-n_peaks*3-1+3));
     %     F = (resnorm/(T-n_peaks*3))/(resnorm_old/(T-n_peaks*3-3))
-    Fcrit = finv(1-alpha,3,T-n_peaks*3-1);
+    Fcrit = finv(1-alpha,3,T-n_peaks*3-1+3);
     %     P = fcdf(F,T-n_peaks*3-3,T-n_peaks*3)
     
     if F >= Fcrit
@@ -101,6 +99,20 @@ while significant
     end
     
 end
+
+% Final test against background-only model
+
+guess_bg = [1;x(1);30];
+p_bg = lsqcurvefit(@lsq_exponential,guess_bg,x,y,[0 -inf 0],[inf inf inf],opt);
+residuals = lsq_exponential(p_bg,x) - y;
+resnorm_bg = sum(residuals.^2);
+% F-Test
+F_bg = ((resnorm_bg-resnorm)/(3*n_peaks))/(resnorm/(T-n_peaks*3-1+3));
+Fcrit = finv(1-alpha,3*n_peaks,T-n_peaks*3-1+3);
+if F_bg < Fcrit
+    parameters = p_bg;
+end
+
 
 if ~exist('parameters','var'), parameters = []; end
 

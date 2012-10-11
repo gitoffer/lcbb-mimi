@@ -9,16 +9,17 @@ clear peak_separation num_peaks noise_ratio noise_sigma_ratio
 k = 2;
 % C = hsv(10);
 
+p = cell(10,10,100);
+
 for l = 1:10
     for i = 1:10
         for j = 1:100
             
             % Parameters
             mu = [50 50+32];
-            %         mu = [100 100+8*i];
-            %         mu = randi(floor(max(x))-32, [1 k])+16;
+            
             sigma = ones(1,k) + 4 + 2*l;
-            A = 10*i+randn(1,k)*20;
+            A = 10*i+ones(1,k)*10;
             params = cat(1,A,mu,sigma);
             
             noise_size = 10;
@@ -27,23 +28,21 @@ for l = 1:10
             % Make the curve-to-fit
             y = synthesize_gaussians(params,x) + noise;
             
-            [p] = iterative_gaussian_fit(y,x,.01,[0 0 5],[Inf max(x) 50]);
-            residuals(i,j,:) = y - synthesize_gaussians(p,x);
+            % Get fitted parameters
+            p{l,i,j} = iterative_gaussian_fit(y,x,.01,[0 0 5],[Inf max(x) 50]);
+            residuals(i,j,:) = y - synthesize_gaussians(p{l,i,j},x);
             resnorm(i,j) = sum(residuals(i,j,:).^2);
             
-            %             separation = min(diff(sort(mu,'ascend')));
-            %             peak_separation(i,j) = separation;
-            num_peaks(l,i,j) = size(p,2);
+            num_peaks(l,i,j) = size(p{l,i,j},2);
         end
-        noise_ratio(l,i) = noise_size/(10*i);
-        noise_sigma_ratio(l,i) = noise_size/4*i;
+        noise_ratio(l,i) = noise_size/A(1);
+        noise_sigma_ratio(l,i) = noise_size/sigma(1);
     end
 end
 
 
 %%
 
-figure
 C = varycolor(10);
 
 for l = 1:10
@@ -61,10 +60,30 @@ for l = 1:10
     end
 end
 % xlabel('Noise amlitude / signal amplitude')
-ylabel('Number of detected peaks')
+% ylabel('Number of detected peaks')
 
 %%
 
-imagesc(noise_ratio(1,1:3,1),noise_sigma_ratio(1,1:3),perc_accurate)
-% imagesc(perc_accurate)
+h = imagesc(1./noise_ratio(1,end:-1:1),1./noise_sigma_ratio(:,1),perc_accurate);
+xlabel('A/n_l')
+ylabel('\sigma/n_l')
+title('Accuracy of inferred number of peaks')
+caxis([0 1]);
+colorbar
+saveas(h,'~/Desktop/Peak Detection testing/Synthetic data/k=2/r2_A_sigma.fig')
+saveas(h,'~/Desktop/Peak Detection testing/Synthetic data/k=2/r2_A_sigma.eps')
+
+%% Parameter accuracy
+
+for l = 1:10
+    for i = 1:10
+        for j = 1:10
+            % Only correct number inference
+            if num_peaks(l,i,j) -k == 0
+                % heights
+                p{l,i,j} = 
+            end
+        end
+    end
+end
 

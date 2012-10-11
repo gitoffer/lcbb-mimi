@@ -8,10 +8,9 @@ input(1).dt = 6.7; input(1).um_per_px = .1806; input(1).X = 1044; input(1).Y = 4
 handle.io.save_dir = '~/Desktop/EDGE processed/Embryo 4';
 
 input(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
-input(2).zslice = 2; input(2).tref = 30; input(2).ignore_list = [1 2 3 4 5 6 7 8 46 52];
-input(2).dt = 7.4; input(2).um_per_px = .1806; input(2).X = 1000; input(2).Y = 400; input(2).T = 80;
+input(2).zslice = 1; input(2).tref = 30; input(2).ignore_list = [1 2 3 4 5 6 7 8 46 52];
+input(2).dt = 7.4; input(2).um_per_px = .1806; input(2).X = 1000; input(2).Y = 400; input(2).T = 65;
 handle.io.save_dir = '~/Desktop/Embryo 7';
-% 
 
 % input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Adam 100411 mat15/Measurements';
 % input(1).zslice = 3; input(1).tref = 50; input(1).ignore_list = [];
@@ -48,7 +47,7 @@ beep;
 
 num_embryos = numel(input);
 
-[areas,num_cells,t,c,IDs] = extract_msmt_data(EDGEstack,'area','on',input);
+[areas,IDs,master_time] = extract_msmt_data(EDGEstack,'area','on',input);
 myosins_fuzzy = extract_msmt_data(EDGEstack,'myosin intensity fuzzy','on',input);
 myosins = extract_msmt_data(EDGEstack,'myosin intensity fuzzy','on',input);
 centroids_x = extract_msmt_data(EDGEstack,'centroid-x','on',input);
@@ -60,11 +59,6 @@ vertices_y = extract_msmt_data(EDGEstack,'vertex-y','off',input);
 % minors = extract_msmt_data(EDGEstack,'minor axis','on',input);
 % orientations = extract_msmt_data(EDGEstack,'identity of neighbors','off',input);
 anisotropies = extract_msmt_data(EDGEstack,'anisotropy-xy','on',input);
-
-% myosins(:,ignore_list) = nan;
-% myosins_fuzzy(:,ignore_list) = nan;
-% areas(:,ignore_list) = nan;
-% anisotropies(:,ignore_list) = nan;
 
 % coronal_areas = get_corona_measurement(areas,neighborID,tref);
 % coronal_myosins = get_corona_measurement(myosins,neighborID);
@@ -83,18 +77,17 @@ myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
 % coronal_areas_rate = -central_diff_multi(coronal_areas_sm);
 % coronal_myosins_rate = central_diff_multi(coronal_myosins_sm);
 
-max_tref = max([input.tref]);
-time_mat = zeros(size(myosins_sm));
+num_cells = zeros(1:num_embryos);
 for i = 1:num_embryos
-    time_mat(:,c==i) = repmat((t.*input(i).dt)',[1 numel(c(c==i))]);
-    input(i).lag = max_tref- input(i).tref;
+    foo = [IDs.which];
+    num_cells(i) = numel(foo(foo==i));
 end
 
 %% Load twist embryos
 
 num_embryos = numel(input_twist);
 
-[areas,num_cells,t,c,IDs] = extract_msmt_data(EDGEstack_twist,'area','on',input_twist);
+[areas,IDs,t] = extract_msmt_data(EDGEstack_twist,'area','on',input_twist);
 % myosins_fuzzy = extract_msmt_data(EDGEstack_twist,'myosin intensity fuzzy','on',input_twist);
 myosins = extract_msmt_data(EDGEstack_twist,'myosin intensity fuzzy','on',input_twist);
 centroids_x = extract_msmt_data(EDGEstack_twist,'centroid-x','on',input_twist);
@@ -128,13 +121,17 @@ myosins_rate = central_diff_multi(myosins_sm,1:num_frames);
 % anisotropies_rate = central_diff_multi(anisotropies);
 % coronal_areas_rate = -central_diff_multi(coronal_areas_sm);
 % coronal_myosins_rate = central_diff_multi(coronal_myosins_sm);
+% 
+% max_tref = max([input_twist.tref]);
+% time_mat = zeros(size(myosins_sm));
+% for i = 1:num_embryos
+%     time_mat(:,c==i) = repmat((t.*input_twist(i).dt)',[1 numel(c(c==i))]);
+%     input_twist(i).lag = max_tref- input_twist(i).tref;
+% end
 
-max_tref = max([input_twist.tref]);
-time_mat = zeros(size(myosins_sm));
+num_cells = zeros(1:num_embryos);
 for i = 1:num_embryos
-    time_mat(:,c==i) = repmat((t.*input_twist(i).dt)',[1 numel(c(c==i))]);
-    input_twist(i).lag = max_tref- input_twist(i).tref;
+    foo = [IDs.which];
+    num_cells(i) = numel(foo(foo==i));
 end
-
-
 

@@ -1,33 +1,32 @@
 %%
-
-figure
-
-cellID = randi(num_cells(2)) + num_cells(1);
-
-showsub_vert( ...
-    @plotyy,{t*input(c(i)).dt,myosins_rate(:,cellID).*(myosins_rate(:,cellID) > 0),...
-    t*input(c(i)).dt,cell_fits(:,cellID)},...
-    ['Myosin rates in cell ' num2str(cellID)],'xlabel(''Time'');legend(''Smoothed rate'',''Fitted peaks'')',...
-    @plotyy,{t*input(c(i)).dt,areas_sm(:,cellID),...
-    t*input(c(i)).dt,significant_cr(:,cellID)},...
-    'Apical area','legend(''Apical area'',''Significant area changes'')', ...
-    2)
-
-% saveas(gcf,[handle.io.save_dir '/peak_gauss/cells/early_pulses_cell_' num2str(cellID)],'fig');
-
+% in = input_twist;
+in = input;
 %% Make movies of individual pulses
 
-pulseID = 16;
+pulseID = 4;
+pulse_frames = pulse(pulseID).frame;
 
-figure;
+h.vx = vertices_x(pulse_frames,:); h.vy = vertices_y(pulse_frames,:);
+h.frames2load = master_time(pulse(pulseID).embryo).frame(pulse_frames);
+h.sliceID = 4;
+h.cellID = pulse(pulseID).cellID;
+h.input = in(pulse(pulseID).embryo);
+h.channels = {'Membranes','Myosin'};
+h.measurement = pulse(pulseID).curve;
+% h.mtype = 'short';
 
-F = make_cell_img(vertices_x,vertices_y,...
-    pulse(pulseID).frame+input(c(pulse(pulseID).cellID)).lag,...
-    4,pulse(pulseID).cellID,input(c(pulse(pulseID).cellID)),...
-    {'Membranes','Myosin'},pulse(pulseID).curve);
+F = make_cell_img(h);
+
+% Save movie (to appropriate folder)
+if strcmpi(in(1).folder2load,input_twist(1).folder2load)
+    if IDs(cellID).which == 1, var_name = '006'; else var_name = '022'; end
+    movie2avi(F,['~/Desktop/EDGE processed/Twist ' var_name '/pulse_movies/pulse_' num2str(pulseID)]);
+elseif strcmpi(in(1).folder2load,input(1).folder2load)
+    if IDs(cellID).which == 1, var_name = '4'; else var_name = '7'; end
+    movie2avi(F,['~/Desktop/EDGE processed/Embryo ' var_name '/pulse_movies/pulse_' num2str(pulseID)]);
+end
 
 %%
-
 [time,aligned_peaks,aligned_myosin] = align_peaks(pulse,myosins_sm);
 [~,~,aligned_area] = align_peaks(pulse,areas_sm);
 [~,~,aligned_area_rate] = align_peaks(pulse,areas_rate);
@@ -38,9 +37,11 @@ cond = sortedID(1:20);
 % cond = find([pulse.size] > 4000 & [pulse.size] < 5000);
 
 aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
+% aligned_area_norm = bsxfun(@minus,aligned_area,aligned_area(:,22));
+
 [aligned_area_norm,cols_left] = delete_nan_rows(aligned_area_norm,2);
 aligned_myosin = aligned_myosin(:,cols_left);
-aligned_area = aligned_area(:,cols_left);
+% aligned_area = aligned_area(:,cols_left);
 time = time(:,cols_left);
 % aligned_area_norm = bsxfun(@minus,aligned_area,aligned_area(:,19));
 % aligned_area_norm = bsxfun(@rdivide,aligned_area_norm,nanmax(aligned_area_norm,[],2));
@@ -71,26 +72,39 @@ legend(labels)
 
 figure;
 
-subplot(1,3,1)
-h = plot(num_peaks:-1:1,[pulse(sortedID).size]);
+subplot(1,5,1)
+h = plot(num_peaks:-1:1,sorted_sizes);
 set(h,'linewidth',5);
 set(gca,'CameraUpVector',[1,0,0]);
+set(gca,'Xlim',[1 numel(pulse)]);
 set(gca,'Xtick',[]);
-set(gca,'Box','off');
+ylabel('Pulse size');
+% set(gca,'Box','off');
 
-subplot(1,3,2:3)
-[X,Y] = meshgrid(-10:10,num_peaks:-1:1);
+subplot(1,5,2:3)
+[X,Y] = meshgrid(-10:11,num_peaks:-1:1);
+pcolor(X,Y,aligned_myosin(sortedID,:)),shading flat, axis tight
+colorbar
+title('Aligned pulses')
+xlabel('Aligned time (sec)'); ylabel('PulseID');
+
+subplot(1,5,4:5)
+[X,Y] = meshgrid(-10:11,num_peaks:-1:1);
 pcolor(X,Y,aligned_area_norm(sortedID,:)),shading flat, axis tight
+colorbar
+caxis([-15 15]),colorbar
+title('Aligned areal responses')
+xlabel('Aligned time (sec)'); ylabel('PulseID');
 
 %%
 
-cond1 = sortedID(1:20);
-cond2 = sortedID(21:40);
-cond3 = sortedID(41:end);
+cond1 = sortedID(1:50);
+cond2 = sortedID(51:100);
+cond3 = sortedID(101:150);
 % cond4 = sortedID(121:160);
 
 figure
-x = (-10:10);
+x = (-10:11);
 plot(x,aligned_area_norm(cond1,:)')
 
 figure
@@ -122,7 +136,7 @@ end
 %%
 
 for cellID = 1:num_cells
-    F = make_cell_img(vertices_x,vertices_y,1:60,4,cellID,input,{'Membranes','Myosin'});
+    F = make_cell_img(vertices_x,vertices_y,1:60,4,cellID,in,{'Membranes','Myosin'});
     if isstruct(F)
         movie2avi(F,['~/Desktop/EDGE processed/Embryo 4/cell_movies/cell_' num2str(cellID) '_t1-60']);
     end
