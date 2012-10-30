@@ -1,4 +1,10 @@
 function P = plot_peak_color(params,t,colororder)
+%PLOT_PEAK_COLOR Plot pulses in specified color order
+% Will use yellow-cyan alternatively if color order not defined.
+%
+% SYNOPSIS: P = plot_peak_color(params,t,colororder);
+%
+% xies@mit.
 
 n_peaks = size(params,2);
 

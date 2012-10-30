@@ -3,7 +3,7 @@ function movie = draw_measurement_on_cells(EDGEstack,measurement,input)
 %cells colored by some input measurement (e.g. area). Will return a pixel
 %image, instead of a scalable "vector" image with the PATCH object.
 %
-% USE: movie = draw_measurement_on_cells(EDGEstack,measurement,X,Y,um_per_px);
+% USE: movie = draw_measurement_on_cells(EDGEstack,measurement,input);
 %
 
 % Preallocate
@@ -21,4 +21,5 @@ for i = 1:num_frames
 end
 
 movie = movie(end:-1:1,:,:);
+
 end
