@@ -65,8 +65,8 @@ for i = 1:num_cells
         t = t(start:start+numel(y)-1)';
         
         % Establish the lower bounds of the constraints
-        lb = [0;t(1)-abs(t(2)-t(1));opt.sigma_lb];
-        ub = [Inf;t(end);opt.sigma_ub];
+        lb = [0;t(1);opt.sigma_lb];
+        ub = [nanmax(y);t(end);opt.sigma_ub];
         
         gauss_p = iterative_gaussian_fit(y,t,alpha,lb,ub,bg);
         
@@ -137,6 +137,7 @@ for i = 1:num_cells
                 pulse(num_peaks).center_frame = findnearest(gauss_p(2,j),t);
                 pulse(num_peaks).frame = left:right;
                 pulse(num_peaks).aligned_time_padded = x;
+                pulse(num_peaks).pulseID = num_peaks;
                 
                 if cell_fit
                     cells(i).pulseID = [cells(i).pulseID num_peaks];

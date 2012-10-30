@@ -76,8 +76,8 @@ for i = 1:num_frames
 %             colorbar
             hold on
             axis equal ij fill
-            axis([0 200 0 100]);
-            axis off
+            axis([100 900 0 400]);
+%             axis off
         end
     end
     title(handle.title)

@@ -46,7 +46,7 @@ for j = 1:num_frame
         colormap(spring)
         caxis(color_limits);
         axis equal;
-        colorbar;
+%         colorbar;
         %axis normal;
         axis xy off;
         if nargin > 2

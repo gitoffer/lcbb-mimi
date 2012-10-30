@@ -20,6 +20,7 @@ function [data,varargout] = extract_msmt_data(m_array,name_to_extract,convert, .
 num_embryos = size(m_array,1);
 num_cells = zeros(num_embryos,1);
 
+x = cell(1,num_embryos);
 for i = 1:num_embryos
     m = m_array(i,strcmpi({m_array(i,:).name},name_to_extract));
     
@@ -44,12 +45,30 @@ for i = 1:num_embryos
         data = cellfun(@(x) x+sum(num_cells), data,'UniformOutput',false);
     end
     
-    [~,num_slices,num_cells(i)] = size(data);
+    num_cells(i) = size(data,3);
     if nargin <= 3
-        slice_range = 1:num_slices;
+        slice_range = 1;
     end
     
-    data = squeeze(data(:,slice_range,:));
+    if numel(slice_range) == 1
+        data = squeeze(data(:,slice_range,:));
+    % track with z-slice
+    elseif numel(slice_range) == size(data,1)
+        possible_z = unique(slice_range);
+        if ~iscell(data)
+            foo = zeros([size(data,1),size(data,3)]);
+        else
+            foo = cell([size(data,1),size(data,3)]);
+        end
+        for j = 1:numel(possible_z)
+            this_index = slice_range == possible_z(j);
+            foo(this_index,:) = ...
+                squeeze(data(this_index,possible_z(j),:));
+        end
+        data = foo;
+    else
+        error('Input slice range needs to be 1 slice or a vector of length equal to the number of frames');
+    end
     x{i} = data;
     
 end
