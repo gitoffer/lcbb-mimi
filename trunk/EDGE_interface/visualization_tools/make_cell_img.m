@@ -2,9 +2,10 @@ function G = make_cell_img(h)
 %MAKE_CELL_IMG Crops out a cell segmented by EDGE from the raw image
 %stacks.
 %
-% USAGE: F = make_cell_img(vx,vy,frames,sliceID,cellID,input,channels)
+% USAGE: F = make_cell_img(handle)
 %
-% INPUT: vx, vy - cell arrays of vertex coordinates exported by EDGE
+% INPUT: handle fields:
+%        vx, vy - cell arrays of vertex coordinates exported by EDGE
 %        frames - a vector of frames to include in the movie (padded)
 %        sliceID - the ORIGINAL slice number in the movie imported by EDGE
 %        cellID - the cell you want to make a movie of
@@ -108,7 +109,7 @@ for i = 1:numel(movie_frames)
             end
         end
         
-        % Make border
+        % Make border white
         if strcmpi(h.border,'on')
             border = bwperim(mask(:,:,1));
             F(:,:,1) = F(:,:,1) + border.*2^8-1;

@@ -112,16 +112,17 @@ close(gcf)
 end
 
 %% Fit for all cells
+
 opt.alpha = 0.01;
 opt.sigma_lb = 20; % Lower bounds
 opt.sigma_ub = 50; % Upper bounds
 opt.bg = 'on';
 
-[pulse_area,cell_fits_area] = fit_gaussian_peaks(areas_rate,master_time,[-300 1000],IDs,opt);
+[pulse,cell_fits] = fit_gaussian_peaks(myosins,master_time,[-1000 1000],IDs,opt);
 num_peaks = numel(pulse);
 % save('~/Desktop/SqhGap1/detected_pulses/','pulse','cell_fits');
-if strcmpi(in(1).folder2load,input(1).folder2load)
-    save('~/Desktop/Aligned embryos/WT/detected_pulses_area','pulse_area','cell_fits_area')
-elseif strcmpi(in(1).folder2load,input_twist(1).folder2load)
-    save('~/Desktop/Aligned embryos/twist/detected_pulses_area','pulse_area','cell_fits_area')
-end
+% if strcmpi(in(1).folder2load,input(1).folder2load)
+%     save('~/Desktop/Aligned embryos/WT/detected_pulses','pulse','cell_fits')
+% elseif strcmpi(in(1).folder2load,input_twist(1).folder2load)
+%     save('~/Desktop/Aligned embryos/twist/detected_pulses','pulse','cell_fits')
+% end

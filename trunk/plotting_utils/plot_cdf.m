@@ -31,9 +31,9 @@ normalization_factors = sum(counts(:));
 cdf = bsxfun(@rdivide,cdf,normalization_factors);
 
 if nargin > 2
-    plot(bins,cdf,varargin{:});
+    h = plot(bins,cdf,varargin{:});
 else
-    plot(bins,cdf);
+    h = plot(bins,cdf);
 end
 
 % for i = 1:num_var

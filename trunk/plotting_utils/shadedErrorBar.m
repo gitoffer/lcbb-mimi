@@ -107,9 +107,6 @@ if nargin<5 || ~isnumeric(transparent)
 end
 
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % Plot the main line. We plot this first in order to extract the RGB values
 % for the line colour. I am not aware of a function that does this.
