@@ -1,7 +1,7 @@
 %CLUSTER_DATA_SCRIPT Script to interface with MATLAB Bioinformatics Toolbox
 % CLUSTERGRAM function.
 
-data2cluster = aligned_area_norm(sortedID(:),:);
+data2cluster = corrected_area_norm(:,:);
 % secondaryData = ar_ac;
 
 %% Get rid of unwanted rows
@@ -11,56 +11,79 @@ data2cluster = aligned_area_norm(sortedID(:),:);
 % % secondaryData(:,deletedInd) = [];
 
 %% Cluster via hierarchical
-cg = clustergram(data2cluster','ImputeFun',@knnimpute,'linkage','average', ...
-    'Cluster',1,'RowPDist',@nan_pearsoncorr,'Colormap',redbluecmap, ...
+cg = clustergram(data2cluster,'ImputeFun',@knnimpute,'linkage','complete', ...
+    'Cluster',1,'RowPDist',@nan_pearsoncorr,'Colormap',jet, ...
     'Dendrogram',5);
-
-%% 
-
-foo = cg.RowLabels;
-for i = 1:numel(foo)
-    ind(i) = str2num(foo{i});
-end
-
-% Plot clustered data
-
-figure,pcolor(data2cluster(ind,:)),colorbar
-figure,pcolor(secondaryData(ind,:)),colorbar
-figure,errorbar(nanmean(data2cluster),nanstd(data2cluster))
-figure,errorbar(nanmean(secondaryData),nanstd(secondaryData))
-
 %%
 
 distances = pdist(data2cluster,@nan_pearsoncorr);
 % distances = pdist(data2cluster,@nan_eucdist);
 Z = linkage(distances,'complete');
+figure,h = dendrogram(Z,0,'Orientation','left')
 
 %%
 
-labels = cluster(Z,'maxclust',2);
-[X,Y] = meshgrid(-10:10,1:num_peaks);
-x = -10:10;
+labels = cluster(Z,'maxclust',3);
+[X,Y] = meshgrid(dt,1:num_peaks);
+x = dt;
 
 figure,
 
+display = [1 2 3];
+
 showsub_vert(...
-    @pcolor,{X(1:numel(labels(labels==1)),:),Y(1:numel(labels(labels==1)),:),...
-    aligned_myosin(labels==1,:)},'1','shading flat;;colorbar',...
-    @surfc,{X(1:numel(labels(labels==1)),:),Y(1:numel(labels(labels==1)),:),...
-    data2cluster(labels==1,:)},'','shading flat',...
-    @errorbar,{x,nanmean(data2cluster(labels==1,:)),nanstd(data2cluster(labels==1,:),[])},'','xlabel(''Aligned time'')',...
-    @pcolor,{X(1:numel(labels(labels==2)),:),Y(1:numel(labels(labels==2)),:),...
-    aligned_myosin(labels==2,:)},'2','shading flat;;colorbar',...
-    @surfc,{X(1:numel(labels(labels==2)),:),Y(1:numel(labels(labels==2)),:),...
-    data2cluster(labels==2,:)},'','shading flat',...
-    @errorbar,{x,nanmean(data2cluster(labels==2,:)),nanstd(data2cluster(labels==2,:),[])},'','xlabel(''Aligned time'')',...
-    2)
-%     @pcolor,{X(1:numel(labels(labels==3)),:),Y(1:numel(labels(labels==3)),:),...
-%     aligned_myosin(labels==3,:)},'3','shading flat;;colorbar',...
-%     @pcolor,{X(1:numel(labels(labels==3)),:),Y(1:numel(labels(labels==3)),:),...
-%     data2cluster(labels==3,:)},'','shading flat',...
-%     @errorbar,{x,nanmean(data2cluster(labels==3,:)),nanstd(data2cluster(labels==3,:),[])},'','xlabel(''Aligned time'')',...
-%     3);
+    @pcolor,{X(1:numel(labels(labels==display(1))),:),Y(1:numel(labels(labels==display(1))),:),...
+    corrected_myosin(labels==display(1),:)},'1','shading flat;;colorbar',...
+    @pcolor,{X(1:numel(labels(labels==display(1))),:),Y(1:numel(labels(labels==display(1))),:),...
+    data2cluster(labels==display(1),:)},'','shading flat',...
+    @errorbar,{x,nanmean(data2cluster(labels==display(1),:)),nanstd(data2cluster(labels==display(1),:),[])},'','xlabel(''Aligned time'')',...
+    @pcolor,{X(1:numel(labels(labels==display(2))),:),Y(1:numel(labels(labels==display(2))),:),...
+    corrected_myosin(labels==display(2),:)},'2','shading flat;;colorbar',...
+    @pcolor,{X(1:numel(labels(labels==display(2))),:),Y(1:numel(labels(labels==display(2))),:),...
+    data2cluster(labels==display(2),:)},'','shading flat',...
+    @errorbar,{x,nanmean(data2cluster(labels==display(2),:)),nanstd(data2cluster(labels==display(2),:),[])},'','xlabel(''Aligned time'')',...
+    @pcolor,{X(1:numel(labels(labels==display(3))),:),Y(1:numel(labels(labels==display(3))),:),...
+    corrected_myosin(labels==display(3),:)},'3','shading flat;;colorbar',...
+    @pcolor,{X(1:numel(labels(labels==display(3))),:),Y(1:numel(labels(labels==display(3))),:),...
+    data2cluster(labels==display(3),:)},'','shading flat',...
+    @errorbar,{x,nanmean(data2cluster(labels==3,:)),nanstd(data2cluster(labels==display(3),:),[])},'','xlabel(''Aligned time'')',...
+    3);
+
+%%
+figure
+subplot(3,4,[1 2 5 6 9 10]);
+pcolor([data2cluster(labels==display(1),:);data2cluster(labels==display(2),:);data2cluster(labels==display(3),:)]);
+set(gca,'YTick',[1 285 524 num_peaks]);
+set(gca,'YTickLabel',{'','Cluster 1','Cluster 2','Cluster3'});
+shading flat,caxis([-10 10]);colorbar;
+
+subplot(3,4,[3 4]);
+shadedErrorBar(dt,nanmean(data2cluster(labels==display(1),:)),nanstd(data2cluster(labels == display(1),:)));
+title('Cluser 1'); xlabel('Aligned time (sec)');
+
+subplot(3,4,[7 8]);
+shadedErrorBar(dt,nanmean(data2cluster(labels==display(2),:)),nanstd(data2cluster(labels == display(2),:)));
+title('Cluser 2'); xlabel('Aligned time (sec)');
+
+subplot(3,4,[11 12]);
+shadedErrorBar(dt,nanmean(data2cluster(labels==display(3),:)),nanstd(data2cluster(labels == display(3),:)));
+title('Cluser 3'); xlabel('Aligned time (sec)');
+
+%% Plot individual clusters
+
+figure,
+i = 1;
+shadedErrorBar(x,nanmean(data2cluster(labels == i,:)),nanstd(data2cluster(labels == i,:)),'r-',1);
+hold on
+plot(x,data2cluster(labels == i,:));
+
+foo = find(labels == i);
+for i = 1:numel(foo)
+    legend_labels{i} = ['Embryo ' num2str(sub_pulse(foo(i)).embryo) ...
+        ', Cell ' num2str(sub_pulse(foo(i)).cellID) ...
+        ', Frame ' num2str(fix(sub_pulse(foo(i)).center_frame))];
+end
+legend(legend_labels)
 
 %%
 figure
