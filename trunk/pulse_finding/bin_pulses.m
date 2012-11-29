@@ -1,6 +1,6 @@
 function sorted = sort_pulses(pulses)
-%SORT_PULSES Sorts pulses from individual embryos according to a percentile
-% cutoffs.
+%BIN_PULSES Bin pulses from individual embryos according to a percentile
+% cutoff - quartiles (only one supported right now).
 %
 % SYNOPSIS: sorted = sorted_pulse(pulses)
 % 

@@ -3,43 +3,46 @@
 clear input input_twist;
 
 input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/2color_4 013012/Measurements';
-input(1).zslice = 1; %z=5
+input(1).zslice = 1; input(1).actual_z = 5;
 input(1).tref = 15;
-input(1).ignore_list = [1 12 14 74 24 36 79]; %embryo4
-input(1).dt = 6.7; input(1).um_per_px = .1806; input(1).X = 1044;
-input(1).Y = 400; input(1).T = 60;
+input(1).dt = 6.7; input(1).um_per_px = .1806;
+input(1).X = 1044; input(1).Y = 400; input(1).T = 60;
 
 input(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/slice_2color_013012_7/Measurements';
-input(2).zslice = 2; % z=5
+input(2).zslice = 2; input(2).actual_z = 5;
 input(2).tref = 30;
-input(2).ignore_list = [1 2 3 4 5 6 7 8 46 52];
-input(2).dt = 7.4; input(2).um_per_px = .1806; input(2).X = 1000;
-input(2).Y = 400; input(2).T = 65; 
+input(2).dt = 7.4; input(2).um_per_px = .1806;
+input(2).X = 1000; input(2).Y = 400; input(2).T = 65; 
 
 input(3).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/101512 SqhGap 1/Measurements';
-input(3).zslice = 1; %z=4
-% input(3).zslice = [2*ones(1,65), ones(1,15)];
+input(3).zslice = 1; input(3).actual_z = 4;
 input(3).tref = 40; input(3).ignore_list = [];
-input(3).dt = 6.1; input(3).um_per_px = 0.1732535; input(3).X = 400; input(3).Y = 1000; input(3).T = 80;
+input(3).dt = 6.1; input(3).um_per_px = 0.1732535;
+input(3).X = 400; input(3).Y = 1000; input(3).T = 80;
 
 input(4).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/102512 Embryo 1/Measurements';
-input(4).zslice = 1; %z=4
+input(4).zslice = 1; input(4).actual_z = 4;
 input(4).tref = 40; input(4).ignore_list = [];
-input(4).dt = 7.6; input(4).um_per_px = 0.1732535; input(4).X = 400; input(4).Y = 1000; input(4).T = 80;
+input(4).dt = 7.6; input(4).um_per_px = 0.1732535;
+input(4).X = 400; input(4).Y = 1000; input(4).T = 80;
 
 input(5).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/110712 SqhGap 1/Measurements';
-input(5).zslice = 1; %z=5
-input(5).tref = 90; input(5).ignore_list = [];
-input(5).dt = 7; input(5).um_per_px = 0.1596724; input(5).X = 400; input(5).Y = 1000; input(5).T = 130;
+input(5).zslice = 2; input(5).actual_z = 4;
+input(5).tref = 90; input(5).ignore_list = find(isnan(areas(90,[IDs.which] == 5)));
+input(5).dt = 7; input(5).um_per_px = 0.1596724;
+input(5).X = 400; input(5).Y = 1000; input(5).T = 130;
 
 input(6).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
-input(6).zslice = 1; input(6).tref = 50; input(6).ignore_list = []; %embryo4
-input(6).dt = 8; input(6).T = 100;
-input(6).X = 1024; input(6).Y = 380;
+input(6).zslice = 1; input(5).actual_z = 1;
+input(6).tref = 50; input(6).ignore_list = []; %embryo4
+input(6).dt = 8; input(5).um_per_px = [];
+input(6).X = 1024; input(6).Y = 380; input(6).T = 100;
 
 input(7).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series022/Measurements';
-input(7).zslice = 1; input(7).tref = 50; input(7).ignore_list = []; %embryo4
-input(7).dt = 8; input(7).T = 70;
+input(7).zslice = 1; input(5).actual_z = 1;
+input(7).tref = 50; input(7).ignore_list = []; %embryo4
+input(7).dt = 8; input(5).um_per_px = [];
+input(7).T = 70;
 
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cytoD control/Measurements';
 % folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/control cytoD 2/Measurements';
