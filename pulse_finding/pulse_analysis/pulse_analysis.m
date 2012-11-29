@@ -1,23 +1,10 @@
 %%
 % in = input_twist;
 in = input;
+
 %% Make movies of individual pulses
 
-pulseID = top(9).pulseID;
-pulse_frames = pulse(pulseID).frame;
-
-h.vx = vertices_x(pulse_frames,:); h.vy = vertices_y(pulse_frames,:);
-h.frames2load = master_time(pulse(pulseID).embryo).frame(pulse_frames);
-h.sliceID = 5;
-h.cellID = pulse(pulseID).cell;
-h.input = in(pulse(pulseID).embryo);
-h.channels = {'Membranes','Myosin'};
-h.measurement = pulse(pulseID).curve;
-h.border = 'on';
-% h.mtype = 'short';
-
-figure
-F = make_cell_img(h);
+F = make_pulse_movie(pulse(936),input,vertices_x,vertices_y,master_time);
 
 % Save movie (to appropriate folder)
 % if strcmpi(in(1).folder2load,input_twist(1).folder2load)
@@ -34,8 +21,6 @@ subIDs = find([pulse.center] < -50);
 % Resort
 sub_pulse = pulse(subIDs);
 
-%%
-
 pulseOI = pulse;
 num_peaks = numel(pulseOI);
 
@@ -45,24 +30,20 @@ num_peaks = numel(pulseOI);
 [~,~,aligned_area_rate] = align_peaks(pulseOI,areas_rate);
 [~,~,aligned_myosin_rate] = align_peaks(pulseOI,myosins_rate);
 
+% Sort pulses based on their magnitude
 [sorted_sizes,sortedID] = sort([pulseOI.size],2,'descend');
-cond = sortedID(1:10);
-% cond = find([pulseOI.center] < 0);
-% cond = find([pulseOI.size] > 4000 & [pulseOI.size] < 5000);
-
+% 
 aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
-% aligned_area_norm = bsxfun(@minus,aligned_area,aligned_area(:,22));
+
+cond = sortedID(1:10);
 
 [aligned_area_norm,cols_left] = delete_nan_rows(aligned_area_norm,2);
 aligned_myosin = aligned_myosin(:,cols_left);
 aligned_area_rate = aligned_area_rate(:,cols_left);
 aligned_myosin_rate = aligned_myosin_rate(:,cols_left);
 time = time(:,cols_left);
-% aligned_area_norm = bsxfun(@minus,aligned_area,aligned_area(:,19));
-% aligned_area_norm = bsxfun(@rdivide,aligned_area_norm,nanmax(aligned_area_norm,[],2));
 
-%% Correct for framerate differences
-
+% Correlate for framerate differences
 corrected_area_norm = ...
     resample_traces(aligned_area_norm,[pulseOI.embryo],[input.dt]);
 corrected_myosin = ...
@@ -70,6 +51,7 @@ corrected_myosin = ...
 [corrected_area_rate,dt] = ...
     resample_traces(aligned_area_rate,[pulseOI.embryo],[input.dt]);
 
+%% Plot a subset of pulses
 
 figure
 % C = rand(numel(cond),3);
@@ -92,7 +74,7 @@ showsub_vert(@plot,{[pulseOI(cond).aligned_time_padded],[pulseOI(cond).curve_pad
 suptitle(['Weakest 20 peaks (out of ' num2str(num_peaks) ', ' num2str(num_embryos) ' embryos)'])
 legend(legend_labels)
 
-%% Subplots of sorted pulses
+%% Heatmap of sorted pulses
 
 figure;
 
@@ -142,11 +124,11 @@ xlabel('Aligned time (sec)'); ylabel('PulseID');
 
 %% Sort pulses according to individual embryo pulseOI sizes
 
-sorted = sort_pulses(pulseOI);
+binned = bin_pulses(pulseOI);
 
 x = dt;
 
-top = sorted{1}; middle_top = sorted{2}; middle_bottom = sorted{3}; bottom = sorted{4};
+top = binned{1}; middle_top = binned{2}; middle_bottom = binned{3}; bottom = binned{4};
 topIDs = [top.pulseID]; middle_topIDs = [middle_top.pulseID]; middle_bottomIDs = [middle_bottom.pulseID]; bottomIDs = [bottom.pulseID];
 % for i = 1:numel(top)
 %     topIDs(i) = find([top(i).pulseID] == subIDs);
@@ -209,16 +191,3 @@ hist(gca,nanmean(corrected_area_norm([top.pulseID],1:9),2) ...
     - nanmean(corrected_area_norm([top.pulseID],11:end),2))
 h = findobj(gca,'Type','patch');
 % set(h(1),'FaceAlpha',0.3);
-
-%% Arbitrarily selected time-pieces -- DOESN'T WORK
-
-random_areal = zeros(size(aligned_area_norm));
-t0s = randi(num_frames,100,1);
-tfs = min(t0s+numel(x),num_frames);
-
-for i = 1:100
-    t0 = t0s(i); tf = tfs(i);
-    this_trace = nan(1,size(aligned_area_norm,2));
-    this_trace(tf-t0+1,2) = areas_sm(t0:tf,randi(sum(num_cells)));
-    random_areal(i,:) = this_trace;
-end
