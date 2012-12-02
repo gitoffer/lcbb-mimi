@@ -22,7 +22,7 @@ function varargout = visualize_cluster(varargin)
 
 % Edit the above text to modify the response to help visualize_cluster
 
-% Last Modified by GUIDE v2.5 28-Nov-2012 19:10:25
+% Last Modified by GUIDE v2.5 30-Nov-2012 18:57:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,6 +53,7 @@ function visualize_cluster_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   unrecognized PropertyName/PropertyValue pairs from the
 %            command line (see VARARGIN)
 
+% Parse inputs
 switch numel(varargin)
     case {0,1}
         error('Need an input dataset and cluster labels.');
@@ -66,13 +67,39 @@ switch numel(varargin)
         mydata.secondary = varargin{4};
 end
 
-% get input data & sort it
-mydata.primary = varargin{1}; mydata.labels = varargin{2};
+% Figure out if the cluster input is a linkage map or a cluster label
+if isvector(varargin{2}),
+    mydata.labels = varargin{2};
+    % Disable dendrogram if no linkage is input
+    set(handles.dendrogram,'Visible','off');
+    set(handles.threshold,'Visible','off');
+    set(handles.clustering_threshold_text,'Visible','off');
+    [mydata.sortedLabels,mydata.sortID] = sort(mydata.labels);
+else
+    % If an input is linkage, then need to set threshold
+    mydata.linkage = varargin{2};
+    th = max(mydata.linkage(:,3))/2;
+    set(handles.threshold,'String',th);
+    % Plot dendrogram
+    axes(handles.dendrogram);
+    [~,~,mydata.sortID] = dendrogram(mydata.linkage,0,'colorthreshold',th,...
+        'orientation','left');
+    mydata.labels = cluster(mydata.linkage,'Cutoff',th,...
+        'Criterion','distance');
+    mydata.sortedLabels = mydata.labels(mydata.sortID);
+    [ticks,ticklabels] = make_cluster_ticklabels(mydata.labels,mydata.sortID);
+    % Turn off labels on dendrogram
+    set(handles.dendrogram,'YTick',ticks);
+    set(handles.dendrogram,'YTickLabel',ticklabels);
+%     set(handles.dendrogram,'YDir','reverse');
+end
+
+% get input data & sort
+mydata.primary = varargin{1};
 mydata.num_clusters = numel(unique(mydata.labels));
-[~,sortID] = sort(mydata.labels);
-mydata.sorted_primary = mydata.primary(sortID,:);
+mydata.sorted_primary = mydata.primary(mydata.sortID,:);
 if isfield(mydata,'secondary')
-    mydata.sorted_secondary = mydata.secondary(sortID,:);
+    mydata.sorted_secondary = mydata.secondary(mydata.sortID,:);
 end
 
 % Plot onto the heapmap
@@ -99,7 +126,7 @@ clusterselecter_Callback(handles.clusterselecter,eventdata,handles);
 
 
 % UIWAIT makes visualize_cluster wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -111,6 +138,7 @@ function varargout = visualize_cluster_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+delete(handles.figure1);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -142,36 +170,37 @@ selected_cluster = str2num(contents{get(hObject,'Value')});
 % Check which data: Primary or Secondary
 switch get(handles.radiobutton1,'Value')
     case 1
-        data = handles.mydata.primary;
+        data = handles.mydata.sorted_primary;
     case 0
-        data = handles.mydata.secondary;
+        data = handles.mydata.sorted_secondary;
 end
 
-if numel(handles.mydata.labels(handles.mydata.labels == selected_cluster)) > 1
+new_order = handles.mydata.sortedLabels == selected_cluster;
+if numel(handles.mydata.sortedLabels(new_order)) > 1
     pcolor(handles.clusterplotter,...
-        data(handles.mydata.labels == selected_cluster,:));
+        data(new_order,:));
     shading(handles.clusterplotter,'flat');
     colorbar('peer',handles.clusterplotter);
-    if isfield(handles.mydata,'clim') & get(handles.radiobutton1,'Value') == 1
+    if isfield(handles.mydata,'clim') && get(handles.radiobutton1,'Value') == 1
         caxis(handles.clusterplotter,handles.mydata.clim);
     end
 else
     plot(handles.clusterplotter,...
-        data(handles.mydata.labels == selected_cluster,:));
+        data(new_order,:));
 end
 % Mean and median
 plot(handles.clustermeanplotter,...
-    data(handles.mydata.labels == selected_cluster,:)');
+    data(new_order,:)');
 hold(handles.clustermeanplotter,'on');
 
 errorbar(handles.clustermeanplotter,...
-    nanmean(data(handles.mydata.labels == selected_cluster,:),1),...
-    nanstd(data(handles.mydata.labels == selected_cluster,:),[],1),'k-',...
+    nanmean(data(new_order,:),1),...
+    nanstd(data(new_order,:),[],1),'k-',...
     'LineWidth',2);
 hold(handles.clustermeanplotter,'on');
 
 plot(handles.clustermeanplotter,...
-    nanmedian(data(handles.mydata.labels == selected_cluster,:),1),'r-',...
+    nanmedian(data(new_order,:),1),'r-',...
     'LineWidth',5);
 hold(handles.clustermeanplotter,'off');
 
@@ -281,3 +310,117 @@ switch get(eventdata.NewValue,'Tag') % Get Tag of selected object.
         % Code for when there is no match.
 end
 clusterselecter_Callback(handles.clusterselecter,eventdata,handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function dendrogram_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to dendrogram (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: place code in OpeningFcn to populate dendrogram
+
+
+% --- Executes during object deletion, before destroying properties.
+function dendrogram_DeleteFcn(hObject, eventdata, handles)
+% hObject    handle to dendrogram (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+function threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+input = get(hObject,'String');
+[input,success] = str2num(input);
+% Check for valid input
+if ~success, msgbox('Cluster threshold needs to numeric','Cluster threshold error');
+else
+    % Update cluster structure via mydata
+    axes(handles.dendrogram);
+    handles.mydata.threshold = input;
+    [~,~,handles.mydata.sortID] = dendrogram(handles.mydata.linkage,0,...
+        'colorthreshold',input,...
+        'orientation','left');
+    handles.mydata.labels = cluster(handles.mydata.linkage,'cutoff',input,...
+        'Criterion','distance');
+    % Re-sort according to new order
+    handles.mydata.sortedLabels = handles.mydata.labels(handles.mydata.sortID);
+    handles.mydata.sorted_primary = handles.mydata.primary(handles.mydata.sortID,:);
+    if isfield(handles.mydata,'secondary')
+        handles.mydata.sorted_secondary = handles.mydata.secondary(handles.mydata.sortID,:);
+    end
+%     handle.mydata.labels = parse_dendrogram_handles(H);
+    handles.mydata.num_clusters = numel(unique(handles.mydata.labels));
+    [ticks,ticklabels] = make_cluster_ticklabels(handles.mydata.labels,...
+        handles.mydata.sortID);
+    % Turn off labels on dendrogram
+    set(handles.dendrogram,'YTick',ticks);
+    set(handles.dendrogram,'YTickLabel',ticklabels);
+%     set(handles.dendrogram,'YDir','reverse');
+    
+    % Initiate the cluster selecter
+    cluster_options = cell(1,handles.mydata.num_clusters);
+    for i = 1:handles.mydata.num_clusters
+        cluster_options{i} = num2str(i);
+    end
+    set(handles.clusterselecter,'String',cluster_options);
+    current_selection = get(handles.clusterselecter,'Value');
+    set(handles.clusterselecter,'Value',min(current_selection,handles.mydata.num_clusters));
+    
+end
+
+guidata(hObject, handles);
+clusterselecter_Callback(handles.clusterselecter,eventdata,handles);
+
+% Hints: get(hObject,'String') returns contents of threshold as text
+%        str2double(get(hObject,'String')) returns contents of threshold as a double
+
+% --- Executes during object creation, after setting all properties.
+function threshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function [ticks,labels] = make_cluster_ticklabels(cluster_labels,sortedID)
+
+cluster_order = unique_nosort(cluster_labels(sortedID));
+num_clusters = numel(unique_nosort(cluster_labels));
+num_members = zeros(1,num_clusters);
+labels = cell(1,num_clusters);
+for i = 1:num_clusters
+    num_members(i) = numel(cluster_labels(cluster_labels == cluster_order(i)));
+    labels{i} = num2str(cluster_order(i));
+end
+half_ways = floor(num_members/2);
+ticks = cumsum(num_members) - half_ways;
+
+% ticks = numel(cluster_labels)-cumsum(num_members);
+% ticks = ticks(end:-1:1);
+% half_ways = floor(num_members/2);
+% ticks = ticks + half_ways(end:-1:1);
+
+
+% --- Executes on button press in pushbutton4.
+function pushbutton4_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.output = handles.mydata.labels;
+guidata(hObject,handles);
+if strcmpi(get(handles.figure1,'waitstatus'), 'waiting')
+    uiresume(handles.figure1);
+else
+    delete(handles.figure1);
+end
+
+

@@ -22,9 +22,9 @@ labels = cluster(Z,'maxclust',9);
 [X,Y] = meshgrid(dt,1:num_peaks);
 x = dt;
 
-%%
+%% Uses the cluster visualization GUI
 
-visualize_cluster(data2cluster,labels,[-15 15],corrected_myosin)
+visualize_cluster(data2cluster,Z,[-15 15])
 
 %% Plot individual clusters
 
