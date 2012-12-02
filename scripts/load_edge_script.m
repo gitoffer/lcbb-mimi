@@ -28,7 +28,7 @@ input(4).X = 400; input(4).Y = 1000; input(4).T = 80;
 
 input(5).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/110712 SqhGap 1/Measurements';
 input(5).zslice = 2; input(5).actual_z = 4;
-input(5).tref = 90; input(5).ignore_list = find(isnan(areas(90,[IDs.which] == 5)));
+input(5).tref = 90; input(5).ignore_list = [];
 input(5).dt = 7; input(5).um_per_px = 0.1596724;
 input(5).X = 400; input(5).Y = 1000; input(5).T = 130;
 
@@ -44,11 +44,6 @@ input(7).tref = 50; input(7).ignore_list = []; %embryo4
 input(7).dt = 8; input(5).um_per_px = [];
 input(7).T = 70;
 
-% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cytoD control/Measurements';
-% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/control cytoD 2/Measurements';
-% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/UtrGFP SqhCher 1/Measurements';handle.io.save_dir = '~/Desktop/UtrGFP SqhCher 1/';zslice = 2;
-% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/090307 cta Spider/Measurements';handle.io.save_dir = '~/Desktop/cta Spider/';zslice = 1;ignore_list = [3 24 38 55 72 87 103 150 163];
-% folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/spiderGFP/Measurements';handle.io.save_dir = '~/Desktop/Embryo 4';zslice = 1; tref = 1; ignorelist = [];
 msmts2make = {'myosin','membranes--basic_2d--area', ...
     'Membranes--vertices--Vertex-y','Membranes--vertices--Vertex-x',...
     'Membranes--basic_2d--Centroid-x','Membranes--basic_2d--Centroid-y',...
