@@ -18,8 +18,11 @@ if nargin < 2, dim = 1; end
 if dim == 1, X = X'; end
 
 n_cols = size(X,1);
+% Pad first column with zeros (for diff)
 padded = [zeros(1,n_cols);X.'];
+% Flatten array
 padded = padded(:);
+% Find all the zeros
 zero_indices = find(~padded);
 padded(zero_indices) = [0;1-diff(zero_indices)];
 counts = reshape(cumsum(padded),[],n_cols).';

@@ -44,8 +44,8 @@ if background
     guess_bg = [1;x(1);30];
     
     n_peaks = 0;
-    LB = cat(2,[0;-Inf;0],lb);
-    UB = cat(2,[Inf;Inf;Inf],ub);
+    LB = cat(2,[0;-Inf;lb(3)],lb);
+    UB = cat(2,[Inf;Inf;ub(3)],ub);
     guess = cat(2,guess_bg,guess);
 %     keyboard
 else

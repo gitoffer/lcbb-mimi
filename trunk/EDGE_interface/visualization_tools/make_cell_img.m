@@ -19,7 +19,7 @@ function G = make_cell_img(h)
 input = h.input;
 frames = h.frames2load;
 channels = h.channels;
-sliceID = h.sliceID;
+sliceID = h.input.actual_z;
 cellID = h.cellID;
 
 path = fileparts(input.folder2load);

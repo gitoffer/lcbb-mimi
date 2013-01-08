@@ -22,7 +22,7 @@ function varargout = visualize_cluster(varargin)
 
 % Edit the above text to modify the response to help visualize_cluster
 
-% Last Modified by GUIDE v2.5 30-Nov-2012 18:57:39
+% Last Modified by GUIDE v2.5 03-Dec-2012 12:26:33
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,13 +68,18 @@ switch numel(varargin)
 end
 
 % Figure out if the cluster input is a linkage map or a cluster label
-if isvector(varargin{2}),
+if isvector(varargin{2})
     mydata.labels = varargin{2};
     % Disable dendrogram if no linkage is input
-    set(handles.dendrogram,'Visible','off');
+%     set(handles.dendrogram,'Visible','off');
     set(handles.threshold,'Visible','off');
     set(handles.clustering_threshold_text,'Visible','off');
+    set(handles.text7,'Visible','off');
     [mydata.sortedLabels,mydata.sortID] = sort(mydata.labels);
+    plot(handles.dendrogram,mydata.labels(mydata.sortID));
+    set(handles.dendrogram,'CameraUpVector',[1 0 0]);
+    set(handles.dendrogram,'XLim',[1 numel(mydata.sortID)]);
+    set(handles.dendrogram,'YTick',[]);
 else
     % If an input is linkage, then need to set threshold
     mydata.linkage = varargin{2};
@@ -96,14 +101,15 @@ end
 
 % get input data & sort
 mydata.primary = varargin{1};
-mydata.num_clusters = numel(unique(mydata.labels));
+mydata.num_clusters = numel(unique(mydata.labels(~isnan(mydata.labels))));
 mydata.sorted_primary = mydata.primary(mydata.sortID,:);
 if isfield(mydata,'secondary')
     mydata.sorted_secondary = mydata.secondary(mydata.sortID,:);
 end
 
-% Plot onto the heapmap
+% Plot onto the central heatmap
 pcolor(handles.dataplotter,mydata.sorted_primary);
+set(handles.dataplotter,'YTickLabels',{});
 shading(handles.dataplotter,'flat'); colorbar('peer',handles.dataplotter);
 if isfield(mydata,'clim'), caxis(handles.dataplotter,mydata.clim); end
 
@@ -126,7 +132,6 @@ clusterselecter_Callback(handles.clusterselecter,eventdata,handles);
 
 
 % UIWAIT makes visualize_cluster wait for user response (see UIRESUME)
-uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -137,8 +142,7 @@ function varargout = visualize_cluster_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = handles.output;
-delete(handles.figure1);
+% varargout{1} = handles.output;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -353,7 +357,8 @@ else
         handles.mydata.sorted_secondary = handles.mydata.secondary(handles.mydata.sortID,:);
     end
 %     handle.mydata.labels = parse_dendrogram_handles(H);
-    handles.mydata.num_clusters = numel(unique(handles.mydata.labels));
+    handles.mydata.num_clusters = numel(unique( ...
+        handles.mydata.labels(~isnan(handles.mydata.labels))));
     [ticks,ticklabels] = make_cluster_ticklabels(handles.mydata.labels,...
         handles.mydata.sortID);
     % Turn off labels on dendrogram
@@ -408,19 +413,3 @@ ticks = cumsum(num_members) - half_ways;
 % ticks = ticks(end:-1:1);
 % half_ways = floor(num_members/2);
 % ticks = ticks + half_ways(end:-1:1);
-
-
-% --- Executes on button press in pushbutton4.
-function pushbutton4_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-handles.output = handles.mydata.labels;
-guidata(hObject,handles);
-if strcmpi(get(handles.figure1,'waitstatus'), 'waiting')
-    uiresume(handles.figure1);
-else
-    delete(handles.figure1);
-end
-
-

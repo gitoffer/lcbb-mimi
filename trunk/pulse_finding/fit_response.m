@@ -1,22 +1,17 @@
-function [params,fits,residuals] = fit_response(responses,opt)
+function [params,fit,residuals] = fit_response(response,opt)
+%FIT_RESPONES
+%
+% SYNOPSIS: [params,fit,residuals] = fit_response(response,opt);
 
-num_pulses = numel(pulse);
 lsqfun = opt.fun;
 lb = opt.lb;
 ub = opt.ub;
 guess = opt.guess;
 time = opt.t;
 
-fits = zeros(size(responses));
+o = optimset('display','off');
 
-for i = 1:size(responses,1)
-	this_resp = responses(i,:);
-	[p,~,residuals] = lsqcurvefit(lsqfun,t,this_resp,guess,lb,ub);
-	fit(i,:) = feval(lsqfun,p,t);
-
-	
-end
-
-
+[params,~,residuals] = lsqcurvefit(lsqfun,guess,time,response,lb,ub,o);
+fit = feval(lsqfun,params,time);
 
 end

@@ -14,7 +14,6 @@ function h = plot_pdf(observations,nbins,varargin)
 %
 % xies@mit.edu March 2012.
 
-
 switch nargin
     case 0
         error('Need at least 1 input!');

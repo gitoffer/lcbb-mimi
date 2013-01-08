@@ -97,8 +97,8 @@ for i = 1:num_cells
         for j = idx:size(gauss_p,2)
             if gauss_p(2,j) > -300
                 
-                l = 10;
-                r = 10;
+                l = 5;
+                r = 9;
                 
                 time = master_time(IDs(i).which).aligned_time';
                 
