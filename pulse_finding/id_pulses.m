@@ -56,19 +56,19 @@ end
 % legend('Myosin rate','Rate rectified',['Fitted peaks (' num2str(n_peaks) ')'])
 title(['Detected areal pulses']);
 
-if strcmpi(in(1).folder2load,input_twist(1).folder2load)
-    if IDs(cellID).which == 1, var_name = '006'; else var_name = '022'; end
-    saveas(gcf,['~/Desktop/EDGE processed/Twist ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'fig');
-    saveas(gcf,['~/Desktop/EDGE processed/Twist ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'epsc');
-elseif strcmpi(in(1).folder2load,input(1).folder2load)
-    switch IDs(cellID).which
-        case 1, var_name = '4';
-        case 2, var_name = '7';
-        case 3, var_name = '1';
-    end
-    saveas(gcf,['~/Desktop/EDGE processed/Embryo ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'fig');
-    saveas(gcf,['~/Desktop/EDGE processed/Embryo ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID) '.eps'],'epsc');
-end
+% if strcmpi(in(1).folder2load,input_twist(1).folder2load)
+%     if IDs(cellID).which == 1, var_name = '006'; else var_name = '022'; end
+%     saveas(gcf,['~/Desktop/EDGE processed/Twist ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'fig');
+%     saveas(gcf,['~/Desktop/EDGE processed/Twist ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'epsc');
+% elseif strcmpi(in(1).folder2load,input(1).folder2load)
+%     switch IDs(cellID).which
+%         case 1, var_name = '4';
+%         case 2, var_name = '7';
+%         case 3, var_name = '1';
+%     end
+%     saveas(gcf,['~/Desktop/EDGE processed/Embryo ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'fig');
+%     saveas(gcf,['~/Desktop/EDGE processed/Embryo ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID) '.eps'],'epsc');
+% end
 
 close all
 

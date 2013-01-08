@@ -1,4 +1,9 @@
 function y = lsq_gauss1d(params,x)
+%Inteded for use with the OPTIMIZATION TOOLBOX, especiallu LSQCURVEFIT.
+% SYNOPSIS: y = lsq_gauss1d(params,x)
+% INPUT: params: [Amplitude mean standard_deviation];
+%        x - the "domain"
+
 
 A = params(1);
 mu = params(2);

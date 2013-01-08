@@ -21,6 +21,7 @@ num_embryos = size(m_array,1);
 num_cells = zeros(num_embryos,1);
 
 x = cell(1,num_embryos);
+
 for i = 1:num_embryos
     m = m_array(i,strcmpi({m_array(i,:).name},name_to_extract));
     
@@ -69,6 +70,7 @@ for i = 1:num_embryos
     else
         error('Input slice range needs to be 1 slice or a vector of length equal to the number of frames');
     end
+    
     x{i} = data;
     
 end
@@ -114,6 +116,7 @@ if nargout > 1
         max_tref = max([input.tref]);
         lag = max_tref - [input.tref];
         for i = 1:num_embryos
+            
             t(i).aligned_time = time*input(i).dt;
             t(i).frame = nan(size(time));
             
