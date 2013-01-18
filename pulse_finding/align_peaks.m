@@ -1,9 +1,10 @@
-function [time,aligned_p,varargout] = align_peaks(pulses,measurement)
+function [time,aligned_p,varargout] = align_peaks(pulses,measurement,opt)
 %ALIGN_PEAKS Aligns the global maxima of a given set of time-series
 %traces. Will return also a given measurement aligned according to the
 %maxima.
 %
-% SYNOPSIS: [time,aligned_p,aligned_areas] = align_peaks(peaks,loc,cells,areas)
+% SYNOPSIS: [time,aligned_p,aligned_areas] = 
+%                align_peaks(pulses,myosins_sm,areas_sm,opt);
 %
 % xies@mit.edu Aug 2012
 
@@ -12,12 +13,14 @@ else other_measurement = 0; end
 
 num_peaks = numel(pulses);
 durations = cellfun('length',{pulses.frame});
-max_duration = max(durations);
+% max_duration = max(durations);
 
-aligned_p = nan(num_peaks,2*max_duration + 1);
-aligned_m = nan(num_peaks,2*max_duration + 1);
-time = nan(num_peaks,2*max_duration + 1);
-center_idx = max_duration + 1;
+l = opt.left_margin; r = opt.right_margin;
+
+aligned_p = nan(num_peaks,l + r + 1);
+aligned_m = nan(num_peaks,l + r + 1);
+time = nan(num_peaks,l + r + 1);
+center_idx = l + 1;
 
 for i = 1:num_peaks
     this_peak = pulses(i).curve_padded;
