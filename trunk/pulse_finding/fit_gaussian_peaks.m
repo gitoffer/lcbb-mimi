@@ -20,6 +20,8 @@ function [pulse,varargout] = fit_gaussian_peaks(Y,master_time,timeframe,IDs,opt)
 alpha = opt.alpha;
 bg = opt.bg;
 
+l = opt.left_margin; r = opt.right_margin;
+
 if strcmpi(bg,'on'), background = 1;
 else background = 0; end
 
@@ -65,30 +67,36 @@ for i = 1:num_cells
         t = t(start:start+numel(y)-1)';
         
         % Establish the lower bounds of the constraints
-        lb = [0;t(1);opt.sigma_lb];
-        ub = [nanmax(y);t(end);opt.sigma_ub];
+        lb = [0;t(1)+10;opt.sigma_lb];
+        ub = [nanmax(y);t(end)-10;opt.sigma_ub];
         
-        gauss_p = iterative_gaussian_fit(y,t,alpha,lb,ub,bg);
+        [gauss_p,residuals] = iterative_gaussian_fit(y,t,alpha,lb,ub,bg);
         
         if cell_fit
 %             if ff - f0 + 1 ~= size(t)
 %                 ff = ff - (ff+f0-1-numel(t));
 %             end
 %             fits(f0:(f0+numel(t) - 1),i) = this_fit;
-            if background
+            if background %If we have a BG model... handles parameter count differently
                 this_fit = synthesize_gaussians(gauss_p(:,2:end),t);
                 P = plot_peak_color(gauss_p(:,2:end),t);
                 cells(i).params = gauss_p(:,2:end);
                 cells(i).num_peaks = size(gauss_p,2) - 1;
+                cells(i).bg = lsq_exponential(gauss_p(:,1),t);
+                cells(i).fit = this_fit + lsq_exponential(gauss_p(:,1),t);
                 cells(i).colorized = P;
-                cells(i).fit = this_fit;
-            else
+                cells(i).signal = this_fit;
+                cells(i).time = t;
+                cells(i).residual = residuals;
+            else % If it's Gaussians only.
                 this_fit = synthesize_gaussians(gauss_p,t);
                 P = plot_peak_color(gauss_p(:,1:end),t);
                 cells(i).params = gauss_p;
                 cells(i).num_peaks = size(gauss_p,2);
                 cells(i).colorized = P;
-                cells(i).fit = this_fit;
+                cells(i).signal = this_fit;
+                cells(i).time = t;
+                cells(i).residual = residuals;
             end
         end
         
@@ -96,9 +104,6 @@ for i = 1:num_cells
         
         for j = idx:size(gauss_p,2)
             if gauss_p(2,j) > -300
-                
-                l = 5;
-                r = 9;
                 
                 time = master_time(IDs(i).which).aligned_time';
                 

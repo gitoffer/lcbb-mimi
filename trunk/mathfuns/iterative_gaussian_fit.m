@@ -1,4 +1,4 @@
-function parameters = iterative_gaussian_fit(y,x,alpha,lb,ub,bg)
+function [parameters,varargout] = iterative_gaussian_fit(y,x,alpha,lb,ub,bg)
 %ITERATIVE_GAUSSIAN_FIT Uses LSQCURVEFIT to fit multiple Gaussians to a 1D
 % signal. Will use F-test to penalize for over-fitting. If BG is turned on,
 % will fit an exponential background.
@@ -44,7 +44,8 @@ if background
     guess_bg = [1;x(1);30];
     
     n_peaks = 0;
-    LB = cat(2,[0;-Inf;lb(3)],lb);
+    % Negative
+    LB = cat(2,[0;x(1);lb(3)],lb);
     UB = cat(2,[Inf;Inf;ub(3)],ub);
     guess = cat(2,guess_bg,guess);
 %     keyboard
@@ -113,7 +114,7 @@ if F_bg < Fcrit
     parameters = p_bg;
 end
 
-
+if nargout > 1, varargout{1} = residuals; end
 if ~exist('parameters','var'), parameters = []; end
 
 end

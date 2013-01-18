@@ -4,9 +4,8 @@
 data2cluster = corrected_area_norm(:,:);
 [data2cluster,dataIDs] = delete_nan_rows(data2cluster,1,'all');
 standardized_myosin = standardize_matrix(corrected_myosin,2);
-standardized_data = standardize_matrix(kmeans_c3,2);
-% data2cluster = interp_mat(data);
-% csvwrite('~/Desktop/clusterdata.csv',data2export);
+standardized_area_norm = standardize_matrix(data2cluster,2);
+standardized_area_rate = standardize_matrix(corrected_area_rate,2);
 
 %% Clustering settings
 clustering.dist_fun = @nan_eucdist;
@@ -31,7 +30,8 @@ end
 
 %% Uses the cluster visualization GUI
 
-visualize_cluster(corrected_area_norm(kmeansID,:),kmeans_labels,[-8 8],standardized_myosin)
+visualize_cluster(data2cluster(cluster_order,:),cluster_labels,[-8 8],standardized_area_norm(cluster_order,:))
+% visualize_cluster(corrected_area_norm(kmeansID,:),kmeans_labels,[-8 8],standardized_myosin)
 
 %% Use Multi-dimensional scaling to visualize clsuters
 

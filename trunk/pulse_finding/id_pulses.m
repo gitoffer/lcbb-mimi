@@ -4,8 +4,6 @@
 % cellID = 1;
 % cellID = 51
 
-for cellID = 1:sum(num_cells)
-
 myosin_sm = myosins(1:end,cellID);
 % if numel(myosin_sm(~isnan(myosin_sm))) < 20
 %     continue
@@ -51,31 +49,13 @@ for i = 1:n_peaks
     plot(t,synthesize_gaussians(gauss_p(:,i+1),t),'Color',C(i,:));
     %     plot(t,synthesize_gaussians(cell_fits(cellID).params(:,i+1),t),'Color',C(i,:));
 end
-
-% hold on,plot(x,cell_fits(:,cellID));
-% legend('Myosin rate','Rate rectified',['Fitted peaks (' num2str(n_peaks) ')'])
 title(['Detected areal pulses']);
 
-% if strcmpi(in(1).folder2load,input_twist(1).folder2load)
-%     if IDs(cellID).which == 1, var_name = '006'; else var_name = '022'; end
-%     saveas(gcf,['~/Desktop/EDGE processed/Twist ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'fig');
-%     saveas(gcf,['~/Desktop/EDGE processed/Twist ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'epsc');
-% elseif strcmpi(in(1).folder2load,input(1).folder2load)
-%     switch IDs(cellID).which
-%         case 1, var_name = '4';
-%         case 2, var_name = '7';
-%         case 3, var_name = '1';
-%     end
-%     saveas(gcf,['~/Desktop/EDGE processed/Embryo ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID)],'fig');
-%     saveas(gcf,['~/Desktop/EDGE processed/Embryo ' var_name '/detected_pulses/cell_' num2str(IDs(cellID).cellID) '.eps'],'epsc');
-% end
-
-close all
-
-% Make movie
+%% Make movie
 
 figure,clear h
 
+% Visualize the individual peaks by alternating cyan/yellow colors
 P = plot_peak_color(gauss_p(:,2:end),x);
 
 h.vx = vertices_x; h.vy = vertices_y;
@@ -87,14 +67,14 @@ switch IDs(cellID).which
 end
 h.cellID = cellID;
 h.input = in(IDs(cellID).which);
-% h.channels = {};
 h.channels = {'Membranes','Myosin'};
 h.border = 'on';
 h.measurement = P;
 
 F = make_cell_img(h);
 
-% Save movie (to appropriate folder)
+%% Save movie (to appropriate folder)
+
 if strcmpi(in(1).folder2load,input_twist(1).folder2load)
     if IDs(cellID).which == 1, var_name = '006'; else var_name = '022'; end
     movie2avi(F,['~/Desktop/EDGE processed/Twist ' var_name '/cell_movies/cell_' num2str(IDs(cellID).cellID)]);
@@ -107,15 +87,12 @@ elseif strcmpi(in(1).folder2load,input(1).folder2load)
     movie2avi(F,['~/Desktop/EDGE processed/Embryo ' var_name '/cell_movies/cell_' num2str(IDs(cellID).cellID)]);
 end
 
-close(gcf)
-
-end
-
 %% Fit for all cells
 
 opt.alpha = 0.01;
 opt.sigma_lb = 20; % Lower bounds
 opt.sigma_ub = 50; % Upper bounds
+opt.left_margin = 5; opt.right_margin = 11; %frames
 opt.bg = 'on';
 
 [pulse,cell_fits] = fit_gaussian_peaks(myosins,master_time,[-1000 1000],IDs,opt);
