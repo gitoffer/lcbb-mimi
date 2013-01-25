@@ -92,7 +92,7 @@ end
 opt.alpha = 0.01;
 opt.sigma_lb = 20; % Lower bounds
 opt.sigma_ub = 50; % Upper bounds
-opt.left_margin = 5; opt.right_margin = 11; %frames
+opt.left_margin = 5; opt.right_margin = 9; %frames
 opt.bg = 'on';
 
 [pulse,cell_fits] = fit_gaussian_peaks(myosins,master_time,[-1000 1000],IDs,opt);

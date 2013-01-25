@@ -1,5 +1,11 @@
 function pulse_sd = standardize_pulse(pulse)
-%STANDARDIZE_PULSE
+%STANDARDIZE_PULSE Creates a field in the pulse structure corresponding to
+% the percentile-ranking of each pulse in the distribution of all pulse
+% sizes within a single embryo.
+%
+% SYNOPSIS: pulse_sd = standardize_pulse(pulse);
+%
+% xies@mit.edu
 
 pulse_sd = pulse;
 num_embryos = numel(unique([pulse.embryo]));
