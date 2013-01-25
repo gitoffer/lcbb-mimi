@@ -68,7 +68,7 @@ for i = 1:num_cells
         
         % Establish the lower bounds of the constraints
         lb = [0;t(1)+10;opt.sigma_lb];
-        ub = [nanmax(y);t(end)-10;opt.sigma_ub];
+        ub = [nanmax(y);t(end)-30;opt.sigma_ub];
         
         [gauss_p,residuals] = iterative_gaussian_fit(y,t,alpha,lb,ub,bg);
         
