@@ -19,7 +19,7 @@ for j = 1:6
 end
 
 %%
-foo = 1:5
+foo = 1:8
 
 cluster_pulse_density(1,:) = nanmean(num_near(:, ...
     [pulseOI([pulseOI.cluster_label]==foo(1)).pulseID]),2);
