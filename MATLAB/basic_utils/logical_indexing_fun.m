@@ -5,4 +5,4 @@ function Y = logical_indexing_fun(X,log_ind)
 %
 % xies@mit.edu
 
-Y = X(log_ind)
+Y = X(log_ind);

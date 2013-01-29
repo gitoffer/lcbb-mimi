@@ -1,12 +1,12 @@
 % cluster_validate,m
 
-dist_mat = D_p2;
-dist_name = 'Euclidean distance';
+dist_mat = D;
+dist_name = 'Pearson distance';
 %% Template matching
 
 [R2,res,templates] = get_cluster_residuals(standardized_area_norm,cluster_labels);
 
-%% Pseudo-color the inter/intra cluster distances
+%% Pseudo-color the inter + intra cluster distances
 for i = 2:10
     cluster_dir = ['~/Desktop/Clustering results/corrected_area_norm_notail/c' num2str(i) '_euclidean/'];
     name = [cluster_dir 'kmeans_c' num2str(i) '_euclidean.txt'];
@@ -46,23 +46,27 @@ for i = 2:10
     name = [cluster_dir 'kmeans_c' num2str(i) '_euclidean.txt'];
     % Load clsuter
     [cluster_order,cluster_labels,cluster_labels_ordered,pulse] = load_gedas_fun(name,pulse);
+    [num_clusters,num_members,cluster_names] = get_cluster_numbers(cluster_labels);
     
-    
+    Dc = get_cluster_distances(dist_mat,cluster_labels_ordered);
     nboot = 1000;
     switch type
         case 'intra'
             bootfun = @(labels) diag(get_cluster_distances(dist_mat,labels));
+            original_stat = diag(Dc);
         case 'inter'
             bootfun = @(labels) ...
                 logical_indexing_fun( ...
                 get_cluster_distances(dist_mat,labels), ...
-                logical(~eye(num_peaks)));
+                logical(~eye(num_clusters)));
+            original_stat = Dc(logical(~eye(num_clusters)));
         otherwise, error('Unknown TYPE of distance.');
     end
     
     bootstat = bootstrp(nboot,bootfun,cluster_labels_ordered);
     % Construct boxplot
-    [X,G] = make_boxplot_args(diag(Dc),bootstat);
+    
+    [X,G] = make_boxplot_args(original_stat,bootstat);
     [G{strcmpi(G,'1')}] = deal('Original clusters');
     [G{strcmpi(G,'2')}] = deal('Bootstrapped clusters');
     boxplot(X,G);
