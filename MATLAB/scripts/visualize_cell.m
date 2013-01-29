@@ -11,3 +11,4 @@ plotyy(time,myosins_sm(nonantime,pulse(ID).cell),...
     time,areas_sm(nonantime,pulse(ID).cell))
 hold on
 plot(cell_fits(pulse(ID).cell).time,cell_fits(pulse(ID).cell).bg,'r-')
+

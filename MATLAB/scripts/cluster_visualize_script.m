@@ -1,11 +1,18 @@
 %CLUSTER_DATA_SCRIPT Script to interface with MATLAB Bioinformatics Toolbox
-% CLUSTERGRAM function.
+% Collection of scripts used to visualize clusters
+%% Select data to cluster or plot
 
 data2cluster = corrected_area_norm(:,:);
 [data2cluster,dataIDs] = delete_nan_rows(data2cluster,1,'all');
 standardized_myosin = standardize_matrix(corrected_myosin,2);
 standardized_area_norm = standardize_matrix(data2cluster,2);
 standardized_area_rate = standardize_matrix(corrected_area_rate,2);
+
+%% Generate distance matrix
+D = pdist(standardized_area_norm,@nan_pearsoncorr);
+D = squareform(D);
+D_p2 = pdist(standardized_area_norm,@nan_eucdist);
+D_p2 = squareform(D_p2);
 
 %% Uses the cluster visualization GUI
 
@@ -44,5 +51,3 @@ for which = 1:num_clusters
 end
 xlabel('Aligned time (sec)'); ylabel('Z-score');
 suptitle(['Pearson clustering with ' num2str(num_clusters) ' clusters']);
-
-
