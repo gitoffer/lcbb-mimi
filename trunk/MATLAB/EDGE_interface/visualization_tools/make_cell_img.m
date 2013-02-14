@@ -14,6 +14,8 @@ function G = make_cell_img(h)
 %
 % OUTPUT: F - MATLAB's movie structure. To play, use movie(F).
 %
+% SEE ALSO: MAKE_PULSE_MOVIE
+%
 % xies@mit.edu 2012.
 
 input = h.input;
@@ -47,7 +49,7 @@ elseif numel(channels) == 3 && ~isempty(varargin)
     error('Cannot display the 3 specified channels as well as an additional measurement.');
 end
 
-% Colored measurements?
+% Colored measurements? AKA the .measurement field is a RGB matrix
 if isfield(h,'measurement')
 	measurement = h.measurement;
     measurement = measurement./nanmax(measurement(:)).*240;
@@ -89,12 +91,14 @@ for i = 1:numel(movie_frames)
         cd(p);
         
     end
-    
+    % Make sure that there is at least one frame at which there is an EDGE
+    % tracking of the specified cell
     if all(~isnan(vx{frames(i)}))
         mask = poly2mask(vx{frames(i)}-box(1),...
             vy{frames(i)}-box(2),...
             box(4)+1,box(3)+1);
         
+        % If we're going to plot the 'measurement' coloration also
         if isfield(h,'measurement')
             % make colored polygon if measurement is 3-channels
             if colorized

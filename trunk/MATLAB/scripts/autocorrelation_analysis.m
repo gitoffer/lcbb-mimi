@@ -23,11 +23,10 @@ ar_ac = delete_nan_rows(ar_ac,1);
 
 %% Plot autocorrelations
 
-figure,pcolor(m_ac),colorbar,title('Myosin autocorrelation')
-figure,pcolor(mr_ac),colorbar,title('Myosin rate autocorrelation')
+figure,pcolor(m_ac),colorbar,title('Myosin autocorrelation'),shading flat
+figure,pcolor(mr_ac),colorbar,title('Myosin rate autocorrelation'),shading flat
 figure,pcolor(a_ac),colorbar,title('Area autocorrelation')
 figure,pcolor(ar_ac),colorbar,title('Area rate autocorrelation')
 
 figure,errorbar(nanmedian(mr_ac),nanstd(mr_ac));title('Myosin rate autocorrelation')
 figure,errorbar(nanmedian(ar_ac),nanstd(ar_ac));title('Area rate autocorrelation')
-

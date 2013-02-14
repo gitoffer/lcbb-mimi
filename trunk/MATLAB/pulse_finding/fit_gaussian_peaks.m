@@ -17,7 +17,7 @@ function [pulse,varargout] = fit_gaussian_peaks(Y,master_time,timeframe,IDs,opt)
 %
 % xies@mit.edu Aug 2012.
 
-alpha = opt.alpha;
+alphas = opt.alpha;
 bg = opt.bg;
 
 l = opt.left_margin; r = opt.right_margin;
@@ -34,9 +34,7 @@ num_peaks = 0;
 
 if nargout > 1, cell_fit = 1; else cell_fit = 0; end
 
-if cell_fit
-    fits = nan(size(Y));
-end
+% if cell_fit, cells = nan(size(Y)); end
 
 [cells(1:num_cells).params] = deal([]);
 [cells(1:num_cells).num_peaks] = deal([]);
@@ -45,6 +43,8 @@ end
 [cells(1:num_cells).pulseID] = deal([]);
 
 for i = 1:num_cells
+    
+    embryoID = IDs(i).which;
     
     % Need to convert frame to actual time using the time bounds given
     t = master_time(IDs(i).which).aligned_time';
@@ -67,10 +67,11 @@ for i = 1:num_cells
         t = t(start:start+numel(y)-1)';
         
         % Establish the lower bounds of the constraints
-        lb = [0;t(1)+10;opt.sigma_lb];
-        ub = [nanmax(y);t(end)-30;opt.sigma_ub];
+        lb = [0;t(1);opt.sigma_lb(embryoID)];
+        ub = [nanmax(y);t(end)-30;opt.sigma_ub(embryoID)];
         
-        [gauss_p,residuals] = iterative_gaussian_fit(y,t,alpha,lb,ub,bg);
+        [gauss_p,residuals] = iterative_gaussian_fit( ...
+            y,t,alphas(embryoID),lb,ub,bg);
         
         if cell_fit
 %             if ff - f0 + 1 ~= size(t)
@@ -110,7 +111,11 @@ for i = 1:num_cells
                 num_peaks = num_peaks + 1;
                 shift = findnearest(t(1),time) - 1;
                 left = max(shift + findnearest(gauss_p(2,j),t) - l,1);
+                left_width = max(shift + findnearest(gauss_p(2,j),t) - ...
+                    findnearest(gauss_p(3,j),cumsum(diff(t))),1);
                 right = min(shift + findnearest(gauss_p(2,j),t) + r,num_frames);
+                right_width = min(shift + findnearest(gauss_p(2,j),t) + ...
+                    findnearest(gauss_p(3,j),cumsum(diff(t))),num_frames);
                 
                 x = time(left:right);
                 fitted_y = synthesize_gaussians(gauss_p(:,j),x);
@@ -131,17 +136,25 @@ for i = 1:num_cells
                     x = [x;nan((shift + findnearest(gauss_p(2,j),t) + r) - num_frames,1)];
                 end
                 
-                % Which cell (recorded three ways)
+                % Which cell recorded two ways (EDGEID and collated ID), alas
                 pulse(num_peaks).cell = i;
                 pulse(num_peaks).cellID = IDs(i).cellID;
-                pulse(num_peaks).embryo = IDs(i).which;
-                % Size, center, and time-frames of pulse
-                pulse(num_peaks).curve_padded = fitted_y;
+                % Which embryo
+                pulse(num_peaks).embryoID = IDs(i).which;
+                % Pulse amplitude
                 pulse(num_peaks).size = gauss_p(1,j);
+                % Pulse center (mean) and the corresponding collated frame
                 pulse(num_peaks).center = gauss_p(2,j);
                 pulse(num_peaks).center_frame = findnearest(gauss_p(2,j),t);
+                % Pulse curves (fitted)
+                pulse(num_peaks).curve_padded = fitted_y;
+                % Pulse frames (standard)
                 pulse(num_peaks).frame = left:right;
                 pulse(num_peaks).aligned_time_padded = x;
+                % Pulse width (standard dev)
+                pulse(num_peaks).width = gauss_p(3,j);
+                pulse(num_peaks).width_frames = left_width:right_width;
+                % PulseID for housekeeping
                 pulse(num_peaks).pulseID = num_peaks;
                 
                 if cell_fit

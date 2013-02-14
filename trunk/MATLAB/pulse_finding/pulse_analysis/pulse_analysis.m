@@ -2,19 +2,6 @@
 % in = input_twist;
 in = input;
 
-%% Make movies of individual pulses
-
-F = make_pulse_movie(sub_pulse(541),input,vertices_x,vertices_y,master_time);
-
-% save movie (to appropriate folder)
-% if strcmpi(in(1).folder2load,input_twist(1).folder2load)
-%     if ids(cellID).which == 1, var_name = '006'; else var_name = '022'; end
-%     movie2avi(f,['~/desktop/edge processed/twist ' var_name '/pulse_movies/pulse_' num2str(pulseID)]);
-% elseif strcmpi(in(1).folder2load,input(1).folder2load)
-%     if ids(cellID).which == 1, var_name = '4'; else var_name = '7'; end
-%     movie2avi(f,['~/desktop/edge processed/embryo ' var_name '/pulse_movies/pulse_' num2str(pulseID)]);
-% end
-
 %% sub-set of pulses
 
 % subIDs = intersect(find(1:numel(pulse) < wt_cutoff),filtIDs);
@@ -48,13 +35,13 @@ time = time(:,cols_left);
 
 % correlate for framerate differences
 corrected_area = ...
-    resample_traces(aligned_area,[pulseOI.embryo],[input.dt],opt);
+    resample_traces(aligned_area,[pulseOI.embryoID],[input.dt],opt);
 corrected_area_norm = ...
-    resample_traces(aligned_area_norm,[pulseOI.embryo],[input.dt],opt);
+    resample_traces(aligned_area_norm,[pulseOI.embryoID],[input.dt],opt);
 corrected_myosin = ...
-    resample_traces(aligned_myosin,[pulseOI.embryo],[input.dt],opt);
+    resample_traces(aligned_myosin,[pulseOI.embryoID],[input.dt],opt);
 [corrected_area_rate,corrected_time] = ...
-    resample_traces(aligned_area_rate,[pulseOI.embryo],[input.dt],opt);
+    resample_traces(aligned_area_rate,[pulseOI.embryoID],[input.dt],opt);
 
 %%
 
@@ -69,7 +56,7 @@ figure
 % c = rand(numel(cond),3);
 cells = [pulseOI(cond).cellID];
 locs = [pulseOI(cond).center_frame];
-embs = [pulseOI(cond).embryo];
+embs = [pulseOI(cond).embryoID];
 
 for i = 1:numel(cond)
     legend_labels{i} = ['embryo ' num2str(embs(i)) ...
