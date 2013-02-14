@@ -1,7 +1,8 @@
 % Load clustering result file from GEDAS Studio
 
-cluster_dir = '~/Desktop/Clustering results/corrected_area_norm_notail/c6_pearson/';
-filename = [cluster_dir 'kmeans_c6_pearson.txt'];
+name = 'c5_pearson';
+cluster_dir = ['~/Desktop/Clustering results/corrected_area_norm_nonan/' name '/'];
+filename = [cluster_dir 'kmeans_' name '.txt'];
 % filename = '~/Desktop/Clustering results/corrected_area_norm_top/kmeans_top_c5_cosine.txt'
 
 [cluster_order,cluster_labels,cluster_labels_ordered,pulse] = load_gedas_fun(filename,pulse);
@@ -22,8 +23,11 @@ end
 
 %% Write CSV data for GEDAS Studio
 
-mkdir('~/Desktop/Clustering results/corrected_area_norm_notail/');
-filename = '~/Desktop/Clustering results/corrected_area_norm_notail.csv';
-data2write = cat(2,(1:num_peaks)',corrected_area_norm);
+mkdir('~/Desktop/Clustering results/corrected_area_norm_nonan/');
+filename = '~/Desktop/Clustering results/corrected_area_norm_nonan.csv';
+foo = corrected_area_norm;
+nonanIDs = find(all(~isnan(foo),2));
+foo(find(any(isnan(foo),2)),:) = NaN;
+data2write = cat(2,(1:num_peaks)',foo);
 
-% csvwrite(filename,data2write);
+csvwrite(filename,data2write);

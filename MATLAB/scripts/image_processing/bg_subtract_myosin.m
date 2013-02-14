@@ -1,8 +1,8 @@
 %BG_SUBTRACT_MYOSIN script to remove background level of myosin
 
 % Path to the raw myosin stack (TIF)
-path = '~/Desktop/Mimi/Data/11-10-2012/cta SqhGFP GapCherry/2/myosin_stack.tif';
-num_frames = 204;
+path = '~/Desktop/Mimi/Data/01-29-2013/cta Sqh Gap/3/myosin_stack.tif';
+num_frames = 71;
 num_slices = 10;
 
 %% Load images
@@ -45,7 +45,7 @@ threshold = mean(flat(bg)) + 2.5*std(flat(bg));
 
 %% Get and display thresholded myosin image
 
-display_time = 100;
+display_time = 50;
 
 myosin_max = max(raw_myo(:,:,1:5,:),[],3);
 myosin_max = permute(myosin_max,[1 2 4 3]);
@@ -62,7 +62,7 @@ showsub_vertlink( ...
 
 %% Write to a TIF stack
 
-output_path = '~/Desktop/Mimi/Data/11-10-2012/cta SqhGFP GapCherry/2/myosin_th_1_5_3sigma.TIF';
+output_path = '~/Desktop/Mimi/Data/01-29-2013/cta Sqh Gap/3/myosin_th_1_5_3sigma.TIF';
 
 write_tiff_stack(myosin_th,output_path);
 

@@ -101,7 +101,7 @@ end
 
 % get input data & sort
 mydata.primary = varargin{1};
-mydata.num_clusters = numel(unique(mydata.labels(~isnan(mydata.labels))));
+mydata.num_clusters = max(mydata.labels(~isnan(mydata.labels)));
 mydata.sorted_primary = mydata.primary(mydata.sortID,:);
 if isfield(mydata,'secondary')
     mydata.sorted_secondary = mydata.secondary(mydata.sortID,:);

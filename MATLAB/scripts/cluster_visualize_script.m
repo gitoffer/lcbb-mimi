@@ -16,12 +16,13 @@ D_p2 = squareform(D_p2);
 
 %% Uses the cluster visualization GUI
 
-visualize_cluster(standardized_area_norm(cluster_order,:),cluster_labels,[-3 3],standardized_myosin(cluster_order,:))
-% visualize_cluster(corrected_area_norm(kmeansID,:),kmeans_labels,[-8 8],standardized_myosin)
+visualize_cluster(standardized_area_norm(cluster_order,:), ...
+    cluster_labels,[-3 3], ...
+    standardized_myosin(cluster_order,:))
 
 %% Use Multi-dimensional scaling to visualize clsuters
 
-[Y,stress,disparities] = mdscale(squareform(distances),3,'criterion','sstress');
+[Y,stress,disparities] = mdscale(squareform(D),3,'criterion','sstress');
 save('~/Desktop/Aligned embryos/WT/mdspoints','Y','stress','disparities');
 
 %% Subplots of pulseOI (restricted pulse-set)
@@ -51,3 +52,25 @@ for which = 1:num_clusters
 end
 xlabel('Aligned time (sec)'); ylabel('Z-score');
 suptitle(['Pearson clustering with ' num2str(num_clusters) ' clusters']);
+
+%% Subplots of histograms
+% figure,
+
+data2histogram = [pulseOI.size];
+nbins = 30;
+bins = linspace(0,2e4,nbins);
+
+colors = {'b','r','g','c','k'};
+N = zeros(num_clusters,nbins);
+foo = 5:-1:1;
+
+for which = 1:num_clusters
+    subplot(num_clusters,1,which);
+    N(which,:) = histc(data2histogram( ... 
+        cluster_labels_ordered(1:num_peaks < wt_cutoff) == foo(which)),bins);
+    bar(bins,N(which,:),'FaceColor',colors{which},'EdgeColor','none');
+    set(gca,'Xlim',[0 2e4]);
+    title(['Cluster ' num2str(which)]);
+    xlabel('Pulse size (a.u.)');
+end
+% suptitle('Timing of wild-type pulses')

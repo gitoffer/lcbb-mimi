@@ -8,13 +8,13 @@ function pulse_sd = standardize_pulse(pulse)
 % xies@mit.edu
 
 pulse_sd = pulse;
-num_embryos = numel(unique([pulse.embryo]));
+num_embryos = numel(unique([pulse.embryoID]));
 
 for i = 1:num_embryos
-    sizes = [pulse([pulse.embryo] == i).size];
+    sizes = [pulse([pulse.embryoID] == i).size];
     bins = prctile(sizes,1:100);
     [~,bin] = histc(sizes,bins);
-    pulseID = [pulse([pulse.embryo] == i).pulseID];
+    pulseID = [pulse([pulse.embryoID] == i).pulseID];
     for j = 1:numel(bin)
         [pulse_sd(pulseID(j)).percentile] = bin(j);
     end
