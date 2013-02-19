@@ -2,11 +2,11 @@
 % by the algorithm.
 
 % tracks = read_mdf('~/Dropbox/Pulse tracking/01-30-2012-4/01-30-2012-4-mimi.mdf'); embryoID = 1;
-% tracks = read_mdf('~/Dropbox/Pulse tracking/01-30-2012-4/01-30-2012-4-merged_acm.tif.mdf'); embryoID = 1;
-% tracks = read_mdf('~/Dropbox/Pulse tracking/10-25-2012-1/10-25-2012-1-mimi.mdf'); embryoID = 4;
-tracks = read_mdf('~/Dropbox/Pulse tracking/10-25-2012-1/10-25-2012-1-acm.mdf'); embryoID = 4;
+tracks = read_mdf('~/Desktop/Tracked pulses/01-30-2012-4/01-30-2012-4-merged_acm.tif.mdf'); embryoID = 1;
+% tracks = read_mdf('~/Dropbox/Pulse tracking/10-25-2012-1/10-25-2012-1-mimi.mdf'); embryoID = 2;
+% tracks = read_mdf('~/Dropbox/Pulse tracking/10-25-2012-1/10-25-2012-1-acm.mdf'); embryoID = 2;
 
-embryo_stack = edge2embryo(EDGEstack);
+embryo_stack = edge2embryo(EDGEstack,input,num_cells);
 
 tracked_pulse = load_mdf_pulse(tracks,embryo_stack(embryoID),input(embryoID), ...
     num_cells,master_time(embryoID));
@@ -14,10 +14,12 @@ tracked_pulse = load_mdf_pulse(tracks,embryo_stack(embryoID),input(embryoID), ..
 cellOI = unique([tracked_pulse.cell]);
 cellOI = cellOI(~isnan(cellOI));
 cellOI = cellOI(~cellfun(@isempty,{cell_fits(cellOI).num_peaks}));
+
 tracked_pulse = [tracked_pulse(ismember([tracked_pulse.cell],cellOI))];
 for i = 1:numel(tracked_pulse)
     tracked_pulse(i).trackID = i;
 end
+
 pulseOI = [pulse(ismember([pulse.cell],cellOI))];
 
 [found,overlaps] = compare_pulse_identification(tracked_pulse,pulseOI,1);
@@ -28,6 +30,12 @@ pulseOI = [pulse(ismember([pulse.cell],cellOI))];
 num_match = numel(found(found > 0));
 num_tracks = numel([tracked_pulse(~isnan([tracked_pulse.cell]))]);
 
+match_trackID = {tracked_pulse(found > 0).trackID};
+[matches(1:num_match).trackID] = deal(match_trackID{:});
+match_pulseID = found(found > 0);
+match_pulseID = num2cell(match_pulseID);
+[matches(1:num_match).pulseID] = deal(match_pulseID{:});
+
 merged_by_fit = find_merges(found);
 for i = 1:numel(merged_by_fit)
     merged_by_fit(i).origin = [tracked_pulse(merged_by_fit(i).origin).trackID];
@@ -37,8 +45,8 @@ for i = 1:numel(merged_by_tracking)
     merged_by_tracking(i).origin = [pulseOI(merged_by_tracking(i).origin).pulseID];
 end
 
-missed_by_fit = tracked_pulse(find(found==0));
-missed_by_tracking = pulse(find(rev_found==0));
+missed_by_fit = tracked_pulse(found==0);
+missed_by_tracking = pulse([pulseOI(rev_found==0).pulseID]); % index needs shifting
 
 % Display results in summary
 display(['Total valid tracks found in manual tracking: ' num2str(num_tracks)]);
@@ -78,15 +86,21 @@ figure;
 
 for i = 1:5
 
+%     correctID = i+5;
+%     trackID = matches(correctID).trackID;
+%     pulseID = matches(correctID).pulseID;
+%     cellID = tracked_pulse(trackID).cell;
     
-    
-    
-%     missedID = i+15;
+%     missedID = i+10;
 %     trackID = missed_by_fit(missedID).trackID;
-%     missed_by_fit(missedID).mdfID
 %     cellID = tracked_pulse(trackID).cell;
 %     pulseID = [];
-	
+    
+    addedID = i+20;
+    pulseID = missed_by_tracking(addedID).pulseID
+    cellID = pulse(pulseID).cell;
+    trackID = [];
+    
     g = plot_pulse_tracks([pulse([pulse.cell]==cellID)],...
         [tracked_pulse([tracked_pulse.cell]==cellID)], ...
         master_time,{pulseID,trackID},[3,5,i,5+i]);
@@ -94,5 +108,6 @@ for i = 1:5
     subplot(3,5,10+i);
     visualize_cell
     linkaxes([h,g],'x');
+    
 end
 

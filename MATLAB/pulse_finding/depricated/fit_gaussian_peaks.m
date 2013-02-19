@@ -29,13 +29,13 @@ else background = 0; end
 min_t = timeframe(1);
 max_t = timeframe(2);
 
-% Keep track of total number
+% Keep track of total number of fitted pulses (no way around this?)
 num_peaks = 0;
 
 if nargout > 1, cell_fit = 1; else cell_fit = 0; end
 
 % if cell_fit, cells = nan(size(Y)); end
-
+% Initialize the fields
 [cells(1:num_cells).params] = deal([]);
 [cells(1:num_cells).num_peaks] = deal([]);
 [cells(1:num_cells).colorized] = deal([]);
@@ -121,7 +121,7 @@ for i = 1:num_cells
                 fitted_y = synthesize_gaussians(gauss_p(:,j),x);
                 
                 % Get curve and fitted curve
-                pulse(num_peaks).raw_curve = y(left:min(right,numel(y)));
+                pulse(num_peaks).raw_curve = y(left:right);
                 pulse(num_peaks).curve = fitted_y;
                 pulse(num_peaks).aligned_time = x - gauss_p(2,j);
                 

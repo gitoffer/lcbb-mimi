@@ -89,10 +89,13 @@ end
 
 %% Fit for all cells
 
-opt.alpha = [0.01 0.01 0.01 0.05 0.01 0.01 0.01];
+% opt.alpha = [0.01 0.01 0.01 0.05 0.01 0.01 0.01];
+opt.alpha = [0.01 0.01];
+opt.sigma_lb = [15 15];
+opt.sigma_ub = [50 60];
 
-opt.sigma_lb = [15 15 15 15 15 15 15]; % Lower bounds on width (sec)
-opt.sigma_ub = [50 50 50 60 50 50 50]; % Upper bounds on width (sec)
+% opt.sigma_lb = [15 15 15 10 15 15 15]; % Lower bounds on width (sec)
+% opt.sigma_ub = [50 50 50 40 50 50 50]; % Upper bounds on width (sec)
 opt.left_margin = 5; opt.right_margin = 5; %frames
 opt.bg = 'on';
 
@@ -101,7 +104,7 @@ opt.bg = 'on';
 % num_peaks = numel(pulse);
 
 [pulse,cell_fits] = fit_gaussian_peaks(myosins,master_time,[-1000 1000],IDs,opt);
-
+beep
 % if strcmpi(in(1).folder2load,input(1).folder2load)
 % save('~/Desktop/Aligned embryos/WT/detected_pulses_wt_twist_notail','pulse','cell_fits','opt','num_peaks')
 % elseif strcmpi(in(1).folder2load,input_twist(1).folder2load)
