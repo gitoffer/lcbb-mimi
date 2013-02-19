@@ -13,16 +13,16 @@ function sorted = sort_pulses(pulses)
 
 % num_pulses = numel(pulses);
 
-which = unique([pulses.embryo]);
+which = unique([pulses.embryoID]);
 sorted = cell(1,4);
 sorted{1} = []; sorted{2} = []; sorted{3} = [];
 
 for i = which
     
-    pulses_this_embryo = pulses([pulses.embryo] == i);
-    pulseID_this_embryo = find([pulses.embryo] == i);
+    pulses_this_embryo = pulses([pulses.embryoID] == i);
+    pulseID_this_embryo = find([pulses.embryoID] == i);
     
-    pulse_size = [pulses_this_embryo.size];
+    pulse_size = [pulses_this_embryo.amplitude];
     [sorted_sizes,sortedID] = sort(pulse_size,2,'descend');
     
     cutoffs = prctile(sorted_sizes,[25 50 75]);

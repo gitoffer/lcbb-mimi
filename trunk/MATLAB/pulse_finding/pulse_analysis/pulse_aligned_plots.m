@@ -1,75 +1,30 @@
-%%
-% in = input_twist;
-in = input;
-
-%% sub-set of pulses
-
-% subIDs = intersect(find(1:numel(pulse) < wt_cutoff),filtIDs);
-% sub_pulse = subID_pulses(pulse,subIDs);
-
-pulseOI = pulse;
-num_peaks = numel(pulseOI);
-
-%% Align all pulses
-
-[time,aligned_peaks,aligned_myosin] = align_peaks(pulseOI,myosins_sm,opt);
-[~,~,aligned_area] = align_peaks(pulseOI,areas_sm,opt);
-[~,~,aligned_area_rate] = align_peaks(pulseOI,areas_rate,opt);
-[~,~,aligned_myosin_rate] = align_peaks(pulseOI,myosins_rate,opt);
-
-% sort pulses based on their magnitude
-[sorted_sizes,sortedID] = sort([pulseOI.size],2,'descend');
-
-% Mean-center pulse responses
-aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
-
-% Select a subset of pulses to display
-cond = sortedID(1:10);
-
-[aligned_area_norm,cols_left] = delete_nan_rows(aligned_area_norm,2);
-aligned_myosin = aligned_myosin(:,cols_left);
-aligned_area_rate = aligned_area_rate(:,cols_left);
-aligned_myosin_rate = aligned_myosin_rate(:,cols_left);
-aligned_area = aligned_area(:,cols_left);
-time = time(:,cols_left);
-
-% correlate for framerate differences
-corrected_area = ...
-    resample_traces(aligned_area,[pulseOI.embryoID],[input.dt],opt);
-corrected_area_norm = ...
-    resample_traces(aligned_area_norm,[pulseOI.embryoID],[input.dt],opt);
-corrected_myosin = ...
-    resample_traces(aligned_myosin,[pulseOI.embryoID],[input.dt],opt);
-[corrected_area_rate,corrected_time] = ...
-    resample_traces(aligned_area_rate,[pulseOI.embryoID],[input.dt],opt);
-
-%%
-
-corrected_area = interp_mat(corrected_area);
-corrected_area_norm = interp_mat(corrected_area_norm);
-corrected_area_rate = interp_mat(corrected_area_rate);
-corrected_myosin = interp_mat(corrected_myosin);
+pulseOI = pulses;
 
 %% plot a subset of pulses
 
 figure
-% c = rand(numel(cond),3);
-cells = [pulseOI(cond).cellID];
-locs = [pulseOI(cond).center_frame];
-embs = [pulseOI(cond).embryoID];
 
-for i = 1:numel(cond)
+% Select a subset of pulses to display
+subset = sortedID(1:10);
+
+cells = [pulses(subset).cellID];
+locs = [pulses(subset).center];
+embs = [pulses(subset).embryoID];
+
+for i = 1:numel(subset)
     legend_labels{i} = ['embryo ' num2str(embs(i)) ...
         ', cell ' num2str(cells(i)) ...
-        ', frame ' num2str(fix(locs(i)))];
+        ', time ' num2str(fix(locs(i)))];
 end
 
-showsub_vert(@plot,{[pulseOI(cond).aligned_time_padded],[pulseOI(cond).curve_padded]},'detected pulses','xlabel(''time (sec)'');ylabel(''intensity (a.u.)'')',...
-    @plot,{corrected_time,corrected_myosin(cond,:)'},'aligned pulses','xlabel(''aligned time (sec)'')',...
-    @plot,{corrected_time,corrected_area_norm(cond,:)'},'aligned areal response','xlabel(''aligned time (sec)'')', ...
+showsub_vert( ...
+    @plot,{cat(1,pulses(subset).aligned_time_padded)',cat(1,pulses(subset).fit_padded)'}, ...
+    'detected pulses','xlabel(''time (sec)'');ylabel(''intensity (a.u.)'')',...
+    @plot,{pulses(1).corrected_time,corrected_myosin(subset,:)'},'aligned pulses','xlabel(''aligned time (sec)'')',...
+    @plot,{pulses(1).corrected_time,corrected_area_norm(subset,:)'},'aligned areal response','xlabel(''aligned time (sec)'')', ...
     3);
 
-suptitle(['weakest 20 peaks (out of ' num2str(num_peaks) ', ' num2str(num_embryos) ' embryos)'])
+suptitle(['Strongest 10 peaks (out of ' num2str(num_peaks) ', ' num2str(num_embryos) ' embryos)'])
 legend(legend_labels)
 
 %% heatmap of sorted pulses
@@ -77,15 +32,15 @@ legend(legend_labels)
 figure;
 
 subplot(1,5,1)
-h = plot(numel(pulseOI):-1:1,[pulseOI(sortedID).size]);
+h = plot(numel(pulseOI):-1:1,[pulses(sortedID).amplitude]);
 set(h,'linewidth',5);
 set(gca,'cameraupvector',[1,0,0]);
 set(gca,'xlim',[1 numel(pulseOI)]);
 set(gca,'xtick',[]);
-ylabel('pulse size');
+ylabel('pulses size');
 
 subplot(1,5,2:3)
-[x,y] = meshgrid(corrected_time,numel(pulseOI):-1:1);
+[x,y] = meshgrid(pulses(1).corrected_time,numel(pulseOI):-1:1);
 pcolor(x,y,corrected_myosin(sortedID,:)),shading flat, axis tight
 colorbar;
 title('aligned pulses')
@@ -93,22 +48,16 @@ xlabel('aligned time (sec)'); ylabel('pulseID');
 
 subplot(1,5,4:5)
 % sorted_area_norm = sort(corrected_area_norm,2,'descend');
-% area_diff = nan(1,num_peaks);
-for i = 1:num_peaks
-    area_diff(i) = nanmean(corrected_area_norm(i,1:7)) - nanmean(corrected_area_norm(i,end-6:end));
-end
-% area_diff = sorted_area_norm(:,2) - sorted_area_norm(:,last_nonan_idx-1);
-
 % plot(num_peaks:-1:1,...
 %     nanmean(corrected_area_norm(:,1:5),2)-nanmean(corrected_area_norm(:,end-4:end),2));
 % set(gca,'xlim',[1 numel(pulseOI)]);
 % set(gca,'cameraupvector',[1 0 0]);
 
 subplot(1,5,4:5)
-[x,y] = meshgrid(corrected_time,numel(pulseOI):-1:1);
+[x,y] = meshgrid(pulses(1).corrected_time,numel(pulseOI):-1:1);
 pcolor(x,y,corrected_area_norm(sortedID,:)),shading flat, axis tight
 colorbar
-caxis([-15 15]),colorbar
+caxis([-10 10]),colorbar
 title('aligned areal responses')
 xlabel('aligned time (sec)'); ylabel('pulseID');
 
@@ -124,7 +73,7 @@ xlabel('aligned time (sec)'); ylabel('pulseID');
 
 binned = bin_pulses(pulseOI);
 
-x = corrected_time;
+x = pulses(1).corrected_time;
 
 top = binned{1}; middle_top = binned{2}; middle_bottom = binned{3}; bottom = binned{4};
 topids = [top.pulseID]; middle_topids = [middle_top.pulseID]; middle_bottomids = [middle_bottom.pulseID]; bottomids = [bottom.pulseID];
