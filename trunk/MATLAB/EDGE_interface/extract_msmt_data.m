@@ -120,7 +120,8 @@ if nargout > 1
             t(i).aligned_time = time*input(i).dt;
             t(i).frame = nan(size(time));
             
-            t(i).frame(lag(i)+1:lag(i)+input(i).T) = 1:input(i).T;
+            t(i).frame(lag(i)+ 1:lag(i)+input(i).T - input(i).t0) = ...
+                1:input(i).T - input(i).t0;
             
 %             t(i).frame(input(i).tref:input(i).tref+input(i).T-1) = ...
 %                 1:input(i).T;
