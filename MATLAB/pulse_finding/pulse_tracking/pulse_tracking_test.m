@@ -1,24 +1,24 @@
-%PULSE_TRACKING_TEST Test to see if the pulse tracked by hand are detected
-% by the algorithm.
-
-% tracks = read_mdf('~/Dropbox/Pulse tracking/01-30-2012-4/01-30-2012-4-mimi.mdf'); embryoID = 1;
-tracks = read_mdf('~/Desktop/Tracked pulses/01-30-2012-4/01-30-2012-4-merged_acm.tif.mdf'); embryoID = 1;
-% tracks = read_mdf('~/Dropbox/Pulse tracking/10-25-2012-1/10-25-2012-1-mimi.mdf'); embryoID = 2;
-% tracks = read_mdf('~/Dropbox/Pulse tracking/10-25-2012-1/10-25-2012-1-acm.mdf'); embryoID = 2;
-
-embryo_stack = edge2embryo(EDGEstack,input,num_cells);
-
-tracked_pulse = load_mdf_pulse(tracks,embryo_stack(embryoID),input(embryoID), ...
-    num_cells,master_time(embryoID));
-
-cellOI = unique([tracked_pulse.cell]);
-cellOI = cellOI(~isnan(cellOI));
-cellOI = cellOI(~cellfun(@isempty,{cell_fits(cellOI).num_peaks}));
-
-tracked_pulse = [tracked_pulse(ismember([tracked_pulse.cell],cellOI))];
-for i = 1:numel(tracked_pulse)
-    tracked_pulse(i).trackID = i;
-end
+% %PULSE_TRACKING_TEST Test to see if the pulse tracked by hand are detected
+% % by the algorithm.
+% 
+% % tracks = read_mdf('~/Dropbox/Pulse tracking/01-30-2012-4/01-30-2012-4-mimi.mdf'); embryoID = 1;
+% tracks = read_mdf('~/Desktop/Tracked pulses/01-30-2012-4/01-30-2012-4-merged_acm.tif.mdf'); embryoID = 1;
+% % tracks = read_mdf('~/Dropbox/Pulse tracking/10-25-2012-1/10-25-2012-1-mimi.mdf'); embryoID = 2;
+% % tracks = read_mdf('~/Dropbox/Pulse tracking/10-25-2012-1/10-25-2012-1-acm.mdf'); embryoID = 2;
+% 
+% embryo_stack = edge2embryo(EDGEstack,input,num_cells);
+% 
+% tracked_pulse = load_mdf_pulse(tracks,embryo_stack(embryoID),input(embryoID), ...
+%     num_cells,master_time(embryoID));
+% 
+% cellOI = unique([tracked_pulse.cell]);
+% cellOI = cellOI(~isnan(cellOI));
+% cellOI = cellOI(~cellfun(@isempty,{cell_fits(cellOI).num_peaks}));
+% 
+% tracked_pulse = [tracked_pulse(ismember([tracked_pulse.cell],cellOI))];
+% for i = 1:numel(tracked_pulse)
+%     tracked_pulse(i).trackID = i;
+% end
 
 pulseOI = [pulse(ismember([pulse.cell],cellOI))];
 
@@ -106,7 +106,7 @@ for i = 1:5
         master_time,{pulseID,trackID},[3,5,i,5+i]);
     
     subplot(3,5,10+i);
-    visualize_cell
+    visualize_cell(cells, stackID);
     linkaxes([h,g],'x');
     
 end
