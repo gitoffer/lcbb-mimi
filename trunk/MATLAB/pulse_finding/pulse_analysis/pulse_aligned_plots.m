@@ -7,13 +7,13 @@ figure
 % Select a subset of pulses to display
 subset = sortedID(1:10);
 
-cells = [pulses(subset).cellID];
+cellOI = [pulses(subset).cellID];
 locs = [pulses(subset).center];
 embs = [pulses(subset).embryoID];
 
 for i = 1:numel(subset)
     legend_labels{i} = ['embryo ' num2str(embs(i)) ...
-        ', cell ' num2str(cells(i)) ...
+        ', cell ' num2str(cellOI(i)) ...
         ', time ' num2str(fix(locs(i)))];
 end
 
