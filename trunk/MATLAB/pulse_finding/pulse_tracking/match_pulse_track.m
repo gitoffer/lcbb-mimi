@@ -35,7 +35,7 @@ for i = 1:num_ref
             candidates(j).(comp_field), ...
             this_ref.(ref_field) ));
     end
-    
+
     [~,order] = sort(overlap, 2, 'descend');
     
     if overlap( order(1) ) > threshold
@@ -44,7 +44,7 @@ for i = 1:num_ref
             candidates(order(1)).(compID);
         
     end
-    
+
     overlaps(i) = overlap( order(1) );
 end
 
@@ -65,10 +65,10 @@ end
         if isfield(comp,'width_frames'), comp_field = 'width_frames';
         else comp_field = 'dev_frame'; end
         
-        if isfield(ref,'pulseID'),refID = 'pulseID';
+        if isfield(ref,'fitID'),refID = 'fitID';
         else refID = 'trackID'; end
         
-        if isfield(comp,'pulseID'),compID = 'pulseID';
+        if isfield(comp,'fitID'),compID = 'fitID';
         else compID = 'trackID'; end
     end
 

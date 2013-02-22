@@ -89,7 +89,7 @@ for i = 1:num_tracks
     this_track.img_frame = img_frame;
     
 	% Construct Track object
-	tracks(trackID) = this_track;
+	tracks(trackID) = Track(this_track);
 
 end
 
