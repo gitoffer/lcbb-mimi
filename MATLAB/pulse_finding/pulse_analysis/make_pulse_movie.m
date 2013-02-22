@@ -9,18 +9,20 @@ function F = make_pulse_movie(pulse,input,vx,vy,master_time)
 %
 % xies@mit.edu
 
-embryoID = pulse.embryoID;
+% embryoID = pulse.embryoID;
 
-pulse_frames = pulse.frame;
+if isfield(pulse,'dev_frame'),pulse_frames = pulse.dev_frame;
+else pulse_frames = pulse.margin_frames; end
 h.vx = vx(pulse_frames,:);
 h.vy = vy(pulse_frames,:);
 
-h.sliceID = input(embryoID).actual_z;
+h.sliceID = input.actual_z;
 
-h.frames2load = master_time(embryoID).frame(pulse_frames) + input(embryoID).t0;
+% h.frames2load = master_time(pulse_frames) + input.t0;
+h.frames2load = pulse_frames;
 
-h.cellID = pulse.cell;
-h.input = input(embryoID);
+h.cellID = pulse.cellID;
+h.input = input;
 h.channels = {'Membranes','Myosin'};
 
 % If there is a '.curve' associated with the pulse, then put it down as the

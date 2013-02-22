@@ -1,4 +1,4 @@
-function [pulse,new_cells] = fit_gaussians(cells,opts)
+function [fit,new_cells] = fit_gaussians(cells,opts)
 
 
 num_embryos = max(unique([cells.embryoID]));
@@ -11,7 +11,7 @@ end
 [cells(1:sum(num_cells)).flag_fitted] = deal(0);
 num_frames = numel(cells(1).dev_frame);
 
-pulseID = 0;
+fitID = 0;
 
 for stackID = 1:sum(num_cells)
     
@@ -25,11 +25,19 @@ for stackID = 1:sum(num_cells)
     Y = this_cell.(opt.to_fit); % curve to be fit
     t = this_cell.dev_time;     % independent variable (domain)
     
+    failed = 0;
+    % Interpolate and trucate NaN
+    try [y,shift,endI] = interp_and_truncate_nan(Y);
+    catch err
+        failed = 1; shift = 1; endI = numel(Y);
+    end
+    
+    consec_nan = find_consecutive_logical( isnan(Y(shift:endI)) );
+    
     % Reject curves without the requisite number of non-NAN data poitns
-    if numel(Y(~isnan(Y))) > opt.nan_thresh && any(Y > 0)
+    if max(consec_nan) < opt.nan_consec_thresh && any(Y > 0) && ~failed && ...
+            numel(Y(~isnan(Y))) > opt.nan_thresh
         
-        % Interpolate and trucate NaN
-        [y,shift] = interp_and_truncate_nan(Y);
         t = t( shift : shift + numel(y) - 1);
         
         % Establish the lower constraints
@@ -55,57 +63,60 @@ for stackID = 1:sum(num_cells)
         
         % --- Get pulse info ---
         this_cell.num_pulses = size(gauss_p,2) - 1;
-        this_cell.pulseID = [];
+        this_cell.fitID = [];
         
         for j = 2 : size(gauss_p,2)
             
-            % Assign pulseID
-            pulseID = pulseID + 1;
-            this_pulse.pulseID = pulseID;
+            % Assign fitID
+            fitID = fitID + 1;
+            this_fit.fitID = fitID;
             
             % Collect the relevant IDs
-            this_pulse.embryoID = embryoID;
-            this_pulse.stackID = stackID;
-            this_pulse.cellID = this_cell.cellID;
+            this_fit.embryoID = embryoID;
+            this_fit.stackID = stackID;
+            this_fit.cellID = this_cell.cellID;
             
             % Collect the parameters
             amplitude = gauss_p(1,j); center = gauss_p(2,j); width = gauss_p(3,j);
-            this_pulse.amplitude = amplitude;
-            this_pulse.center = center; this_pulse.width = width;
+            this_fit.amplitude = amplitude;
+            this_fit.center = center; this_fit.width = width;
             
             dev_time = this_cell.dev_time;
             center_frame = findnearest(center,dev_time);
-%             this_pulse.center_frame = center_frame;
+%             this_fit.center_frame = center_frame;
             % Get pulse margin-time frame
             [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
             [right_margin,pad_r] = min([ center_frame + opt.left_margin , num_frames]);
-            this_pulse.margin_frames = left_margin:right_margin;
+            this_fit.margin_frames = left_margin:right_margin;
             % Get pulse width-time frame
             left_width = max( center_frame - findnearest(width,cumsum(diff(t))) , 1);
             right_width = min( center_frame + findnearest(width,cumsum(diff(t))) , num_frames);
-            this_pulse.width_frames = left_width:right_width;
+            this_fit.width_frames = left_width:right_width;
             
             % Collect the pulse-centric fitted curves
             x = dev_time(left_margin:right_margin);
             fitted_y = synthesize_gaussians(gauss_p(:,j),x);
-            this_pulse.raw = Y(left_margin:right_margin);
-            this_pulse.fit = fitted_y;
-            this_pulse.aligned_time = x - center;
+            this_fit.raw = Y(left_margin:right_margin);
+            this_fit.fit = fitted_y;
+            this_fit.aligned_time = x - center;
             
             % PAD the margin-time frame for plotting purposes
             if pad_l > 1
-                fitted_y = [nan(1 - (center_frame - opt.left_margin), 1), fitted_y];
-                x = [nan(1 - (center_frame - opt.left_margin), 1), x];
+                fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
+                x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
             end
             if pad_r > 1
                 fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
                 x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
             end
-            this_pulse.aligned_time_padded = x;
-            this_pulse.fit_padded = fitted_y;
+            this_fit.aligned_time_padded = x;
+            this_fit.fit_padded = fitted_y;
             
-            pulse(pulseID) = this_pulse;
-            this_cell.pulseID = [this_cell.pulseID pulseID];
+            fit(fitID) = Fitted(this_fit);
+            
+            % Construct Fitted object
+%             fit(fitID) = this_fit;
+            this_cell.fitID = [this_cell.fitID fitID];
             
         end
         
@@ -117,7 +128,7 @@ for stackID = 1:sum(num_cells)
         this_cell.fit_curve = NaN;
         this_cell.residuals = NaN;
         this_cell.num_pulses = NaN;
-        this_cell.pulseID = NaN;
+        this_cell.fitID = NaN;
     end
     
     new_cells(stackID) = this_cell;

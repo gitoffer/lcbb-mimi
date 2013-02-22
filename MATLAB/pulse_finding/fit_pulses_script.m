@@ -1,35 +1,34 @@
 
 %%
-
+clear fit_opts
 [fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity_fuzzy');
 [fit_opts(1:num_embryos).bg] = deal('on');
 
 [fit_opts(1:num_embryos).left_margin] = deal(5);
 [fit_opts(1:num_embryos).right_margin] = deal(5);
 [fit_opts(1:num_embryos).nan_thresh] = deal(20);
+[fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
 [fit_opts(1:num_embryos).end_tol] = deal(30);
 
 fit_opts(1).alpha = 0.01;
 fit_opts(1).sigma_lb = 15;
 fit_opts(1).sigma_ub = 50;
-
-fit_opts(2).alpha = 0.01;
-fit_opts(2).sigma_lb = 15;
-fit_opts(2).sigma_ub = 50;
+% 
+% fit_opts(2).alpha = 0.01;
+% fit_opts(2).sigma_lb = 15;
+% fit_opts(2).sigma_ub = 40;
 
 %%
 
-embryo_stack = edge2embryo(EDGEstack,input,num_cells);
 cells = edge2cell(embryo_stack);
-[pulses,cells] = fit_gaussians(cells,fit_opts);
+[fits,cells] = fit_gaussians(cells,fit_opts);
 
 %% sub-set of pulses
 
 % subIDs = intersect(find(1:numel(pulses) < wt_cutoff),filtIDs);
 % sub_pulse = subID_pulses(pulses,subIDs);
 
-pulsesOI
-num_peaks = numel(pulseOI);
+% num_peaks = numel(pulseOI);
 
 %% Align all pulses
 
