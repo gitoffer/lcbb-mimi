@@ -22,7 +22,7 @@ function varargout = play_movie(varargin)
 
 % Edit the above text to modify the response to help play_movie
 
-% Last Modified by GUIDE v2.5 14-Sep-2012 19:17:20
+% Last Modified by GUIDE v2.5 21-Feb-2013 20:29:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,19 +57,21 @@ handles.output = hObject;
 
 if numel(varargin) ~= 1
     error('ERROR: Need movie as input!');
+else
+    if isempty(varargin{1}), return; end
 end
 handles.movie = varargin{1};
 
 num_frames = numel(handles.movie);
 
-set(handles.slider1,'Min',1,...
+set(handles.frame_selecter,'Min',1,...
     'Max',num_frames,...
     'Value',1, ...
-    'SliderStep',[1 1]/(num_frames-1) ...
+    'SliderStep',[0 1]/(num_frames-1) ...
     );
 %     'sliderstep',1);
 
-current_frame = get(handles.slider1,'Value');
+current_frame = get(handles.frame_selecter,'Value');
 set(handles.edit1,'String',int2str(current_frame));
 
 set(handles.edit1,'Value',current_frame);
@@ -90,19 +92,22 @@ function varargout = play_movie_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = handles.output;
+% varargout{1} = handles.output;
 
 
 % --- Executes on slider movement.
-function slider1_Callback(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
+function frame_selecter_Callback(hObject, eventdata, handles)
+% hObject    handle to frame_selecter (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles = guidata(handles.output);
 
-current_frame = fix(get(hObject,'Value'));
+current_frame = get(hObject,'Value')
+
+% set(hObject,'Value',current_frame);
 
 set(handles.edit1,'String',int2str(current_frame));
-set(handles.slider1,'Value',current_frame);
+set(handles.frame_selecter,'Value',current_frame);
 
 imshow(handles.movie(current_frame).cdata,'Parent',get(handles.figure1,'CurrentAxes'));
 
@@ -114,8 +119,8 @@ guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function slider1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
+function frame_selecter_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to frame_selecter (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -131,9 +136,9 @@ function edit1_Callback(hObject, eventdata, handles)
 % hObject    handle to edit1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-current_frame = str2num(get(hObject,'String'));
+current_frame = str2double(get(hObject,'String'));
 set(handles.edit1,'String',current_frame);
-set(handles.slider1,'Value',current_frame);
+set(handles.frame_selecter,'Value',current_frame);
 imshow(handles.movie(current_frame).cdata,'Parent',get(handles.figure1,'CurrentAxes'));
 guidata(hObject, handles);
 
@@ -153,17 +158,3 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-% --- Executes on button press in playbutton.
-function playbutton_Callback(hObject, eventdata, handles)
-% hObject    handle to playbutton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-movie(get(handles.figure1,'CurrentAxes'),handles.movie);
-
-
-% --- Executes on button press in stopbutton.
-function stopbutton_Callback(hObject, eventdata, handles)
-% hObject    handle to stopbutton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)

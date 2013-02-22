@@ -1,9 +1,9 @@
-function [signal_int,start] = interp_and_truncate_nan(signal)
+function [signal_int,start,endI] = interp_and_truncate_nan(signal)
 %INTERP_AND_TRUNCATER_NAN: Interpolates the input SIGNAL and truncates
 %trailing NaNs. Will set first NaNs to 0, but will also return the true
 %"start" index.
 %
-% SYNOPSIS: [s_interp, start] = interp_and(truncate_nan(signal);
+% SYNOPSIS: [s_interp, start] = interp_and_truncate_nan(signal);
 %
 % xies@mit.edu
 
@@ -21,5 +21,8 @@ signal_int_pad(1:I) = 0;
 I = find(isnan(signal_int_pad),1);
 signal_int(I:end) = [];
 signal_int(1:start-1) = [];
+
+endI = I;
+if isempty(endI), endI = numel(signal); end
 
 end

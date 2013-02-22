@@ -2,7 +2,8 @@
 
 %% Make movies of individual pulses
 
-F = make_pulse_movie(pulse(77),input,vertices_x,vertices_y,master_time);
+F = make_pulse_movie(fits(101),input,vertices_x,vertices_y,dev_time);
+play_movie(F)
 
 %% Make a movie of hand-tracked pulse
 

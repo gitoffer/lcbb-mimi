@@ -22,7 +22,7 @@ out_data = [];
 for i = 1:num_embryos
     
     this_data = data{i};
-	
+
     if iscell(data{i})
         this_data = padcell(this_data,max_left - left(i),NaN,'pre');
         this_data = padcell(this_data,max_right - right(i),NaN,'post');
