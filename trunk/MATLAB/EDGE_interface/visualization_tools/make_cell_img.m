@@ -18,6 +18,7 @@ function G = make_cell_img(h)
 %
 % xies@mit.edu 2012.
 
+
 input = h.input;
 frames = h.frames2load;
 channels = h.channels;
