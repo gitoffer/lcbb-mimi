@@ -1,8 +1,8 @@
 %%TRACK_PULSE_SCRIPT Pipeline for 
 
 %% Load MDF into matrix
-mdf_mat = read_mdf('~/Desktop/Tracked pulses/01-30-2012-4/01-30-2012-4-merged_acm.tif.mdf'); embryoID = 1;
-% mdf_mat = read_mdf('~/Desktop/Tracked pulses/10-25-2012-1/10-25-2012-1-acm.mdf'); embryoID = 2;
+% mdf_mat = read_mdf('~/Desktop/Tracked pulses/01-30-2012-4/01-30-2012-4-merged_acm.tif.mdf'); embryoID = 1;
+mdf_mat = read_mdf('~/Desktop/Tracked pulses/10-25-2012-1/10-25-2012-1-acm.mdf'); embryoID = 2;
 
 tracks = load_mdf_track(mdf_mat, embryo_stack, embryoID, 1, cells);
 fitsOI = [fits( ismember([fits.stackID], [tracks.stackID]) )];
@@ -20,25 +20,23 @@ match_thresh = 1;
 
 pulse = Pulse(tracks,fitsOI);
 pulse = pulse.match_pulse(match_thresh);
-pulse = pulse.categorize_mapping
+pulse = pulse.categorize_mapping;
 
 pulse.embryoID = embryoID;
 
-% display_match(pulse);
+display(pulse);
 
-%% Visualize
+%% Mannually-correct
 
-mergeID = 4;
-splitID = 1:5;
-missID = 2;
-addID = 1:5;
+% pulse
+remove_list = [56 202];
+createTF_list = [4 141 79 123 113 222 221 207 205 203];
 
-graph_match(pulse.categories.merge,cells,tracks,fits,mergeID);
-% figure, visualize_match(match.split,cells,tracks,pulses,splitID);
-% figure, visualize_match(match.miss,cells,tracks,pulses,missID);
-% figure, visualize_match(match.add,cells,tracks,pulses,addID);
+for i = 1:numel(remove_list)
+    pulse = pulse.removePulse( 'fit',remove_list(i) );
+end
 
-%%
-
-F = make_pulse_movie(tracks([match.merge(mergeID).trackID(1)]), input, ...
-    vertices_x, vertices_y, dev_time);
+for i = 1:numel(createTF_list)
+    pulse = pulse.createTrackFromFit( createTF_list(i) );
+end
+% pulse
