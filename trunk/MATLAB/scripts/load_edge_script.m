@@ -23,12 +23,12 @@ input(1).embryoID = 1; input(1).last_segmented = 50; input(1).ignore_list = [];
 % input(3).X = 400; input(3).Y = 1000; input(3).T = 80;
 % input(3).embryoID = 3;
 
-% input(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/102512 Embryo 1/Measurements';
-% input(2).zslice = 1; input(2).actual_z = 4;
-% input(2).tref = 40; input(2).t0 = 0; input(2).ignore_list = [];
-% input(2).dt = 7.6; input(2).um_per_px = 0.1732535;
-% input(2).X = 400; input(2).Y = 1000; input(2).T = 80;
-% input(2).embryoID = 2; input(2).last_segmented = 65;
+input(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/102512 Embryo 1/Measurements';
+input(2).zslice = 1; input(2).actual_z = 4;
+input(2).tref = 40; input(2).t0 = 0; input(2).ignore_list = [];
+input(2).dt = 7.6; input(2).um_per_px = 0.1732535;
+input(2).X = 400; input(2).Y = 1000; input(2).T = 80;
+input(2).embryoID = 2; input(2).last_segmented = 65;
 
 % input(5).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/110712 SqhGap 1/Measurements';
 % input(5).zslice = 2; input(5).actual_z = 4;

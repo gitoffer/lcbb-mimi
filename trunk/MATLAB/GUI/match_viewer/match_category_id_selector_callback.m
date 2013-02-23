@@ -8,8 +8,8 @@ function handles = match_category_id_selector_callback(handles)
 pulse = handles.pulse;
 cells = handles.cells;
 % embryo_struct = handles.embryo_struct;
-fits = handles.pulse.fits;
-tracks = handles.pulse.tracks;
+% fits = handles.pulse.fits;
+% tracks = handles.pulse.tracks;
 
 % Get the currently selected category
 categories = get( handles.category,'String');

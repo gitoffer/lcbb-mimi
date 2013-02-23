@@ -30,7 +30,7 @@ if this_cell.flag_fitted
     
     plot(handle,this_cell.fit_time, this_cell.fit_colorized);
     plot(handle,this_cell.fit_time, this_cell.fit_bg, 'c-');
-    plot(handle,this_cell.fit_time, this_cell.fit_curve, 'm-');
+%     plot(handle,this_cell.fit_time, this_cell.fit_curve, 'm-');
     
     hold(handle,'off');
     

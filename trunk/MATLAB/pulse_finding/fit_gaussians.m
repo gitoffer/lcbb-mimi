@@ -53,12 +53,12 @@ for stackID = 1:sum(num_cells)
         this_cell.flag_fitted = 1;
         
         % --- Get fitted curves ---
-        this_fit = synthesize_gaussians(gauss_p(:,2:end),t); % Get gaussians/time
+        curve = synthesize_gaussians(gauss_p(:,2:end),t); % Get gaussians/time
         background = lsq_exponential(gauss_p(:,1),t); % Get background
         P = plot_peak_color(gauss_p(:,2:end),t); % Get colorized fit
         this_cell.fit_colorized = P; this_cell.fit_bg = background;
-        this_cell.fit_gaussians = this_fit; this_cell.fit_time = t;
-        this_cell.fit_curve = this_fit + background;
+        this_cell.fit_gaussians = curve; this_cell.fit_time = t;
+        this_cell.fit_curve = curve + background;
         this_cell.residuals = residuals;
         
         % --- Get pulse info ---
@@ -83,15 +83,20 @@ for stackID = 1:sum(num_cells)
             
             dev_time = this_cell.dev_time;
             center_frame = findnearest(center,dev_time);
-%             this_fit.center_frame = center_frame;
+            
             % Get pulse margin-time frame
             [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
             [right_margin,pad_r] = min([ center_frame + opt.left_margin , num_frames]);
             this_fit.margin_frames = left_margin:right_margin;
+            
             % Get pulse width-time frame
             left_width = max( center_frame - findnearest(width,cumsum(diff(t))) , 1);
             right_width = min( center_frame + findnearest(width,cumsum(diff(t))) , num_frames);
             this_fit.width_frames = left_width:right_width;
+            
+            % Get pulse time WRT image/dev_time
+            this_fit.img_frames = this_cell.dev_frame(left_width:right_width);
+            this_fit.dev_time = this_cell.dev_time(left_width:right_width);
             
             % Collect the pulse-centric fitted curves
             x = dev_time(left_margin:right_margin);
