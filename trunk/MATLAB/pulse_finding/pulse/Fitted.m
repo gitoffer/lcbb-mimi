@@ -74,21 +74,19 @@ classdef Fitted
             num_fits = numel(fits);
             duration = numel(fits(1).margin_frames);
             l = opt.left_margin; r = opt.right_margin;
-            
+
             center_idx = l + 1;
             
             for i = 1:num_fits
                 
                 frames = fits(i).margin_frames;
-                %                 nonan_idx = fits(i).aligned_time_padded;
-                %                 nonan_idx = ~isnan( nonan_idx );
                 [~,max_idx] = max( fits(i).fit );
                 
                 left_len = max_idx - 1;
                 
-                m = nan(1, l + r + 1);
+                m = nan(1, l + r + 1); % Make the padded vector
                 m( (center_idx - left_len) : (center_idx - left_len + duration - 1) ) = ...
-                    measurement( frames, fits(i).stackID );
+                    measurement( fits(i).dev_frame, fits(i).stackID );
 
                 fits(i).(name) = m;
                 

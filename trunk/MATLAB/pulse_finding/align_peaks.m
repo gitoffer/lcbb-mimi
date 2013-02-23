@@ -3,7 +3,15 @@ function [fits,time] = align_peaks(fits,measurement,name,opt)
 % traces. Will return also a given measurement aligned according to the
 % maxima. Updates the fits structure.
 %
-% SYNOPSIS: [fits,time] = align_peaks(fitss,cells,opt);
+<<<<<<< .mine
+% SYNOPSIS: [fits,time] = align_peaks(fits,cells,opt);
+=======
+% SYNOPSIS: [time,aligned_p,aligned_areas] = 
+%                align_peaks(pulses,myosins_sm,areas_sm,opt);
+>>>>>>> .r141
+%
+% INPUT: fits - array of FITTED structure
+%
 %
 % xies@mit.edu Aug 2012
 
