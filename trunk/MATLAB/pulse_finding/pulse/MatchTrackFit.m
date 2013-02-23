@@ -65,11 +65,6 @@ classdef MatchTrackFit
                     overlaps(i) = overlap( order(1) );
                 end
                 
-                % ----- Sub-nested functions
-                function flag2cont = valid_input(ref,comp)
-                    flag2cont = isstruct(ref) && isstruct(comp);
-                end
-                
                 function flag2cont = valid_pulse(ref,ref_field,thresh)
                     flag2cont = ~any([isnan(ref.cellID) isnan(ref.embryoID) isnan(ref.stackID)]);
                     flag2cont = flag2cont || numel(ref.(ref_field)) < thresh + 1;
@@ -118,20 +113,23 @@ classdef MatchTrackFit
             
         end % Merge
         
-        function obj = removeElement(obj,value,name)
-            
-            if strcmpi(name,'track')
-                mapname = 'dictTrackPulse'; othername = 'dictPulseTrack';
-            else
-                mapname = 'dictPulseTrack'; othername = 'dictTrackPulse';
+        function obj = removeElement(obj,key,name)
+            % Removes a Pulse object from the two maps
+            switch name
+                case 'track'
+                    mapname = 'dictTrackFit'; othername = 'dictFitTrack';
+                case 'fit'
+                    mapname = 'dictFitTrack'; othername = 'dictTrackFit';
             end
             
-            obj.(mapname).remove(value);
+            if isKey(obj.(mapname),key), obj.(mapname).remove(key); end
             
             vlist = obj.(othername).values;
+            if ~ismember( key, [vlist{:}] ), return; end
             keylist = obj.(othername).keys;
-            obj.(othername).remove( num2cell( keylist{cellfun(@(x) x == value,vlist)} ) );
-            keyboard
+            obj.(othername).remove( ...
+                num2cell( keylist{cellfun(@(x) x == key,vlist)} ) );
+            
         end %removeElement
         
     end %methods
