@@ -1,6 +1,7 @@
 classdef Pulse
     properties (SetAccess = private)
         fits
+		fits_opts
         tracks
         
         map
@@ -15,7 +16,7 @@ classdef Pulse
     end
     methods %Dynamic methods
         % ---- Constructor ----
-        function pulse = Pulse(tracks,fits)
+        function pulse = Pulse(tracks,fits,opts)
             if strcmp(class(tracks),'Track')
                 pulse.fits = fits;
                 pulse.tracks = tracks;
@@ -23,6 +24,7 @@ classdef Pulse
                 pulse.fits = tracks;
                 pulse.tracks = fits;
             end
+			pulse.fits_opts = opts;
             
         end % Constructor
         
