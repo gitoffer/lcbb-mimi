@@ -15,45 +15,45 @@ classdef Pulse
     end
     methods %Dynamic methods
         % ---- Constructor ----
-        function obj = Pulse(tracks,fits)
+        function pulse = Pulse(tracks,fits)
             if strcmp(class(tracks),'Track')
-                obj.fits = fits;
-                obj.tracks = tracks;
+                pulse.fits = fits;
+                pulse.tracks = tracks;
             else
-                obj.fits = tracks;
-                obj.tracks = fits;
+                pulse.fits = tracks;
+                pulse.tracks = fits;
             end
             
         end % Constructor
         
-        function obj = match_pulse(obj,threshold)
+        function pulse = match_pulse(pulse,threshold)
             % Match fit and track
-            nbm = MatchTrackFit(obj.tracks,obj.fits,threshold);
-            obj.map = nbm;
-            obj.match_thresh = threshold;
+            nbm = MatchTrackFit(pulse.tracks,pulse.fits,threshold);
+            pulse.map = nbm;
+            pulse.match_thresh = threshold;
             
         end % match
         
-        function obj = categorize_mapping(obj)
+        function pulse = categorize_mapping(pulse)
             %PULSE class method
             % categorizes the mapping between track and fit
             
-            nbm = obj.map;
-            fit = obj.fits;
-            track = obj.tracks;
+            nbm = pulse.map;
+            fit = pulse.fits;
+            track = pulse.tracks;
             
-            % -- Quantify merges --
+            % -------- Quantify merges --
             [trackID,fitID] = find_merges(nbm.dictTrackFit);
             [ matches.merge( 1:numel(trackID) ).trackID ] = deal(trackID{:});
             [ matches.merge( 1:numel(trackID) ).fitID ] = deal(fitID{:});
             % Annotate fit/track with merges
             for i = 1:numel(trackID)
-                keyboard
+                %                 keyboard
                 [ fit( ismember([fit.fitID], fitID{i}) ).category ] = deal('merge');
                 [ track( ismember([track.trackID], trackID{i}) ).category ] = deal('merge');
             end
             
-            % -- Quantify splits --
+            % ------- Quantify splits --
             [fitID,trackID] = find_merges(nbm.dictFitTrack);
             [ matches.split( 1:numel(trackID) ).fitID ] = deal(fitID{:});
             [ matches.split( 1:numel(trackID) ).trackID ] = deal(trackID{:});
@@ -63,10 +63,10 @@ classdef Pulse
                 [ track( ismember([track.trackID], trackID{i}) ).category ] = deal('split');
             end
             
-            % -- Quantify missed/added --
+            % ------- Quantify missed/added --
             matchedTF_trackID = nbm.dictTrackFit.keys; %fitID
             matchedFT_fitID = nbm.dictFitTrack.keys; %trackID
-            
+            % misses
             trackID = ...
                 [ track(~ismember([track.trackID],cell2mat(matchedTF_trackID))).trackID ];
             % Annotate track with misses
@@ -75,7 +75,7 @@ classdef Pulse
                 matches.miss(i).fitID = [];
             end
             [ track( ismember([track.trackID],[matches.miss.trackID])).category ] = deal('miss');
-            
+            % adds
             fitID = ...
                 [ fit(~ismember([fit.fitID],cell2mat(matchedFT_fitID))).fitID ];
             for i = 1:numel(fitID)
@@ -103,22 +103,24 @@ classdef Pulse
             % Annotate one2one matches ontp fit/track structures
             [ track( ismember([track.trackID],[one2one.trackID]) ).category] = deal('one2one');
             [ fit( ismember([fit.fitID],[one2one.fitID]) ).category] = deal('one2one');
-            
             % Collect into structure
             matches.one2one = one2one;
             
-            obj.fits = fit;
-            obj.tracks = track;
-            obj.categories = matches;
-            if ~consistent(obj,matchedTF_trackID,matchedFT_fitID)
+            % Delete empty fields
+            matches = delete_empty(matches);
+            
+            pulse.fits = fit;
+            pulse.tracks = track;
+            pulse.categories = matches;
+            if ~consistent(pulse,matchedTF_trackID,matchedFT_fitID)
                 error('Something doesn''t add up!');
             end
             
             % -- Subfunctions of categorize_mapping -- %
-            function flag2cont = consistent(obj,matchedTF_trackID,matchedFT_fitID)
-                match = obj.categories;
-                num_tracks = numel(obj.tracks);
-                num_fit = numel(obj.fits);
+            function flag2cont = consistent(pulse,matchedTF_trackID,matchedFT_fitID)
+                match = pulse.categories;
+                num_tracks = numel(pulse.tracks);
+                num_fit = numel(pulse.fits);
                 flag2cont = num_tracks ~= ...
                     numel(match.one2one) + numel(match.miss.trackID) ...
                     + numel([match.merge.trackID]);
@@ -132,13 +134,101 @@ classdef Pulse
                     numel(matchedFT_fitID) ~= numel(match.one2one) ...
                     + numel([ match.merge.fitID ]) + numel([ match.split.fitID ]);
             end
+            function match = delete_empty(match)
+                if isempty( [match.one2one.trackID] )
+                    match = rmfield(match,'one2one');
+                end
+                if isempty( [match.merge.trackID] )
+                    match = rmfield(match,'merge');
+                end
+                if isempty( [match.split.trackID] )
+                    match = rmfield(match,'split');
+                end
+                if isempty( [match.miss.trackID] )
+                    match = rmfield(match,'miss');
+                end
+                if isempty( [match.add.fitID] )
+                    match = rmfield(match,'add');
+                end
+            end
             % --- End categorize_mapping subfunctions
         end % Categorize_mapping
         
-        function graph(obj,cat,cells,ID,axes_handle)
+%--------------------- edit pulse/tracks ----------------------------------
+        
+        function pulse = removePulse(pulse,type,pulseID)
+            % Remove pulse from track-fit mapping
+            new_nbm = pulse.map.removeElement(pulseID,type);
+            pulse.map = new_nbm;
+            % Remove pulse from stack
+            switch type
+                case 'fit'
+                    fits = pulse.fits;
+                    fits(ismember([fits.fitID],pulseID)) = [];
+                    pulse.fits = fits;
+                case 'track'
+                    tracks = pulse.tracks;
+                    tracks(ismember([tracks.trackID],pulseID)) = [];
+                    pulse.tracks = tracks;
+                otherwise
+                    error('Invalid type: expecting TRACK or FIT.')
+            end
+            
+            % Redo categorizing
+            pulse = pulse.categorize_mapping;
+            
+        end %removePulse
+        
+        function pulse = createTrackFromFit(pulse,fitID)
+            %@Pulse.createTrackFromFit Convert a fitted pulse into an
+            %'artificial track'. Useful when dealing with the 'add'
+            % category.
+            %
+            % USAGE: pulse = pulse.createTrackFromFit(fitID);
+            
+            fit = pulse.fits.get_fitID(fitID);
+            if isempty(fit), error('No FIT found with fitID.'); end
+            % Add to tracks stack
+            this_track.embryoID = fit.embryoID;
+            this_track.cellID = fit.cellID;
+            this_track.stackID = fit.stackID;
+            this_track.dev_frame = fit.width_frames;
+            this_track.embryoID = fit.embryoID;
+            this_track.dev_time = ensure_row(fit.dev_time);
+            this_track.img_frame = ensure_row(fit.img_frames);
+            
+            tracks = add_track(pulse.tracks,this_track);
+            
+            % Rematch the track/fit mappings
+            pulse_new = pulse; pulse_new.tracks = tracks;
+            pulse_new = pulse_new.match_pulse(pulse.match_thresh); % Redo match
+            pulse_new = pulse_new.categorize_mapping;
+            
+            pulse = pulse_new;
+            
+            
+        end % createTrackFromFit
+        
+%         function pulse = deassignPulse(pulse,type,pulseID)
+%             
+%             switch type
+%                 case 'track'
+%                     
+%                 case 'pulse'
+%                     
+%                 otherwise
+%                     error('Invalid type: expecing PULSE or TRACK.')
+%             end
+%             
+%         end
+%         
+
+%---------------------- graph/display -------------------------------------
+        
+        function graph(pulse,cat,cells,ID,axes_handle)
             % Graph the selected cateogry
-            % USAGE: obj.graph(category,cells,ID,handles)
-            %        obj.graph(category,cells,ID)
+            % USAGE: pulse.graph(category,cells,ID,handles)
+            %        pulse.graph(category,cells,ID)
             %
             % INPUT: category - string corresponding to category name, e.g.
             %               'one2one' or 'merge'
@@ -147,10 +237,10 @@ classdef Pulse
             %        handles.axes - subplot axes
             
             % get the data
-            fits = obj.fits; tracks = obj.tracks;
+            fits = pulse.fits; tracks = pulse.tracks;
             
             % find number of things to graph
-            category = obj.categories.(cat);
+            category = pulse.categories.(cat);
             num_disp = numel(ID);
             
             % handles
@@ -162,14 +252,14 @@ classdef Pulse
                 trackID = category(ID(i)).trackID;
                 % Get stackID
                 if ~isempty(trackID), stackID = tracks(trackID(1)).stackID;
-                else stackID = fits.get(fitID(1)).stackID; end
+                else stackID = fits.get_fitID(fitID(1)).stackID; end
                 
                 % Get time (for graphing
                 dev_time = cells(stackID).dev_time;
                 
                 % Extract fit/track of interest
-                tracks = tracks( [tracks.stackID] == stackID); num_track = numel(tracks);
-                fit = fits.get_stackID( stackID ); num_fit = numel(fit);
+                track = tracks( [tracks.stackID] == stackID); num_track = numel(tracks);
+                fit = fits.get_stackID(stackID ); num_fit = numel(fit);
                 
                 % --- Plot tracked pulses ---
                 % handle subplots, plot to alternative parent if applicable
@@ -179,14 +269,14 @@ classdef Pulse
                     h(1) = subplot(3, num_disp, i);
                 end
                 axes(h(1));
-                binary_trace = concatenate_pulse(tracks,dev_time); % get binary track
+                binary_trace = concatenate_pulse(track,dev_time); % get binary track
                 if ~isempty(trackID) % highlight pulse if applicable
-                    on = highlight_track(tracks,trackID);
+                    on = highlight_track(track,trackID);
                     binary_trace(on,:) = binary_trace(on,:) + 3;
                 end
                 if num_track > 1 % Plot
-%                     if nargin > 4
-                        imagesc(dev_time,1:num_track,binary_trace,'Parent',h(1));
+                    %                     if nargin > 4
+                    imagesc(dev_time,1:num_track,binary_trace,'Parent',h(1));
                     
                 elseif num_track == 1
                     plot(dev_time,binary_trace);
@@ -195,7 +285,7 @@ classdef Pulse
                 end
                 set(h(1),'Xlim',[min(dev_time) max(dev_time)]);
                 xlabel(h(1),'Develop. time (sec)');
-                title(h(1),['Manual: #' num2str(tracks(1).trackID)])
+                title(h(1),['Manual: #' num2str(track(1).trackID)])
                 
                 % --- Plot fitted pulses ---
                 if nargin > 4
@@ -206,11 +296,11 @@ classdef Pulse
                 axes(h(2));
                 binary_trace = concatenate_pulse(fit,dev_time); % get binary track
                 if ~isempty(fitID) % highlight pulse if applicable
-                    on = highlight_track(tracks,fitID);
+                    on = highlight_track(fit,fitID);
                     binary_trace(on,:) = binary_trace(on,:) + 3;
                 end
                 if num_fit > 1 % Plot
-                    imagesc(dev_time,1:num_track,binary_trace,'Parent',h(2));
+                    imagesc(dev_time,1:num_fit,binary_trace,'Parent',h(2));
                 elseif num_track == 1
                     plot(dev_time,binary_trace);
                 else
@@ -229,7 +319,7 @@ classdef Pulse
                 visualize_cell(cells, stackID, h(3));
                 linkaxes( h , 'x');
                 
-            end % For-loop
+            end % End of for-loop
             
             % --- Sub functions ---
             function binary = concatenate_pulse(pulse,time)
@@ -249,27 +339,63 @@ classdef Pulse
                     on = ismember([pulse.trackID],ID);
                 end
             end
-            % End subfunctions
+            % ---- End subfunctions ----
             
-        end
+        end % graph
         
-        function disp(obj)
-            %Display overloaded method
+        function disp(pulse)
+            %---- Display overloaded method ---
             fprintf('\n')
             display('------ Tracked pulses ---------- ')
-            display(['Total tracked pulses: ' num2str(numel(obj.tracks))])
+            display(['Total tracked pulses: ' num2str(numel(pulse.tracks))])
             display('------ Fitted pulses ----------- ')
-            display(['Total fitted pulses: ' num2str(numel(obj.fits))])
+            display(['Total fitted pulses: ' num2str(numel(pulse.fits))])
             fprintf('\n')
+
             display('------ Matching ---------------- ')
-            display(['One-to-one matches: ' num2str(numel(obj.categories.one2one))])
-            display(['Merged (by fit): ' num2str(numel(obj.categories.merge))])
-            display(['Split (by fit): ' num2str(numel(obj.categories.split))])
-            display(['Missed (by fit): ' num2str(numel(obj.categories.miss))])
-            display(['Added (by fit): ' num2str(numel(obj.categories.add))])
+			if isfield(pulse.categories,'one2one')
+				num_one2one = numel( pulse.categories.one2one );
+			else
+				num_one2one = 0;
+			end
+            display( ['One-to-one matches: ' num2str(num_one2one)] );
+			
+			if isfield(pulse.categories,'merge')
+				num_merge = numel( pulse.categories.merge );
+			else
+				num_merge = 0;
+			end
+            display( ['Merged (by fit): ' num2str(num_merge)] )
+
+			if isfield(pulse.categories,'split')
+				num_split = numel( pulse.categories.split );
+			else
+				num_split = 0;
+			end
+            display(['Split (by fit): ' num2str(num_split)])
+
+			if isfield(pulse.categories,'miss')
+				num_miss = numel( pulse.categories.miss );
+			else
+				num_miss = 0;
+			end
+            display(['Missed (by fit): ' num2str(num_miss)])
+
+			if isfield(pulse.categories,'add')
+				num_add = numel( pulse.categories.add );
+			else
+				num_add = 0;
+			end
+            display(['Added (by fit): ' num2str(num_add)])
             fprintf('\n')
             
         end % display
+        
+%         function diff(pulse1,pulse2)
+%             %---- Difference display ----
+% %             num
+%             
+%         end
         
     end % Dynamic methods
     
