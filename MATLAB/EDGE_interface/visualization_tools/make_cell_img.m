@@ -1,4 +1,4 @@
-function G = make_cell_img(h)
+function varargout = make_cell_img(h)
 %MAKE_CELL_IMG Crops out a cell segmented by EDGE from the raw image
 %stacks.
 %
@@ -6,43 +6,36 @@ function G = make_cell_img(h)
 %
 % INPUT: handle fields:
 %        vx, vy - cell arrays of vertex coordinates exported by EDGE
-%        frames - a vector of frames to include in the movie (padded)
-%        sliceID - the ORIGINAL slice number in the movie imported by EDGE
+%        frames - a vector of frames to include in the movie (image_frames)
+%        dev_frame - the developmental_frame
 %        cellID - the cell you want to make a movie of
 %        channels - the names of the image channels you want to use... as
 %                   defined by EDGE. e.g. {'Myosin','Membranes'}
+%        border - 'on'/'off' (turn on the segmented cell border, default 'off')
+%        input - input file structure
+% 
+%        (opt)
+%        mask -
+%        axes - alternative parent object
 %
-% OUTPUT: F - MATLAB's movie structure. To play, use movie(F).
-%
+% OUTPUT: F (opt) - MATLAB's movie structure. To play, use movie(F).
+% 
 % SEE ALSO: MAKE_PULSE_MOVIE
 %
 % xies@mit.edu 2012.
 
+% ---- Parse input handle -----
 
 input = h.input;
 frames = h.frames2load;
 channels = h.channels;
 sliceID = h.input.actual_z;
 cellID = h.cellID;
+dev_frame = h.dev_frame;
 
 path = fileparts(input.folder2load);
 vx = h.vx(:,cellID);
 vy = h.vy(:,cellID);
-
-% Correct for lag
-movie_frames = frames(~isnan(frames));
-frames = find(~isnan(frames));
-
-% num_frames = size(vx);
-
-box = find_bounding_box(vx,vy);
-
-% If all NaN
-if cellfun(@(x) any(isnan(x)),vx)
-    warning(['No non-NaN values for cell # ' int2str(cellID) '.']);
-    G = [];
-    return
-end
 
 % Check for number of channels. If > 3, then cannot use RGB.
 if numel(channels) > 3, error('Cannot display more than 3 channels');
@@ -58,11 +51,27 @@ if isfield(h,'measurement')
         colorized = 1;
     else
         colorized = 0;
-%         if numel(measurement) ~= numel(movie_frames)
-%             error('Measurement array size must be the same as the number of desired frames');
-%         end
     end
 
+end
+% Turn on border by default
+if ~isfield(h,'border'), h.border = 'off'; end
+% Parse axes
+if ~isfield(h, 'axes'), h.axes = gca; end
+
+% ---- Construct image -----
+
+% Correct for lag
+movie_frames = frames(~isnan(frames));
+frames = dev_frame(ismember(dev_frame,frames));
+
+box = find_bounding_box(vx,vy);
+
+% If all NaN
+if cellfun(@(x) any(isnan(x)),vx)
+    warning(['No non-NaN values for cell # ' int2str(cellID) '.']);
+    if nargout > 0, varargout{1} = []; end
+    return
 end
 
 % Load all the FRAMES
@@ -123,18 +132,20 @@ for i = 1:numel(movie_frames)
         end
     end
     
-    imshow(cast(F,'uint8'),'Border','loose');
-    title(['Time: ' int2str((movie_frames(i)-input.tref)*input.dt) ' (sec)']);
+    imshow(cast(F,'uint8'),'Border','loose','Parent',h.axes);
+    title(h.axes,['Time: ' int2str((movie_frames(i)-input.tref)*input.dt) ' (sec)']);
     
-    G(i) = getframe(gca);
+    if nargout > 0, G(i) = getframe(gca); end
     
 end
 
+if nargout > 0, varargout{1} = G; end
+
 end
 
+function box = find_bounding_box(vx,vy)
 % Find a square bounding box with border size 15 around all vertices of the
 % cell.
-function box = find_bounding_box(vx,vy)
 
 left = floor(nanmin(cellfun(@nanmin,vx)));
 right = nanmax(cellfun(@nanmax,vx));

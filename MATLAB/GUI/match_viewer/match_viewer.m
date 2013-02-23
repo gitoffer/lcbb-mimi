@@ -22,7 +22,7 @@ function varargout = match_viewer(varargin)
 
 % Edit the above text to modify the response to help match_viewer
 
-% Last Modified by GUIDE v2.5 21-Feb-2013 20:15:17
+% Last Modified by GUIDE v2.5 23-Feb-2013 14:22:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,24 +62,18 @@ categories = pulse.categories;
 cells = varargin{2}; handles.cells = cells;
 embryo_struct = varargin{3}; handles.embryo_struct = embryo_struct;
 
-% Initialize category selector
+% Initialize category selecter
 cat_names = fieldnames(categories);
 set(handles.category,'String', cat_names(end:-1:1));
 set(handles.category,'Value',1);
-set(handles.track_or_fit,'String', {'Track','Fit'});
+handles.current_category = cat_names{1};
+% Initialize movie selecter
 
-handles = match_category_id_selector_callback(handles);
+set(handles.track,'Value',1); set(handles.fit,'Value',0);
+set(handles.whichID,'Value',1);
 
-% categories = get(handles.category,'String');
-% current_category = lower(categories{get(handles.category,'Value')});
-% % ID
-% set(handles.categoryID, ...
-%     'String', num2cell(1:numel( match.(current_category) )) );
-% set(handles.categoryID,'Value',1);
-% categoryID = get(handles.categoryID,'Value');
-% 
-% graph_match(match.(current_category),cells,tracks,pulses,categoryID);
-
+handles = match_category_id_selecter_callback(handles);
+handles = movie_pulse_selecter_callback(handles);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -118,7 +112,10 @@ function category_Callback(hObject, eventdata, handles)
 % 
 % graph_match(match.(current_category),cells,tracks,pulses,categoryID);
 
-handles = match_category_id_selector_callback(handles);
+set(handles.categoryID,'Value',1);
+
+handles = match_category_id_selecter_callback(handles);
+handles = movie_pulse_selecter_callback(handles);
 
 guidata(hObject,handles);
 
@@ -157,7 +154,8 @@ function categoryID_Callback(hObject, eventdata, handles)
 % visualize_match(match.(current_category),cells,tracks,pulses,categoryID);
 % handles=guidata(handles.output);
 
-handles = match_category_id_selector_callback(handles);
+handles = match_category_id_selecter_callback(handles);
+handles = movie_pulse_selecter_callback(handles);
 
 guidata(hObject,handles);
 
@@ -190,50 +188,45 @@ function play_movie_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get data from handle
-pulses = handles.pulses;
-tracks = pulses.tracks; fits = pulses.fits;
-match = pulses.match;
+% pulse = handles.pulse;
+% tracks = pulse.tracks; fits = pulse.fits;
+% cats = pulse.categories;
 % cells = handles.cells; embryo_struct = handles.embryo_struct;
 
 % get current selected category
-categories = get(handles.category,'String');
-current_category = lower(categories{get(handles.category,'Value')});
-match = match.(current_category);
-% catID
-catID = get( handles.categoryID, 'Value' );
+% categories = get( handles.category,'String' );
+% current_category = lower( categories{get(handles.category,'Value')} );
+% cats = cats.(current_category);
+% catID - which one from category
+% catID = get( handles.categoryID, 'Value' );
+% 
+% % track or fit?
+% which = get(handles.track_or_fit,'Value');
+% if which == 1, which = 'trackID'; else which = 'fitID'; end
+% % special case for add/miss
+% if strcmpi(current_category,'miss'), which = 'trackID'; end
+% if strcmpi(current_category,'add'), which = 'fitID'; end
+% 
+% whichID = get(handles.whichID,'Value')
+% 
+% if strcmpi( which, 'track')
+%     this_pulse = tracks( cats(catID).(which) (whichID) );
+%     h.frame = this_pulse.dev_frames(1);
+% else
+%     this_pulse = fits( cats(catID).(which) (whichID) );
+%     h.frame = this_pulse.margin_frames(1);
+% end
+% 
+% h.vx = handles.embyro_struct.vertex_x; h.vy = handles.embyro_struct.vertex_y;
+% h.cellID = this_pulse.stackID;
+% h.input = handles.embryo_struct(this_pulse.embryoID).input;
+% h.channels = {'Myosin','Membranes'};
+% h.axes = handles.movie_panel;
 
-% track or fit?
-which = get(handles.track_or_fit,'Value');
-if which == 1, which = 'trackID'; else which = 'fitID'; end
-% special case for add/miss
-if strcmpi(current_category,'miss'), which = 'trackID'; end
-if strcmpi(current_category,'add'), which = 'fitID'; end
+handles = movie_pulse_selecter_callback(handles);
+handles = match_viewer_update_movie_callback(handles);
 
-pulseID = get(handles.pulseID,'Value');
-
-if strcmpi(which, 'trackID')
-    F = make_pulse_movie( ...
-        tracks( match(catID).(which)(pulseID) ), ...
-        handles.embryo_struct.input,...
-        handles.embryo_struct.vertex_x,handles.embryo_struct.vertex_y,...
-        handles.embryo_struct.dev_time);
-else
-    F = make_pulse_movie( ...
-        fits( match(catID).(which)(pulseID) ), ...
-        handles.embryo_struct.input,...
-        handles.embryo_struct.vertex_x,handles.embryo_struct.vertex_y,...
-        handles.embryo_struct.dev_time);
-end
-
-play_movie(F);
-
-% --- Executes on selection change in track_or_fit.
-function track_or_fit_Callback(hObject, eventdata, handles)
-% hObject    handle to track_or_fit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% Hints: contents = cellstr(get(hObject,'String')) returns track_or_fit contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from track_or_fit
+guidata(hObject,handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -257,23 +250,103 @@ function play_movie_ButtonDownFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --- Executes on selection change in pulseID.
-function pulseID_Callback(hObject, eventdata, handles)
-% hObject    handle to pulseID (see GCBO)
+% --- Executes on selection change in whichID.
+function whichID_Callback(hObject, eventdata, handles)
+% hObject    handle to whichID (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pulseID contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pulseID
+handles = movie_pulse_selecter_callback(handles);
+guidata(hObject,handles);
+% Hints: contents = cellstr(get(hObject,'String')) returns whichID contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from whichID
 
 
 % --- Executes during object creation, after setting all properties.
-function pulseID_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pulseID (see GCBO)
+function whichID_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to whichID (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+% --- Executes on slider movement.
+function slider2_Callback(hObject, eventdata, handles)
+% hObject    handle to slider2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+set( hObject,'Value',fix(get(hObject,'Value')) );
+
+handles = movie_pulse_selecter_callback(handles);
+
+guidata(hObject,handles);
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+
+% --- Executes during object creation, after setting all properties.
+function slider2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes when selected object is changed in which.
+function which_SelectionChangeFcn(hObject, eventdata, handles)
+
+% hObject    handle to the selected object in which 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+switch get(eventdata.NewValue,'Tag') % Get Tag of selected object.
+    case 'track'
+        % Code for when track is selected.
+        set(handles.track,'Value',1);
+        set(handles.fit,'Value',0);
+    case 'fit'
+        set(handles.track,'Value',0);
+        set(handles.fit,'Value',1);
+        % Code for when fit is selected.
+    otherwise
+        % Code for when there is no match.
+end
+
+handles = movie_pulse_selecter_callback(handles);
+guidata(hObject,handles);
+
+
+
+function edit3_Callback(hObject, eventdata, handles)
+% hObject    handle to edit3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit3 as text
+%        str2double(get(hObject,'String')) returns contents of edit3 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit3_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
