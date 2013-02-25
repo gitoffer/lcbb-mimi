@@ -16,7 +16,7 @@ time = this_cell.dev_time( nonan_frame );
 if nargin < 3, handle = gca; end
 
 % Plot raw data: myosin + area
-[h,fig1,fig2] = plotyy(handle, time, this_cell.myosin_sm(nonan_frame), ...
+[h,fig1,fig2] = plotyy(handle, time, this_cell.myosin_intensity_fuzzy(nonan_frame), ...
     time, this_cell.area_sm(nonan_frame) );
 
 set(fig1,'Color','g'); set(fig2,'Color','k')
@@ -34,11 +34,11 @@ if this_cell.flag_fitted
     
     hold(handle,'off');
     
-    title(handle,['EDGE #' num2str(this_cell.cellID)])
+%     title(handle,['EDGE #' num2str(this_cell.cellID)])
     
 end
 
-set(handle,'Xlim',[min(this_cell.dev_time) max(this_cell.dev_time)]);
+set(h(1),'Xlim',[min(time) max(time)]);
 
 % if nargout > 0, varargout{1} = h; end
 
