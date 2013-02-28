@@ -1,42 +1,29 @@
-%%TRACK_PULSE_SCRIPT Pipeline for 
+%%TRACK_PULSE_SCRIPT Pipeline for
 
 %% Load MDF into matrix
-% mdf_mat = read_mdf('~/Desktop/Tracked pulses/01-30-2012-4/01-30-2012-4-merged_acm.tif.mdf'); embryoID = 1;
-mdf_mat = read_mdf('~/Desktop/Tracked pulses/10-25-2012-1/10-25-2012-1-acm.mdf'); embryoID = 2;
+
+mdf_file = '~/Desktop/Tracked pulses/01-30-2012-4/01-30-2012-4-merged_acm.tif.mdf'; embryoID = 1;
+% mdf_file = '~/Desktop/Tracked pulses/10-25-2012-1/10-25-2012-1-acm.mdf'; embryoID = 4;
+% mdf_file = '~/Desktop/Tracked pulses/01-30-2012-7/01-30-2012-7_acm.mdf'; embryoID = 2;
+
+mdf_mat = read_mdf(mdf_file);
 
 tracks = load_mdf_track(mdf_mat, embryo_stack, embryoID, 1, cells);
-fitsOI = [fits( ismember([fits.stackID], [tracks.stackID]) )];
+fitsOI_ID = [fits( ismember([fits.stackID], [tracks.stackID]) ).fitID];
 % filter_non_fitted_cells(tracks,pulses);
 
 %% Perform matching to fitted pulses
+
 clear pulse
-% match_thresh = 1;
 
-% [mapTracksFits,overlaps] = match_pulse_track(tracks,fitsOI,match_thresh);
-% [mapFitsTracks,overlaps_rev] = match_pulse_track(fitsOI,tracks,match_thresh);
-% 
-% nbm = NonBijectiveMap(mapTracksFits,mapFitsTracks,'track','fit');
-match_thresh = 1;
+for i = 1:1
+    match_thresh = 1;
+    
+    pulse(i) = Pulse(tracks,mdf_file,fits,fitsOI_ID,fit_opts(embryoID));
+    pulse(i) = pulse(i).match_pulse(match_thresh);
+    pulse(i) = pulse(i).categorize_mapping;
+    
+    pulse(i).embryoID = embryoID;
+    display(pulse(i));
 
-pulse = Pulse(tracks,fitsOI);
-pulse = pulse.match_pulse(match_thresh);
-pulse = pulse.categorize_mapping;
-
-pulse.embryoID = embryoID;
-
-display(pulse);
-
-%% Mannually-correct
-
-% pulse
-remove_list = [56 202];
-createTF_list = [4 141 79 123 113 222 221 207 205 203];
-
-for i = 1:numel(remove_list)
-    pulse = pulse.removePulse( 'fit',remove_list(i) );
 end
-
-for i = 1:numel(createTF_list)
-    pulse = pulse.createTrackFromFit( createTF_list(i) );
-end
-% pulse

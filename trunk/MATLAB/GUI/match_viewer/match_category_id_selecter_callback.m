@@ -14,22 +14,14 @@ cells = handles.cells;
 % Get the currently selected category
 categories = get( handles.category,'String');
 current_cat = lower( categories{get(handles.category,'Value')} );
+% Set catID selecter values to number of match objects
 set( handles.categoryID, ...
     'String', num2cell( 1:numel(pulse.categories.(current_cat)) ) );
-
-if numel( pulse.categories.(current_cat) ) == 0
-    
-    
-    
-else
-    if get( handles.categoryID,'Value') > numel(pulse.categories.(current_cat))
-        set(handles.categoryID,'Value',1);
-        handles.display_graph = 1;
-    end
+% If current value exeeds number of objects, reset to 1
+if get( handles.categoryID,'Value') > numel(pulse.categories.(current_cat))
+    set(handles.categoryID,'Value',1);
 end
 catID = get( handles.categoryID,'Value');
-
-
 
 if strcmpi(current_cat,'add')
     set(handles.fit,'Enable','off');
@@ -49,6 +41,12 @@ end
 handles.catID = catID;
 handles.current_category = current_cat;
 
-pulse.graph(current_cat,cells,catID,handles.axes_panel);
+[trackID, fitID] = pulse.graph(current_cat,cells,catID,handles.axes_panel);
+
+% Update cell/track/fit being displayed
+candidate_tracks = pulse.tracks.get_trackID(trackID);
+handles.current_cell = candidate_tracks(1).cellID;
+handles.current_tracks = trackID;
+handles.current_fits = fitID;
 
 end

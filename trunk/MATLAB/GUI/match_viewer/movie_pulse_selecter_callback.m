@@ -26,26 +26,31 @@ if strcmpi( which,'trackID' )
     frames = [this_pulse.dev_frame];
 else
     this_pulse = fits.get_fitID( cats.(current_cat)(catID).(which) (whichID) );
+    min_nan = find(~isnan(handles.cells(this_pulse.stackID).dev_frame),1,'first');
+    max_nan = find(~isnan(handles.cells(this_pulse.stackID).dev_frame),1,'last');
     frames = [this_pulse.width_frames];
+    frames = frames( frames >= min_nan & frames <= max_nan );
 end
 
 % Set slider boundaries
-set( handles.slider2,'Min', min(frames), 'Max', max(frames), ...
-    'SliderStep', [1, 1]/(numel(frames) - 1) );
-if get(handles.slider2,'Value') < min(frames) || get(handles.slider2,'Value') > max(frames)
-    set(handles.slider2,'Value',min(frames));
+if max(frames) - min(frames) < 1
+    set(handles.slider2,'Visible','off');
+else
+    set(handles.slider2,'Visible','on');
+    set( handles.slider2,'Min', min(frames), 'Max', max(frames), ...
+        'SliderStep', [1, 1]/(numel(frames) - 1) );
+    if get(handles.slider2,'Value') < min(frames) || get(handles.slider2,'Value') > max(frames)
+        set(handles.slider2,'Value',min(frames));
+    end
 end
-
-% Update texts
-set( handles.pulseID,'String', ...
-    [which ': ' num2str(this_pulse.(which)) ] );
-set( handles.current_frame, 'String', ...
-    ['Frame: ' num2str( get(handles.slider2,'Value') )] );
-
 
 % Update handle
 handles.this_pulse = this_pulse;
+handles.which = which;
+handles.whichID_display = whichID;
 
+% Update texts
+handles = update_displays(handles);
 
 % Gall grapher
 handles = match_viewer_update_movie_callback(handles);

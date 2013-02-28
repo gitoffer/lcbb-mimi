@@ -22,7 +22,7 @@ function varargout = match_viewer(varargin)
 
 % Edit the above text to modify the response to help match_viewer
 
-% Last Modified by GUIDE v2.5 23-Feb-2013 14:22:31
+% Last Modified by GUIDE v2.5 25-Feb-2013 15:15:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -193,35 +193,6 @@ function play_movie_Callback(hObject, eventdata, handles)
 % cats = pulse.categories;
 % cells = handles.cells; embryo_struct = handles.embryo_struct;
 
-% get current selected category
-% categories = get( handles.category,'String' );
-% current_category = lower( categories{get(handles.category,'Value')} );
-% cats = cats.(current_category);
-% catID - which one from category
-% catID = get( handles.categoryID, 'Value' );
-% 
-% % track or fit?
-% which = get(handles.track_or_fit,'Value');
-% if which == 1, which = 'trackID'; else which = 'fitID'; end
-% % special case for add/miss
-% if strcmpi(current_category,'miss'), which = 'trackID'; end
-% if strcmpi(current_category,'add'), which = 'fitID'; end
-% 
-% whichID = get(handles.whichID,'Value')
-% 
-% if strcmpi( which, 'track')
-%     this_pulse = tracks( cats(catID).(which) (whichID) );
-%     h.frame = this_pulse.dev_frames(1);
-% else
-%     this_pulse = fits( cats(catID).(which) (whichID) );
-%     h.frame = this_pulse.margin_frames(1);
-% end
-% 
-% h.vx = handles.embyro_struct.vertex_x; h.vy = handles.embyro_struct.vertex_y;
-% h.cellID = this_pulse.stackID;
-% h.input = handles.embryo_struct(this_pulse.embryoID).input;
-% h.channels = {'Myosin','Membranes'};
-% h.axes = handles.movie_panel;
 
 handles = movie_pulse_selecter_callback(handles);
 handles = match_viewer_update_movie_callback(handles);
@@ -330,19 +301,21 @@ handles = movie_pulse_selecter_callback(handles);
 guidata(hObject,handles);
 
 
-
-function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function cellID_display_Callback(hObject, eventdata, handles)
+% hObject    handle to cellID_display (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
+cellID = get(hObject,'Value');
+handles.current_cell = cellID;
+
+% Hints: get(hObject,'String') returns contents of cellID_display as text
+%        str2double(get(hObject,'String')) returns contents of cellID_display as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function cellID_display_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to cellID_display (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -351,3 +324,17 @@ function edit3_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes during object creation, after setting all properties.
+function fitID_display_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fitID_display (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function trackID_display_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to trackID_display (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
