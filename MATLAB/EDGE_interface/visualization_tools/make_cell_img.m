@@ -62,8 +62,8 @@ if ~isfield(h, 'axes'), h.axes = gca; end
 % ---- Construct image -----
 
 % Correct for lag
-movie_frames = frames(~isnan(frames));
-frames = dev_frame(ismember(dev_frame,frames));
+movie_frames = dev_frame(frames(~isnan(frames)));
+% frames = frames;
 
 box = find_bounding_box(vx,vy);
 
