@@ -1,6 +1,9 @@
 classdef Track
     properties (SetAccess = private)
         
+%         folder
+%         filename
+        
         embryoID
         cellID
         stackID
@@ -62,7 +65,7 @@ classdef Track
                         break;
                     else
                         eqs = eqs && ...
-                            all(eq( track1(j).(names{i}), track2.(names{i}) ));
+                            all(eq( nonans(track1(j).(names{i})), nonans(track2.(names{i})) ));
                     end
                 end
                 equality(j) = eqs;

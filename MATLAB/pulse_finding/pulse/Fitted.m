@@ -25,6 +25,7 @@ classdef Fitted
         area
         area_rate
         area_norm
+        corrected_time
         corrected_myosin
         corrected_myosin_rate
         corrected_area
@@ -72,7 +73,7 @@ classdef Fitted
             % SYNOPSIS: [fits,time] = align_peaks(fitss,cells,opt);
             
             num_fits = numel(fits);
-            duration = numel(fits(1).margin_frames);
+            durations = cellfun(@numel, {fits.margin_frames} );
             l = opt.left_margin; r = opt.right_margin;
 
             center_idx = l + 1;
@@ -85,8 +86,8 @@ classdef Fitted
                 left_len = max_idx - 1;
                 
                 m = nan(1, l + r + 1); % Make the padded vector
-                m( (center_idx - left_len) : (center_idx - left_len + duration - 1) ) = ...
-                    measurement( fits(i).dev_frame, fits(i).stackID );
+                m( (center_idx - left_len) : (center_idx - left_len + durations(i) - 1) ) = ...
+                    measurement( fits(i).margin_frames, fits(i).stackID );
 
                 fits(i).(name) = m;
                 
@@ -134,6 +135,46 @@ classdef Fitted
             end
             
         end % resample_traces
+        
+        
+% --------------------- Comparator ----------------------------------------
+
+        function equality = eq(fit1,fit2)
+            % Equality comparator for TRACK
+            % right now slow, expecting array
+            if numel(fit1) > 1 && numel(fit2) > 1
+                error('Cannot handle TWO array inputs.');
+            end
+%             names = setdiff(fieldnames(fit2),{'fitID','category'});
+            equality = false(1,numel(fit1));
+            for j = 1:numel(fit1)
+                if fit1(j).stackID == fit2.stackID
+                % can't use bsxfun because of un-uniform output
+                    if numel(fit1(j).width_frames( ...
+                            ismember(fit1(j).width_frames, fit2.width_frames))) > 1
+                        equality(j) = 1;
+                    end
+                end
+            end
+
+        end
+% --------------------- Array operations ----------------------------------
+
+        function obj_array = add_fit(obj_array,new_fit)
+            
+            new_fit.fitID = max([obj_array.fitID]) + 1;
+            new_fit = Fitted( new_fit );
+            new_fit.manually_added = 1;
+            
+            if any(obj_array == new_fit)
+                disp('Cannot create new fit: Fit also exists.');
+                beep
+                return
+            end
+            
+            obj_array = [obj_array new_fit];
+            
+        end
         
     end
     
