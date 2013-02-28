@@ -1,8 +1,10 @@
 classdef Pulse
     properties (SetAccess = private)
-        fits
-		fits_opts
+        fits % Complete set of fits from ALL cells, including non-tracked and other embryos
+        fitsOI_ID % fitID from only trakced cells in TRACKS
+		fit_opt
         tracks
+        tracks_mdf_file
         
         map
         match_thresh
@@ -12,11 +14,12 @@ classdef Pulse
     properties
         
         embryoID
+        changes
         
     end
     methods %Dynamic methods
-        % ---- Constructor ----
-        function pulse = Pulse(tracks,fits,opts)
+% --------------------------- Constructor -------------------
+        function pulse = Pulse(tracks,filename,fits,fitsOI_ID,opts)
             if strcmp(class(tracks),'Track')
                 pulse.fits = fits;
                 pulse.tracks = tracks;
@@ -24,7 +27,9 @@ classdef Pulse
                 pulse.fits = tracks;
                 pulse.tracks = fits;
             end
-			pulse.fits_opts = opts;
+            pulse.tracks_mdf_file = filename;
+			pulse.fit_opt = opts;
+            pulse.fitsOI_ID = fitsOI_ID;
             
         end % Constructor
         
@@ -36,12 +41,23 @@ classdef Pulse
             
         end % match
         
+%--------------------------- Mapping ------------------------------------------
         function pulse = categorize_mapping(pulse)
-            %PULSE class method
-            % categorizes the mapping between track and fit
+            %CATEGORIZE_MAPPING Quantify the different types of matches between
+			% FITTED pulses and TRACK pulses.
+			%
+			% USAGE: pulse = categorize_mapping(pulse)
+			% Updates the following class properties:
+			%	pulse.categories.one2one - pulses with one FITTED and one TRACK
+			%	pulse.categories.merge - one TRACK with multiple FITTED
+			%	pulse.categories.split - multiple TRACK with single FITTED
+			%	pulse.categories.miss - TRACK with no FITTED
+			%	pulse.categories.add - FITTED with no TRACK
+			%
+			% xies@mit.edu Feb 2013.
             
             nbm = pulse.map;
-            fit = pulse.fits;
+            fit = pulse.fits.get_fitID(pulse.fitsOI_ID);
             track = pulse.tracks;
             
             % -------- Quantify merges --
@@ -155,23 +171,53 @@ classdef Pulse
             end
             % --- End categorize_mapping subfunctions
         end % Categorize_mapping
+
+		function catID = search_catID(pulse,type,pulseID)
+			% SEARCH_CATID Search for the category_index (catID) of a pulse
+			% (track/fit).
+			if strcmpi(type,'fit')
+				this = pulse.get_fitID(pulseID);
+				ID = 'fitID';
+			else
+				this = pulse.get_trackID(pulseID);
+				ID = 'trackID';
+			end
+			category = this.category;
+			curr_cat = pulse.categories.(category);
+			catID = cellfun(@(x) ismember( pulseID, x ), ...
+                {category.(ID)});
+			catID = find(catID);
+
+		end
         
 %--------------------- edit pulse/tracks ----------------------------------
         
         function pulse = removePulse(pulse,type,pulseID)
-            % Remove pulse from track-fit mapping
+            %REMOVEPULSE Remove pulse from track-fit mapping, as well as
+            % the respective pulse object array.
+            %
+            % USAGE: pulse = removePulse(pulse,'fit',fitID);
+            %
+            % xies@mit.edu
             new_nbm = pulse.map.removeElement(pulseID,type);
             pulse.map = new_nbm;
             % Remove pulse from stack
             switch type
                 case 'fit'
-                    fits = pulse.fits;
-                    fits(ismember([fits.fitID],pulseID)) = [];
-                    pulse.fits = fits;
+                    indices = ismember([pulse.fitsOI_ID], pulseID);
+                    if ~any(indices)
+                        display('Cannot remove FITTED: given fitID does not exist.');
+                        return
+                    end
+                    pulse.fitsOI_ID( indices ) = [];
+                    pulse.fits( indices ) = [];
                 case 'track'
-                    tracks = pulse.tracks;
-                    tracks(ismember([tracks.trackID],pulseID)) = [];
-                    pulse.tracks = tracks;
+                    indices = ismember([pulse.tracks.trackID], pulseID);
+                    if ~any(indices)
+                        display('Cannot remove TRACK: given trackID does not exist.');
+                        return
+                    end
+                    pulse.tracks( indices ) = [];
                 otherwise
                     error('Invalid type: expecting TRACK or FIT.')
             end
@@ -202,32 +248,79 @@ classdef Pulse
             tracks = add_track(pulse.tracks,this_track);
             
             % Rematch the track/fit mappings
-            pulse_new = pulse; pulse_new.tracks = tracks;
+            pulse_new = pulse;
+            pulse_new.tracks = tracks;
             pulse_new = pulse_new.match_pulse(pulse.match_thresh); % Redo match
             pulse_new = pulse_new.categorize_mapping;
             
             pulse = pulse_new;
             
-            
         end % createTrackFromFit
-        
-%         function pulse = deassignPulse(pulse,type,pulseID)
-%             
-%             switch type
-%                 case 'track'
-%                     
-%                 case 'pulse'
-%                     
-%                 otherwise
-%                     error('Invalid type: expecing PULSE or TRACK.')
-%             end
-%             
-%         end
-%         
+
+		function pulse = createFitFromTrack(pulse,cells,trackID,opt)
+            
+			track = pulse.tracks.get_trackID(trackID);
+			if isempty(track), error('Cannot create FIT: No track with trackID found.'); end
+			this_fit.embryoID = track.embryoID;
+			this_fit.cellID = track.cellID;
+			this_fit.stackID = track.stackID;
+            
+            this_cell = cells(track.stackID);
+            num_frames = numel(this_cell.dev_frame);
+            params = manual_fit([mean(track.dev_time) 20],cells,track.stackID);
+
+			% Get parameters
+			this_fit.amplitude = params(1);
+			this_fit.center = params(2);
+			this_fit.width = params(3);
+            
+            % Get dev frames
+            center_frame = findnearest( this_cell.dev_time, params(2) );
+            [left_margin,pad_l] = max([ center_frame - opt.left_margin, 1 ]);
+            [right_margin,pad_r] = min([ center_frame + opt.right_margin, num_frames ]);
+			this_fit.margin_frames = left_margin:right_margin;
+            
+            % Get width frames
+            left_width = max( center_frame - ...
+                findnearest(params(3), cumsum(diff(this_cell.dev_time)), 1));
+            right_width = min( center_frame + ...
+                findnearest(params(3), cumsum(diff(this_cell.dev_time)), num_frames));
+			this_fit.width_frames = left_width : right_width;
+            
+			this_fit.img_frames = this_cell.dev_frame(left_width:right_width);
+			this_fit.dev_time = this_cell.dev_time(left_width:right_width);
+            
+            % Get curves
+			Y = this_cell.(opt.to_fit);
+            x = this_cell.dev_time(left_margin:right_margin);
+            this_fit.raw = Y(left_margin:right_margin);
+			fitted_y = lsq_gauss1d(params,x);
+            this_fit.fit = fitted_y;
+			this_fit.aligned_time = x - this_fit.center;
+
+            % Get padded objects
+            if pad_l > 1
+                fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
+                x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
+            end
+            if pad_r > 1
+                fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
+                x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
+            end
+            this_fit.aligned_time_padded = x;
+			this_fit.fit_padded = fitted_y;
+            
+            fits = add_fit(pulse.fits,this_fit);
+            pulse.fitsOI_ID = [pulse.fitsOI_ID fits(end).fitID];
+            pulse.fits = fits;
+            pulse = pulse.match_pulse(pulse.match_thresh); % Redo match
+            pulse = pulse.categorize_mapping;
+            
+        end
 
 %---------------------- graph/display -------------------------------------
         
-        function graph(pulse,cat,cells,ID,axes_handle)
+        function varargout = graph(pulse,cat,cells,ID,axes_handle)
             % Graph the selected cateogry
             % USAGE: pulse.graph(category,cells,ID,handles)
             %        pulse.graph(category,cells,ID)
@@ -253,14 +346,14 @@ classdef Pulse
                 fitID = category(ID(i)).fitID;
                 trackID = category(ID(i)).trackID;
                 % Get stackID
-                if ~isempty(trackID), stackID = tracks(trackID(1)).stackID;
+                if ~isempty(trackID), stackID = tracks.get_trackID(trackID(1)).stackID;
                 else stackID = fits.get_fitID(fitID(1)).stackID; end
                 
                 % Get time (for graphing
                 dev_time = cells(stackID).dev_time;
                 
                 % Extract fit/track of interest
-                track = tracks( [tracks.stackID] == stackID); num_track = numel(tracks);
+                track = tracks.get_stackID(stackID); num_track = numel(track);
                 fit = fits.get_stackID(stackID ); num_fit = numel(fit);
                 
                 % --- Plot tracked pulses ---
@@ -281,13 +374,13 @@ classdef Pulse
                     imagesc(dev_time,1:num_track,binary_trace,'Parent',h(1));
                     
                 elseif num_track == 1
-                    plot(dev_time,binary_trace);
+                    plot(h(1),dev_time,binary_trace);
                 else
-                    cla
+                    cla(h(1));
                 end
                 set(h(1),'Xlim',[min(dev_time) max(dev_time)]);
                 xlabel(h(1),'Develop. time (sec)');
-                title(h(1),['Manual: #' num2str(track(1).trackID)])
+%                 title(h(1),['Manual: #' num2str(track(1).trackID)])
                 
                 % --- Plot fitted pulses ---
                 if nargin > 4
@@ -303,10 +396,10 @@ classdef Pulse
                 end
                 if num_fit > 1 % Plot
                     imagesc(dev_time,1:num_fit,binary_trace,'Parent',h(2));
-                elseif num_track == 1
-                    plot(dev_time,binary_trace);
+                elseif num_fit == 1
+                    plot(h(2),dev_time,binary_trace);
                 else
-                    cla
+                    cla(h(2));
                 end
                 set(h(2),'Xlim',[min(dev_time) max(dev_time)]);
                 xlabel(h(2),'Develop. time (sec)');
@@ -322,6 +415,11 @@ classdef Pulse
                 linkaxes( h , 'x');
                 
             end % End of for-loop
+            
+            if nargout > 0
+                varargout{1} = [tracks.get_stackID(stackID).trackID];
+                varargout{2} = [fits.get_stackID(stackID).fitID];
+            end
             
             % --- Sub functions ---
             function binary = concatenate_pulse(pulse,time)
