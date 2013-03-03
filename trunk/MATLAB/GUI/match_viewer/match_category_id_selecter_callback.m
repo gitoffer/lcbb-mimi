@@ -41,7 +41,7 @@ end
 handles.catID = catID;
 handles.current_category = current_cat;
 
-[trackID, fitID] = pulse.graph(current_cat,cells,catID,handles.axes_panel);
+[trackID, fitID] = pulse.graph(current_cat,catID,handles.axes_panel);
 
 % Update cell/track/fit being displayed
 candidate_tracks = pulse.tracks.get_trackID(trackID);

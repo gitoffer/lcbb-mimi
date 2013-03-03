@@ -131,6 +131,27 @@ classdef MatchTrackFit
                 num2cell( keylist{cellfun(@(x) x == key,vlist)} ) );
             
         end %removeElement
+
+        function obj = reassign(obj,trackID,fitID)
+            % Reassign a TRACK to a FIT, only suceeds if both are 'unattached'
+            keyTrackID = obj.dictTrackFit.keys;
+            valFitID = obj.dictTrackFit.values;
+            keyFitID = obj.dictFitTrack.keys;
+            valTrackID = obj.dictFitTrack.values;
+            
+            if (~any( ...
+                    cellfun(@(x) (x == trackID), keyTrackID) | ...
+                    cellfun(@(x) (x == fitID), valFitID) ) || ...
+                    ~any( ...
+                    cellfun(@(x) (x == fitID), keyFitID) | ...
+                    cellfun(@(x) (x == trackID), valTrackID)))
+
+                    obj.dictTrackFit(trackID) = fitID;
+                    obj.dictFitTrack(fitID) = trackID;
+            else
+                display('FitID already assigned.')
+            end
+        end % reassign
         
     end %methods
     

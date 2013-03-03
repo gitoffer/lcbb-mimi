@@ -19,9 +19,10 @@ clear fit_opts
 % fit_opts(2).sigma_ub = 40;
 
 %%
+clear cells fits
 
 cells = edge2cell(embryo_stack);
-[fits,cells] = fit_gaussians(cells,fit_opts);
+[cells,fits] = fit_gaussians(cells,fit_opts);
 
 %% sub-set of pulses
 
@@ -62,7 +63,7 @@ fits = resample_traces(fits,'area',[input.dt],fit_opts);
 fits = resample_traces(fits,'myosin',[input.dt],fit_opts);
 fits = resample_traces(fits,'area_rate',[input.dt],fit_opts);
 
-corrected_area = cat(1, pulses.area);
+corrected_area = cat(1, fits.area);
 corrected_area_norm = cat(1, fits.area_norm);
 corrected_area_rate = cat(1, fits.area_rate);
 corrected_myosin = cat(1, fits.myosin);

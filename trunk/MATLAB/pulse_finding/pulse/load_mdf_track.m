@@ -1,4 +1,4 @@
-function tracks = load_mdf_track(mdf_matrix,embryo_stack,embryoID,min_frame,cells)
+function [tracks,cells] = load_mdf_track(mdf_matrix,embryo_stack,embryoID,min_frame,cells)
 %LOAD_MDF_TRACKS Loads tracked pulses from a MDF matrix into a TRACK
 % object
 %
@@ -89,6 +89,9 @@ for i = 1:num_tracks
     this_track.img_frame = img_frame;
     
 	% Construct Track object
+    cells(order(index)).trackID = trackID;
+	cells(order(index)).flag_tracked = 1;
+    cells(order(index)).num_tracks = cells(order(index)).num_tracks + 1;
 	tracks(trackID) = Track(this_track);
 
 end
