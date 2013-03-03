@@ -1,25 +1,39 @@
 classdef Track
+	%TRACK Tracked pulses loaded from a MDF file as output from MTrackJ
+	% and cross-checked against EDGE cells
+	%
+	% Properties:
+	%	embryoID - the embryo index
+	%	cellID - EDGE cellID
+	%	stackID - stacked index of all cells
+	% 	mdfID - the original mdfID
+	%	dev_frame
+	% 	dev_time
+	%	img_frame
+	%
+	% 	trackID - unique index
+	% 	category - matching category to FITTED
+	%	manually_added - flag for artificially added tracks
+	%
+	
     properties (SetAccess = private)
+
+        embryoID % which embryo in stack
+        cellID	% EDGE ID for cell
+        stackID % index in cell stack
+        mdfID 	% Original track index from MtrackJ
         
-%         folder
-%         filename
-        
-        embryoID
-        cellID
-        stackID
-        mdfID
-        
-        dev_frame
-        dev_time
-        img_frame
+        dev_frame % The active track frames in aligned frame
+        dev_time  % The developmental aligned time for track
+        img_frame % the image frames for track
         
     end
     
     properties (SetAccess = public)
         
-        trackID
-        category
-        manually_added
+        trackID		% trackID (not same as mdfID)
+        category 	% category of match to FITTED
+        manually_added % Whether it's manually added or not
         
     end
     

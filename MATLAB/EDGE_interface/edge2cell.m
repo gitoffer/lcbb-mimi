@@ -8,7 +8,7 @@ function cells = edge2cell(embryo_stack)
 num_cells = [embryo_stack.num_cell];
 num_cells_padded = cumsum([0 num_cells]);
 
-[cells(1:sum(num_cells)).embryoID] = deal([]);
+% [cells(1:sum(num_cells)).embryoID] = deal([]);
 measurements = setdiff(fieldnames(embryo_stack), ...
     {'input','dev_time','dev_frame','num_cell'});
 
@@ -19,9 +19,9 @@ for i = 1:sum(num_cells)
     embryoID = find( (num_cells_padded - i) < 0, 1, 'last');
     cellID = i - num_cells_padded(embryoID);
     
-    cells(i).embryoID = embryoID;
-    cells(i).stackID = stackID;
-    cells(i).cellID = cellID;
+    this_cell.embryoID = embryoID;
+    this_cell.stackID = stackID;
+    this_cell.cellID = cellID;
     
     % Get input structure
     input = embryo_stack(embryoID).input;
@@ -35,13 +35,15 @@ for i = 1:sum(num_cells)
         catch err
         end
 
-        cells(i).(measurements{j}) = ...
+        this_cell.(measurements{j}) = ...
             meas_this_cell;
     end
     
     % Collect the time
-    cells(i).dev_time = embryo_stack(embryoID).dev_time;
-    cells(i).dev_frame = embryo_stack(embryoID).dev_frame;
+    this_cell.dev_time = embryo_stack(embryoID).dev_time;
+    this_cell.dev_frame = embryo_stack(embryoID).dev_frame; 
+    
+    cells(i) = CellObj(this_cell);
     
 end
 

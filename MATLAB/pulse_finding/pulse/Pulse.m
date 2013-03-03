@@ -1,14 +1,73 @@
 classdef Pulse
+	%Pulse A housekeeping class to keep track of TRACK pulses and FITTED pulses,
+	% as well as the bi-directional correspondence between the two sets.
+	%
+	% Matches tracked pulses (TRACK) to fitted pulses (FITTED), with a generalized
+	% class MatchTrackFit to handle the two-way mapping between the two sets of
+	% objects, which could contain the following categories:
+	%	1) one-to-one matches
+	%	2) missed objects from either set
+	%	3) objects from one set mapped onto the same object in the other.
+	%
+	% Methods are implemented to handle manual adjustment to the correspondence
+	% to resolve missed objects, as well as merged objects. To this end a graphical
+	% output is also implemented under @pulse.graph.
+	% 
+	% Properties (private)
+	%	fits - the complete array of all fits, does not have to exclude non-tracked
+	%		cells/embryos
+	%	fitsOI_ID - the fitID (unique ID code for each fitted pulse) of interest, i.e.
+	%		those from cells with tracked pulses
+	%	tracks - the array of TRACK pulses for this embryo
+	%	tracks_mdf_file - the MDF filename
+	%	cells - an array of CELL of data from cells found in this embryo
+	%
+	% Properties (public)
+	% 	embryoID - the index of this embryo (see also LOAD_EDGE_SCRIPT)
+	%	changes - a structure containing information about the manual changes
+	%		performed on the PULSE object
+	%
+	% Methods
+	% 
+	% --- Construction methods ---
+	%	Pulse - constructor object
+	%	.match_pulse - performs matching between .tracks and .fits, and constructs
+	%		the .map property from the resulting two-way mapping
+	%	.categorize_mapping - creates/updates the .categories property from the .map
+	%		includes the following fields:
+	%		.one2one - one-to-one matches
+	%		.merge - two Track per Fitted
+	% 		.split - one Track per two Fitted
+	%		.miss - Track with no Fitted
+	% 		.add - Fitted with no Track
+	% --- Manual editing methods ---
+	%	search_catID - given a tracked or fit from a PULSE object, find the index
+	%		of that object within its current .cagetory
+	%	removePulse - remove a track/fit and update the mapping
+	%	createFitFromTrack - create an artificial FITTED from roughly where a TRACK
+	%		was... uses MANUAL_FIT
+	%	createTrackFromFit - create an artificial TRACK from roughly where a FITTED
+	%		was...
+	%	reassignFit - re-assign a FITTED to a TRACK, will only work if neither have
+	% 		prior assignments
+	% --- Display methods ---
+	%	graph - Generates a 1x3 subplot of the TRACK/FIT/CELL
+	% 	display - In-line display, reporting the number of objects and the quality of
+	%		matching
+	%
+	% xies@mit.edu
+
     properties (SetAccess = private)
-        fits % Complete set of fits from ALL cells, including non-tracked and other embryos
-        fitsOI_ID % fitID from only trakced cells in TRACKS
-		fit_opt
-        tracks
-        tracks_mdf_file
+        fits 		% Complete set of FITTED pulses from ALL cells, including non-tracked and other embryos
+        fitsOI_ID 	% fitID from only trakced cells in TRACKS
+		fit_opt 	% The fitting option file for this embryo
+        tracks 		% Set of TRACK pulses for this embryo
+        tracks_mdf_file % The filename of the MDF file from which .tracks was loaded
+        cells 		% An array of CELL of cells in this embryo (Contains the raw data)
         
-        map
-        match_thresh
-        categories
+        map			% The two-way mapping between Track and Fit
+        match_thresh % The threshold of frames overlap above which a TRACK and a FITTED is matched (usually 1)
+        categories %  A structure containing the different categories of matches
         
     end %properties
     properties
@@ -19,7 +78,12 @@ classdef Pulse
     end
     methods %Dynamic methods
 % --------------------------- Constructor -------------------
-        function pulse = Pulse(tracks,filename,fits,fitsOI_ID,opts)
+        function pulse = Pulse(tracks,filename,fits,opts,cells)
+			%PULSE Constructor for the Pulse object (see main documentation)
+			% Will not generate the .map property.
+			%
+			% USAGE: pulse = Pulse(tracks,mdf_filename,fits,fit_opt,cells);
+
             if strcmp(class(tracks),'Track')
                 pulse.fits = fits;
                 pulse.tracks = tracks;
@@ -27,14 +91,29 @@ classdef Pulse
                 pulse.fits = tracks;
                 pulse.tracks = fits;
             end
+            
+            fitsOI_ID = [fits( ... filter out non-tracked cells
+                ismember( [fits.stackID], [tracks.stackID] )).fitID];
+            
             pulse.tracks_mdf_file = filename;
 			pulse.fit_opt = opts;
             pulse.fitsOI_ID = fitsOI_ID;
-            
+            pulse.cells = cells;
+
         end % Constructor
         
         function pulse = match_pulse(pulse,threshold)
-            % Match fit and track
+            %MATCH_PULSE Match FITTED objects to TRACK objects by generating a
+			% MatchTrackFit object, which is a wrapper for interacting with two
+			% container.Map objects (hashmaps).
+			%
+			% USAGE: pulse = match_pulse(pulse, threshold)
+
+			if isempty(pulse.map) || ...
+				 (~isempty(pulse.match_thresh) && pulse.match_thresh ~= threshold)
+				pulse.categories = [];
+				pulse.changes = [];
+			end
             nbm = MatchTrackFit(pulse.tracks,pulse.fits,threshold);
             pulse.map = nbm;
             pulse.match_thresh = threshold;
@@ -173,8 +252,13 @@ classdef Pulse
         end % Categorize_mapping
 
 		function catID = search_catID(pulse,type,pulseID)
-			% SEARCH_CATID Search for the category_index (catID) of a pulse
-			% (track/fit).
+			%SEARCH_CATID Search for the category_index (catID) of a pulse
+			% (track/fit). Will use the .category property of the given
+			% FITTED/TRACK.
+			%
+			% USAGE: catID = search_catID(pulse,'fit',fitID)
+			% 		 catID = search_catID(pulse,'track',trackID)
+			
 			if strcmpi(type,'fit')
 				this = pulse.get_fitID(pulseID);
 				ID = 'fitID';
@@ -193,7 +277,7 @@ classdef Pulse
 %--------------------- edit pulse/tracks ----------------------------------
         
         function pulse = removePulse(pulse,type,pulseID)
-            %REMOVEPULSE Remove pulse from track-fit mapping, as well as
+            %@Pulse.removePulse Remove pulse from track-fit mapping, as well as
             % the respective pulse object array.
             %
             % USAGE: pulse = removePulse(pulse,'fit',fitID);
@@ -211,6 +295,20 @@ classdef Pulse
                     end
                     pulse.fitsOI_ID( indices ) = [];
                     pulse.fits( indices ) = [];
+    
+                    stackID = [pulse.fits(indices).stackID];
+                    for i = 1:numel(stackID)
+                        pulse.cells(stackID(i)) = pulse.cells(stackID(i)).removeFit(pulseID);
+                    end
+                    
+                    if isfield(pulse.changes,'fitIDRemoved')
+                        pulse.changes.fitIDRemoved = ...
+                            [pulse.changes.fitIDRemoved pulseID];
+                    else
+                        pulse.changes.fitIDRemoved = pulseID;
+                    end
+                        
+                    
                 case 'track'
                     indices = ismember([pulse.tracks.trackID], pulseID);
                     if ~any(indices)
@@ -218,6 +316,19 @@ classdef Pulse
                         return
                     end
                     pulse.tracks( indices ) = [];
+                    
+                    stackID = [pulse.tracks(indices).stackID];
+                    for i = 1:numel(stackID)
+                        pulse.cells(stackID(i)) = pulse.cells(stackID(i)).removeTrack(pulseID);
+                    end
+                    
+                    if isfield(pulse.changes,'trackIDRemoved')
+                        pulse.changes.trackIDRemoved = ...
+                            [pulse.changes.trackIDRemoved pulseID];
+                    else
+                        pulse.changes.trackIDRemoved = pulseID;
+                    end
+                    
                 otherwise
                     error('Invalid type: expecting TRACK or FIT.')
             end
@@ -255,21 +366,38 @@ classdef Pulse
             
             pulse = pulse_new;
             
+            pulse.cells(fit.stackID) = ...
+                pulse.cells(fit.stackID).addTrack( pulse.tracks(end).trackID);
+            
+            if isfield(pulse.changes,'tracksMadeFromFit')
+                pulse.changes.tracksMadeFromFit = ...
+                    [pulse.changes.tracksMadeFromFit pulse.tracks(end).trackID];
+            else
+                pulse.changes.tracksMadeFromFit = pulse.tracks(end).trackID;
+            end
+            
         end % createTrackFromFit
 
 		function pulse = createFitFromTrack(pulse,cells,trackID,opt)
-            
+            %@Pulse.createFitFromTrack Using the stackID/embryoID and timing to create an
+			% artificial 'fit'.
+			%
+			% USAGE: pulse = pulse.createFitFromTrack(cells,trackID,fit_opt)
+			% xies@mit.edu Feb 2013
+
+			% Extract track
 			track = pulse.tracks.get_trackID(trackID);
 			if isempty(track), error('Cannot create FIT: No track with trackID found.'); end
+			% Get embryo/stackID
 			this_fit.embryoID = track.embryoID;
 			this_fit.cellID = track.cellID;
 			this_fit.stackID = track.stackID;
-            
             this_cell = cells(track.stackID);
             num_frames = numel(this_cell.dev_frame);
+			% Launch the manual fit GUI
             params = manual_fit([mean(track.dev_time) 20],cells,track.stackID);
 
-			% Get parameters
+			% Get parameters of the manual fit
 			this_fit.amplitude = params(1);
 			this_fit.center = params(2);
 			this_fit.width = params(3);
@@ -315,12 +443,38 @@ classdef Pulse
             pulse.fits = fits;
             pulse = pulse.match_pulse(pulse.match_thresh); % Redo match
             pulse = pulse.categorize_mapping;
+           
+            pulse.cells(track.stackID) = ...
+                pulse.cells(track.stackID).addFit( pulse.fits(end).fitID);
             
+            if isfield(pulse.changes,'fitsMadeFromTrackID')
+                pulse.changes.fitsMadeFromTrackID = ...
+                    [pulse.changes.fitsMadeFromTrackID pulse.fits(end).fitID];
+            else
+                pulse.changes.fitsMadeFromTrackID = pulse.fits(end).fitID;
+            end
         end
+
+		function pulse = reassignFit(pulse,fitID,newTrackID)
+			%@Pulse.reassginFit Reassign FIT to TRACK: works only if neither
+			% FIT and TRACK have been assigned previously.
+			nbm = pulse.map.reassign(newTrackID,fitID);
+			pulse.map = nbm;
+            pulse = pulse.categorize_mapping;
+            
+            if isfield(pulse.changes,'reassignedTrackFit')
+                pulse.changes.reassignedTrackFit = ...
+                    cat(2, pulse.changes.reassignedTrackFit, ...
+                    [newTrackID fitID]);
+            else
+                pulse.changes.reassignedTrackFit = [newTrackID fitID];
+            end
+            
+		end
 
 %---------------------- graph/display -------------------------------------
         
-        function varargout = graph(pulse,cat,cells,ID,axes_handle)
+        function varargout = graph(pulse,cat,ID,axes_handle)
             % Graph the selected cateogry
             % USAGE: pulse.graph(category,cells,ID,handles)
             %        pulse.graph(category,cells,ID)
@@ -332,13 +486,14 @@ classdef Pulse
             %        handles.axes - subplot axes
             
             % get the data
-            fits = pulse.fits; tracks = pulse.tracks;
+            fits = pulse.fits; tracks = pulse.tracks; cells = pulse.cells;
             
             % find number of things to graph
             category = pulse.categories.(cat);
             num_disp = numel(ID);
             
-            % handles
+            % Default axes = gca
+            if nargin < 4, axes_handle = gca; end
             
             for i = 1:num_disp
                 
@@ -358,11 +513,9 @@ classdef Pulse
                 
                 % --- Plot tracked pulses ---
                 % handle subplots, plot to alternative parent if applicable
-                if nargin > 4
-                    h(1) = subplot(3, num_disp, i, 'Parent', axes_handle);
-                else
-                    h(1) = subplot(3, num_disp, i);
-                end
+
+                h(1) = subplot(3, num_disp, i, 'Parent', axes_handle);
+
                 axes(h(1));
                 binary_trace = concatenate_pulse(track,dev_time); % get binary track
                 if ~isempty(trackID) % highlight pulse if applicable
@@ -383,11 +536,9 @@ classdef Pulse
 %                 title(h(1),['Manual: #' num2str(track(1).trackID)])
                 
                 % --- Plot fitted pulses ---
-                if nargin > 4
-                    h(2) = subplot(3, num_disp, num_disp + i, 'Parent', axes_handle);
-                else
-                    h(2) = subplot(3, num_disp, num_disp + i);
-                end
+
+                h(2) = subplot(3, num_disp, num_disp + i, 'Parent', axes_handle);
+
                 axes(h(2));
                 binary_trace = concatenate_pulse(fit,dev_time); % get binary track
                 if ~isempty(fitID) % highlight pulse if applicable
@@ -406,12 +557,9 @@ classdef Pulse
                 title(h(2),['Fitted'])
                 
                 % --- Plot cell raw data ---
-                if nargin > 4
-                    h(3) = subplot(3, num_disp, 2*num_disp + i, 'Parent', axes_handle);
-                else
-                    h(3) = subplot(3, num_disp, 2*num_disp + i);
-                end
-                visualize_cell(cells, stackID, h(3));
+                h(3) = subplot(3, num_disp, 2*num_disp + i, 'Parent', axes_handle);
+                
+                cells.visualize( stackID, h(3) );
                 linkaxes( h , 'x');
                 
             end % End of for-loop
@@ -450,6 +598,10 @@ classdef Pulse
             display(['Total tracked pulses: ' num2str(numel(pulse.tracks))])
             display('------ Fitted pulses ----------- ')
             display(['Total fitted pulses: ' num2str(numel(pulse.fits))])
+			display('------ Cells ------------------- ')
+			display(['Total number of cells: ' num2str(numel(pulse.cells))])
+			display(['Total tracked cells: ' ...
+                num2str(numel(pulse.cells([pulse.cells.flag_tracked]==1))) ])
             fprintf('\n')
 
             display('------ Matching ---------------- ')
@@ -490,12 +642,6 @@ classdef Pulse
             fprintf('\n')
             
         end % display
-        
-%         function diff(pulse1,pulse2)
-%             %---- Difference display ----
-% %             num
-%             
-%         end
         
     end % Dynamic methods
     

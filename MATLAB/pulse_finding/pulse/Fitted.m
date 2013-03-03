@@ -1,4 +1,9 @@
 classdef Fitted
+	%Fitted A fitted pulse as found by multiple-Gaussian fitting
+	%
+	% Methods
+	%	Fitted - cosntructor, see @Cell.FIT_GAUSSIANS
+	%	removeFit
     properties (SetAccess = private)
         
         % Initialized with
@@ -31,6 +36,9 @@ classdef Fitted
         corrected_area
         corrected_area_rate
         corrected_area_norm
+
+		% Cell structure
+		cell
         
     end
     properties (SetAccess = public)
@@ -41,7 +49,8 @@ classdef Fitted
     end
     methods % Dynamic methods
         function obj = Fitted(this_fit)
-            % Constructor - use from FIT_GAUSSIANS (array constructor)
+            %Fitted Constructor - use from FIT_GAUSSIANS (array constructor)
+			% USAGE: obj = FITTED(this_fit)
             if nargin > 0
                 names = fieldnames(this_fit);
                 for i = 1:numel(names)
@@ -51,16 +60,20 @@ classdef Fitted
             end
         end % constructor
         function obj_array = removeFit(obj_array,fitID)
+			%removeFit Removes a fit of a given fitID from an array
+			% USAGE: obj_array = obj_array.removeFit(fitID)
             obj_array(obj_array.get_fitID(fitID)) = [];
         end
         
         function objs = get_stackID(obj_array,stackID)
             % Find the FIT(s) with the given stackID(s)
+			% usage: objs = obj_array.get_stackID(stackID)
             objs = obj_array( ismember([ obj_array.stackID ], stackID) );
         end %get_stackID
         
         function objs = get_fitID(obj_array,fitID)
             % Find the FIT(s) with the given fitID(s)
+			% USAGE: objs = obj_array.get_fitID(fitID)
             objs = obj_array( ismember([ obj_array.fitID ], fitID) );
         end %get_fitID
         
@@ -96,6 +109,8 @@ classdef Fitted
         end % align_fits
         
         function [fits] = assign_datafield(fits,data,name)
+			%assign_datafield Assign a matrix into the fields of fitted objects
+			% USAGE: fits = assign_datafield(fits,data,name)
             if size(data,1) ~= numel(fits)
                 error('Data size must be the same as the number of FITTED objects.');
             end
@@ -140,8 +155,8 @@ classdef Fitted
 % --------------------- Comparator ----------------------------------------
 
         function equality = eq(fit1,fit2)
-            % Equality comparator for TRACK
-            % right now slow, expecting array
+            % Equality comparator for FITTED
+            % right now slow, expecting array in first argument
             if numel(fit1) > 1 && numel(fit2) > 1
                 error('Cannot handle TWO array inputs.');
             end
@@ -151,7 +166,7 @@ classdef Fitted
                 if fit1(j).stackID == fit2.stackID
                 % can't use bsxfun because of un-uniform output
                     if numel(fit1(j).width_frames( ...
-                            ismember(fit1(j).width_frames, fit2.width_frames))) > 1
+                            ismember(fit1(j).width_frames, fit2.width_frames))) > 2
                         equality(j) = 1;
                     end
                 end
@@ -167,7 +182,7 @@ classdef Fitted
             new_fit.manually_added = 1;
             
             if any(obj_array == new_fit)
-                disp('Cannot create new fit: Fit also exists.');
+                disp('Cannot create new fit: Fit already exists.');
                 beep
                 return
             end
