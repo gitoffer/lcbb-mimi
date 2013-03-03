@@ -191,8 +191,40 @@ classdef Fitted
             
         end
         
+		function binned_array = bin(fits)
+
+			embryoIDs = unique( [fits.embryoID] );
+			binned_array = cell(1,4);
+			binned_array{1} = []; binned_array{2} = []; binned_array{3} = []; binned_array{4} = [];
+
+			for i = embryoIDs
+				
+				fits_this_embryo = fits( [fits.embryoID] == i);
+				fitIDs_this_embryo = [ fits_this_embryo.fitID ];
+
+				amps = [ fits_this_embryo.amplitude ];
+				[ sorted_amps, sortID ] = sort( amps, 2, 'descend' );
+
+				cutoffs = prctile( sorted_amps, [ 25 50 75 ] );
+				sortedID = fitIDs_this_embryo( sortID );
+				
+				top = sortedID(1 : find( sorted_amps < cutoffs(3), 1) );
+				top_middle = sortedID( find(sorted_amps < cutoffs(3),1) + 1 : ...
+					find(sorted_amps < cutoffs(2), 1) );
+				bottom_middle = sortedID( find(sorted_amps < cutoffs(2), 1) + 1 : ...
+					find( sorted_amps < cutoffs(1), 1) );
+				bottom = sortedID( find(sorted_amps < cutoffs(1), 1) + 1: end);
+
+				binned_array{1} = [ binned_array{1} fits.get_fitID(top) ];
+				binned_array{2} = [ binned_array{2} fits.get_fitID(top_middle) ];
+				binned_array{3} = [ binned_array{3} fits.get_fitID(bottom_middle) ];
+				binned_array{4} = [ binned_array{4} fits.get_fitID(bottom) ];
+
+			end
+			
+		end
     end
-    
+ 
     methods (Static)
         
     end
