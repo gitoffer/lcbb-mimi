@@ -31,7 +31,7 @@ frames = h.frames2load;
 channels = h.channels;
 sliceID = h.input.actual_z;
 cellID = h.cellID;
-dev_frame = h.dev_frame;
+% dev_frame = h.dev_frame;
 
 path = fileparts(input.folder2load);
 vx = h.vx(:,cellID);
@@ -61,8 +61,8 @@ if ~isfield(h, 'axes'), h.axes = gca; end
 
 % ---- Construct image -----
 
-% Correct for lag
-movie_frames = dev_frame(frames(~isnan(frames)));
+% Correct for EDGE lag
+movie_frames = frames + input.t0;
 % frames = frames;
 
 box = find_bounding_box(vx,vy);

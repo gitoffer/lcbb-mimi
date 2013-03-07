@@ -36,9 +36,6 @@ classdef Fitted
         corrected_area
         corrected_area_rate
         corrected_area_norm
-
-		% Cell structure
-		cell
         
     end
     properties (SetAccess = public)
@@ -176,7 +173,7 @@ classdef Fitted
             for i = 1:num_traces
                 pulses(i).(['corrected_' name]) = ...
                     interp1((-l:r)*dt(embryoIDs(i)),traces(i,:),(-(l-2):r-2)*aligned_dt);
-                pulses(i).corrected_time = aligned_t;
+                pulses(i).corrected_time = aligned_t(3:end-2);
             end
             
         end % resample_traces
@@ -191,11 +188,12 @@ classdef Fitted
                 this_cell = cells.get_stackID(this_fit.stackID);
                 num_frames = numel(this_cell.dev_time);
                 opt = opts(this_fit.embryoID);
+                center_frame = findnearest( this_fit.center, this_cell.dev_time );
                 
                 % Get margin frame
                 [left_margin,pad_l] = max( ...
                     [center_frame - opt.left_margin, 1] );
-                [right_margin,pad_r] = max( ...
+                [right_margin,pad_r] = min( ...
                     [center_frame + opt.right_margin, num_frames] );
                 this_fit.margin_frames = left_margin:right_margin;
                 
@@ -245,14 +243,12 @@ classdef Fitted
         
 % --------------------- Array operations ----------------------------------
         
-		function binned_array = bin_fits(fits)
+		function fits = bin_fits(fits)
             %BIN_FITS Bin fits according to their amplitudes
 
             [fits.bin] = deal(NaN);
             
 			embryoIDs = unique( [fits.embryoID] );
-			binned_array = cell(1,4);
-			binned_array{1} = []; binned_array{2} = []; binned_array{3} = []; binned_array{4} = [];
 
 			for i = embryoIDs
 				
@@ -316,34 +312,34 @@ classdef Fitted
             % Plot the myosins
             figure, hold on,
             shadedErrorBar( x, ...
-                nanmean( cat(1, [top.corrected_myosin]) ), ...
-                nanstd( cat(1, [top.corrected_myosin]) ), 'r-', 1)
+                nanmean( cat(1, top.corrected_myosin ) ), ...
+                nanstd( cat(1, top.corrected_myosin ) ), 'r-', 1)
             shadedErrorBar( x, ...
-                nanmean( cat(1, [top_middle.corrected_myosin]) ), ...
-                nanstd( cat(1, [top_middle.corrected_myosin]) ), 'b-', 1)
+                nanmean( cat(1, top_middle.corrected_myosin) ), ...
+                nanstd( cat(1, top_middle.corrected_myosin) ), 'b-', 1)
             shadedErrorBar( x, ...
-                nanmean( cat(1, [bottom_middle.corrected_myosin]) ), ...
-                nanstd( cat(1, [bottom_middle.corrected_myosin]) ), 'k-', 1)
+                nanmean( cat(1, bottom_middle.corrected_myosin) ), ...
+                nanstd( cat(1, bottom_middle.corrected_myosin) ), 'k-', 1)
             shadedErrorBar( x, ...
-                nanmean( cat(1, [bottom.corrected_myosin]) ), ...
-                nanstd( cat(1, [bottom.corrected_myosin]) ), 'g-', 1)
+                nanmean( cat(1, bottom.corrected_myosin) ), ...
+                nanstd( cat(1, bottom.corrected_myosin) ), 'g-', 1)
             hold off
             xlabel('Aligned time (sec)')
             ylabel('Myosin intensity (a.u.)')
             
             figure, hold on,
             shadedErrorBar( x, ...
-                nanmean( cat(1, [top.corrected_area_norm]) ), ...
-                nanstd( cat(1, [top.corrected_area_norm]) ), 'r-', 1)
+                nanmean( cat(1, top.corrected_area_norm) ), ...
+                nanstd( cat(1, top.corrected_area_norm) ), 'r-', 1)
             shadedErrorBar( x, ...
-                nanmean( cat(1, [top_middle.corrected_area_norm]) ), ...
-                nanstd( cat(1, [top_middle.corrected_area_norm]) ), 'b-', 1)
+                nanmean( cat(1, top_middle.corrected_area_norm) ), ...
+                nanstd( cat(1, top_middle.corrected_area_norm) ), 'b-', 1)
             shadedErrorBar( x, ...
-                nanmean( cat(1, [bottom_middle.corrected_area_norm]) ), ...
-                nanstd( cat(1, [bottom_middle.corrected_area_norm]) ), 'k-', 1)
+                nanmean( cat(1, bottom_middle.corrected_area_norm) ), ...
+                nanstd( cat(1, bottom_middle.corrected_area_norm) ), 'k-', 1)
             shadedErrorBar( x, ...
-                nanmean( cat(1, [bottom.corrected_area_norm]) ), ...
-                nanstd( cat(1, [bottom.corrected_area_norm]) ), 'g-', 1)
+                nanmean( cat(1, bottom.corrected_area_norm) ), ...
+                nanstd( cat(1, bottom.corrected_area_norm) ), 'g-', 1)
             hold off
             xlabel('Aligned time (sec)')
             ylabel('\Delta area (\mum^2)')
@@ -361,12 +357,12 @@ classdef Fitted
             set(gca, 'CameraUpVector', [1 0 0] );
             set(gca, 'XLim', [1 numel(fits)] );
             set(gca, 'XTick', []);
-            ylable('Fitted amplitudes');
+            ylabel('Fitted amplitudes');
             
             subplot(1,5,2:3)
             [X,Y] = meshgrid( fits(1).corrected_time, numel(fits):-1:1);
             pcolor( X,Y, cat(1,fits.corrected_myosin) );
-            shading flat; axis tight;
+            shading flat; axis tight; colorbar;
             title('Aligned myosin')
             xlabel('Aligned time (sec)');
             

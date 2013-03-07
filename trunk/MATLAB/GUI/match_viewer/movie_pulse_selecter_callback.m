@@ -22,12 +22,12 @@ whichID = get(handles.whichID,'Value');
 
 % get current_pulse according to which/whichID
 if strcmpi( which,'trackID' )
-    this_pulse = tracks( cats.(current_cat)(catID).(which) (whichID) );
+    this_pulse = tracks.get_trackID( cats.(current_cat)(catID).(which) (whichID) );
     frames = [this_pulse.dev_frame];
 else
     this_pulse = fits.get_fitID( cats.(current_cat)(catID).(which) (whichID) );
-    min_nan = find(~isnan(handles.cells(this_pulse.stackID).dev_frame),1,'first');
-    max_nan = find(~isnan(handles.cells(this_pulse.stackID).dev_frame),1,'last');
+    min_nan = find(~isnan(handles.cells(this_pulse.stackID).dev_time),1,'first');
+    max_nan = find(~isnan(handles.cells(this_pulse.stackID).dev_time),1,'last');
     frames = [this_pulse.width_frames];
     frames = frames( frames >= min_nan & frames <= max_nan );
 end

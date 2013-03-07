@@ -170,17 +170,19 @@ classdef Pulse
             for i = 1:numel(trackID)
                 matches.miss(i).trackID = trackID(i);
                 matches.miss(i).fitID = [];
+                track( [track.trackID] == trackID(i) ).category = 'miss';
             end
-            [ track( ismember([track.trackID],[matches.miss.trackID])).category ] = deal('miss');
+%             [ track( ismember([track.trackID],[matches.miss.trackID])).category ] = deal('miss');
             % adds
             fitID = ...
                 [ fit(~ismember([fit.fitID],cell2mat(matchedFT_fitID))).fitID ];
             for i = 1:numel(fitID)
                 matches.add(i).fitID = fitID(i);
                 matches.add(i).trackID = [];
+                fit( [fit.fitID] == fitID(i) ).category = 'add';
             end
             % Annotate track with adds
-            [ fit( ismember([fit.fitID],[matches.add.fitID])).category ] = deal('add');
+%             [ fit( ismember([fit.fitID],[matches.add.fitID])).category ] = deal('add');
             
             % -- Quantify one-to-one matches --
             % Find all tracks within the fit-fitted cells, and not belonging to
@@ -241,12 +243,12 @@ classdef Pulse
                 if isempty( [match.split.trackID] )
                     match = rmfield(match,'split');
                 end
-                if isempty( [match.miss.trackID] )
-                    match = rmfield(match,'miss');
-                end
-                if isempty( [match.add.fitID] )
-                    match = rmfield(match,'add');
-                end
+%                 if isempty( [match.miss] )
+%                     match = rmfield(match,'miss');
+%                 end
+%                 if isfield( match, 'add')
+%                     match = rmfield(match,'add');
+%                 end
             end
             % --- End categorize_mapping subfunctions
         end % Categorize_mapping
@@ -354,7 +356,6 @@ classdef Pulse
             this_track.dev_frame = fit.width_frames;
             this_track.embryoID = fit.embryoID;
             this_track.dev_time = ensure_row(fit.dev_time);
-            this_track.img_frame = ensure_row(fit.img_frames);
             
             tracks = add_track(pulse.tracks,this_track);
             
@@ -393,7 +394,7 @@ classdef Pulse
 			this_fit.cellID = track.cellID;
 			this_fit.stackID = track.stackID;
             this_cell = cells(track.stackID);
-            num_frames = numel(this_cell.dev_frame);
+            num_frames = numel(this_cell.dev_time);
 			% Launch the manual fit GUI
             params = manual_fit([mean(track.dev_time) 20],cells,track.stackID);
 
@@ -410,12 +411,11 @@ classdef Pulse
             
             % Get width frames
             left_width = max( center_frame - ...
-                findnearest(params(3), cumsum(diff(this_cell.dev_time)), 1));
+                findnearest(params(3), cumsum(diff(this_cell.dev_time))), 1);
             right_width = min( center_frame + ...
-                findnearest(params(3), cumsum(diff(this_cell.dev_time)), num_frames));
+                findnearest(params(3), cumsum(diff(this_cell.dev_time))), num_frames);
 			this_fit.width_frames = left_width : right_width;
             
-			this_fit.img_frames = this_cell.dev_frame(left_width:right_width);
 			this_fit.dev_time = this_cell.dev_time(left_width:right_width);
             
             % Get curves
@@ -506,6 +506,7 @@ classdef Pulse
                 
                 % Get time (for graphing
                 dev_time = cells(stackID).dev_time;
+                dev_time = dev_time(~isnan(dev_time));
                 
                 % Extract fit/track of interest
                 track = tracks.get_stackID(stackID); num_track = numel(track);
@@ -516,7 +517,7 @@ classdef Pulse
 
                 h(1) = subplot(3, num_disp, i, 'Parent', axes_handle);
 
-                axes(h(1));
+%                 axes(h(1));
                 binary_trace = concatenate_pulse(track,dev_time); % get binary track
                 if ~isempty(trackID) % highlight pulse if applicable
                     on = highlight_track(track,trackID);
@@ -539,7 +540,7 @@ classdef Pulse
 
                 h(2) = subplot(3, num_disp, num_disp + i, 'Parent', axes_handle);
 
-                axes(h(2));
+%                 axes(h(2));
                 binary_trace = concatenate_pulse(fit,dev_time); % get binary track
                 if ~isempty(fitID) % highlight pulse if applicable
                     on = highlight_track(fit,fitID);

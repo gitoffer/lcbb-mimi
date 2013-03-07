@@ -4,8 +4,8 @@ clear fit_opts
 [fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity_fuzzy');
 [fit_opts(1:num_embryos).bg] = deal('on');
 
-[fit_opts(1:num_embryos).left_margin] = deal(5);
-[fit_opts(1:num_embryos).right_margin] = deal(5);
+[fit_opts(1:num_embryos).left_margin] = deal(10);
+[fit_opts(1:num_embryos).right_margin] = deal(10);
 [fit_opts(1:num_embryos).nan_thresh] = deal(20);
 [fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
 [fit_opts(1:num_embryos).end_tol] = deal(30);
@@ -19,17 +19,13 @@ clear fit_opts
 % fit_opts(2).sigma_ub = 40;
 
 %%
-clear cells fits
 
 cells = edge2cell(embryo_stack);
 [cells,fits] = fit_gaussians(cells,fit_opts);
 
 %% sub-set of pulses
 
-% subIDs = intersect(find(1:numel(pulses) < wt_cutoff),filtIDs);
-% sub_pulse = subID_pulses(pulses,subIDs);
-
-% num_peaks = numel(pulseOI);
+fits = fits.retrace(cells,fit_opts);
 
 %% Align all pulses
 
@@ -42,9 +38,6 @@ aligned_area = cat(1,fits.area);
 aligned_myosin = cat(1,fits.myosin);
 aligned_area_rate = cat(1,fits.area_rate);
 aligned_myosin_rate = cat(1,fits.myosin_rate);
-
-% sort pulses based on their magnitude
-[sorted_amplitudes,sortedID] = sort([fits.amplitude],2,'descend');
 
 % Mean-center pulses responses
 aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));

@@ -13,7 +13,7 @@ embryo_struct = embryo_stack(embryoID);
 
 % Load time, cell number, and input from embryo_struct
 dev_time = embryo_struct.dev_time;
-dev_frame = embryo_struct.dev_frame;
+% dev_frame = embryo_struct.dev_frame;
 input = embryo_struct.input;
 
 % Get rid of other zslices and squeeze out singleton
@@ -38,6 +38,7 @@ for i = 1:num_tracks
 
 	% Get the active frames
 	frames = this_mdf(:,end);
+    frames = frames - input.t0;
 
 	% Make sure there are more than a threshold number of active frames
 	if numel(frames) < min_frame; end
@@ -46,7 +47,7 @@ for i = 1:num_tracks
 	if mean(frames) > input.last_segmented, continue; end
 	
     % Collect the image frames
-    img_frame = frames;
+%     img_frame = frames;
     
 	% Get the coordinates of the track and the centroid of track
 	x = this_mdf(:,3);
@@ -55,8 +56,8 @@ for i = 1:num_tracks
 	track_cy = mean(y);
     
     % Convert image-frames into dev-frames
-    f0 = find( 1 == dev_frame );
-    frames = frames + f0 - 1;
+%     f0 = find( 1 == dev_frame );
+%     frames = frames + f0 - 1;
 
 	% Sort the distance between track cenroid to all cell centroids
 	dists = sqrt( ...
@@ -86,7 +87,7 @@ for i = 1:num_tracks
 	this_track.dev_frame = ensure_row(frames);
 	this_track.dev_time = dev_time(frames);
     % Collect the frames WRT image time
-    this_track.img_frame = img_frame;
+%     this_track.img_frame = img_frame;
     
 	% Construct Track object
     cells(order(index)).trackID = trackID;
