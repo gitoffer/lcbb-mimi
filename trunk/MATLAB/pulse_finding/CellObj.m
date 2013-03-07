@@ -165,7 +165,7 @@ classdef CellObj
                         
                         % Get pulse margin-time frame
                         [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
-                        [right_margin,pad_r] = min([ center_frame + opt.left_margin , num_frames]);
+                        [right_margin,pad_r] = min([ center_frame + opt.right_margin , num_frames]);
                         this_fit.margin_frames = left_margin:right_margin;
                         
                         % Get pulse width-time frame
@@ -179,7 +179,7 @@ classdef CellObj
                         
                         % Collect the pulse-centric fitted curves
                         x = dev_time(left_margin:right_margin);
-                        fitted_y = synthesize_gaussians(gauss_p(:,j),x);
+                        fitted_y = lsq_gauss1d(gauss_p(:,j),x);
                         this_fit.raw = Y(left_margin:right_margin);
                         this_fit.fit = fitted_y;
                         this_fit.aligned_time = x - center;
