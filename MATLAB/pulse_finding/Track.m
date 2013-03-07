@@ -25,7 +25,6 @@ classdef Track
         
         dev_frame % The active track frames in aligned frame
         dev_time  % The developmental aligned time for track
-        img_frame % the image frames for track
         
     end
     
@@ -100,7 +99,6 @@ classdef Track
             
             if any(obj_array == new_track)
                 disp('Cannot create new track: Track already exists.');
-                beep
                 return
             end
             

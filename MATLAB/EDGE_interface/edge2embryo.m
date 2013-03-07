@@ -45,29 +45,38 @@ for j = 1:numel(meas_fieldnames)
     data{j} = foo;
 end
 
-frame = nan(num_embryos,numel(time)); t = nan(num_embryos,numel(time));
-max_tref = max([input.tref]); lag = max_tref - [input.tref];
-
 for i = 1:num_embryos
     for j = 1:numel(meas_fieldnames)
+        
         embryo_structs(i).(meas_fieldnames{j}) = ...
-            data{j}(:,IDs == i);
+            data{j}(:, IDs == i );
+        
+        
     end
-    % Construct the dev_time
-    t(i,:) = time*input(i).dt;
-    frame(i,lag(i)+1:lag(i)+input(i).T) = 1:input(i).T;
 end
 
 [embryo_structs(1:num_embryos).num_cell] = deal([]);
 [embryo_structs(1:num_embryos).input] = deal([]);
 [embryo_structs(1:num_embryos).dev_time] = deal([]);
-[embryo_structs(1:num_embryos).dev_frame] = deal([]);
 
 for i = 1:num_embryos
     embryo_structs(i).num_cell = num_cells(i);
     embryo_structs(i).input = input(i);
-    embryo_structs(i).dev_time = t(i,:);
-    embryo_structs(i).dev_frame = frame(i,:);
+    embryo_structs(i).dev_time = time(i,:);
 end
+
+% frame = nan(num_embryos,numel(time)); t = nan(num_embryos,numel(time));
+% max_tref = max([input.tref]); lag = max_tref - [input.tref];
+
+% for i = 1:num_embryos
+%     for j = 1:numel(meas_fieldnames)
+%         embryo_structs(i).(meas_fieldnames{j}) = ...
+%             data{j}(:,IDs == i);
+%     end
+%     % Construct the dev_time
+%     t(i,:) = time*input(i).dt;
+%     frame(i,lag(i)+1:lag(i)+input(i).T) = 1:input(i).T;
+% end
+
 
 end

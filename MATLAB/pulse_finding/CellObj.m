@@ -46,7 +46,6 @@ classdef CellObj
         vertex_y	% vertices, y-coordinates
         
         % Time
-        dev_frame	% multiple-embryo-aligned, developmental frames (NB: need to get rid of it... redundant)
         dev_time	% multiple-embryo-aligned, developmental time
     end % Private properties (can't be changed)
     
@@ -88,7 +87,7 @@ classdef CellObj
             end
             
             [cells(1:sum(num_cells)).flag_fitted] = deal(0);
-            num_frames = numel(cells(1).dev_frame);
+            num_frames = numel(cells(1).dev_time);
             
             fitID = 0;
             
@@ -173,8 +172,8 @@ classdef CellObj
                         right_width = min( center_frame + findnearest(width,cumsum(diff(t))) , num_frames);
                         this_fit.width_frames = left_width:right_width;
                         
-                        % Get pulse time WRT image/dev_time
-                        this_fit.img_frames = this_cell.dev_frame(left_width:right_width);
+                        % Get pulse time WRT dev_time
+%                         this_fit.img_frames = this_cell.dev_frame(left_width:right_width);
                         this_fit.dev_time = this_cell.dev_time(left_width:right_width);
                         
                         % Collect the pulse-centric fitted curves
@@ -284,7 +283,7 @@ classdef CellObj
             % Extract cell
             this_cell = cells(ID);
 
-            nonan_frame = this_cell.dev_frame;
+            nonan_frame = this_cell.dev_time;
             nonan_frame = ~isnan(nonan_frame);
             time = this_cell.dev_time( nonan_frame );
 

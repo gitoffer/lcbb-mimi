@@ -6,14 +6,16 @@ if ~isfield(handles,'params')
     handles.center = handles.init_params(1);
     handles.std = handles.init_params(2);
     set(handles.std_display,'String',handles.std);
-    handles.frame = findnearest(this_cell.dev_frame,handles.center);
+    handles.frame = findnearest(this_cell.dev_time,handles.center);
+    handles.frame = handles.frame(1);
     handles.amplitude = handles.this_cell.myosin_sm(handles.frame);
     set(handles.amplitude_display,'String',handles.amplitude);
     set(handles.center_display,'String',handles.frame);
     
 end
 
-handles.frame = findnearest(this_cell.dev_frame,handles.center);
+handles.frame = findnearest(this_cell.dev_time,handles.center);
+handles.frame = handles.frame(1);
 handles.params = [handles.amplitude handles.center handles.std];
 
 % set limits

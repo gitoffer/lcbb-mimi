@@ -24,7 +24,7 @@ for i = 1:sum(num_cells)
     this_cell.cellID = cellID;
     
     % Get input structure
-    input = embryo_stack(embryoID).input;
+%     input = embryo_stack(embryoID).input;
     
     % Put the relevant measurements into the cell structure
     for j = 1:numel(measurements)
@@ -41,7 +41,6 @@ for i = 1:sum(num_cells)
     
     % Collect the time
     this_cell.dev_time = embryo_stack(embryoID).dev_time;
-    this_cell.dev_frame = embryo_stack(embryoID).dev_frame; 
     
     cells(i) = CellObj(this_cell);
     
