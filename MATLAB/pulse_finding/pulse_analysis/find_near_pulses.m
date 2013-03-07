@@ -1,10 +1,10 @@
-function [near_pulses,nearIDs] = find_near_pulses(pulses,pulseID,time_window,neighborIDs,master_time)
+function [near_pulses,nearIDs] = find_near_pulses(pulses,pulseID,time_window,neighborIDs)
 %FIND_NEAR_PULSE
 
 this_pulse = pulses(pulseID);
-same_embryo = pulses([pulses.embryo] == this_pulse.embryo);
-center_frame = this_pulse.frame(floor(numel(this_pulse.frame)/2));
-neighbor_cells = neighborIDs{center_frame,this_pulse.cell};
+same_embryo = pulses([pulses.embryoID] == this_pulse.embryoID);
+center_frame = this_pulse.margin_frames(floor(numel(this_pulse.margin_frames)/2));
+neighbor_cells = neighborIDs{center_frame,this_pulse.stackID};
 neighbor_cells = neighbor_cells(neighbor_cells > 0)';
 
 count = 0;
