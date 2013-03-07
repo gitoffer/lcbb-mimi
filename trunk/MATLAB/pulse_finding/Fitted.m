@@ -16,7 +16,6 @@ classdef Fitted
         width
         margin_frames
         width_frames
-        img_frames
         dev_time
         raw
         fit
@@ -46,15 +45,74 @@ classdef Fitted
         
     end
     methods % Dynamic methods
-        function obj = Fitted(this_fit)
+        
+        function this_fit = Fitted(cell,params,fitID,opt)
             %Fitted Constructor - use from FIT_GAUSSIANS (array constructor)
-			% USAGE: obj = FITTED(this_fit)
+            % Will populate the pulse-centric fields, like the margins, and
+            % aligned curves and time.
+            % 
+			% USAGE: fit = FITTED(cell,params,fitID)
+            
             if nargin > 0
-                names = fieldnames(this_fit);
-                for i = 1:numel(names)
-                    [obj.(names{i})] = deal(this_fit.(names{i}));
+                
+                % FitID
+                fit.fitID = fitID;
+                
+                % Collect the relevant indices
+                fit.embryoID = cell.embryoID;
+                fit.cellID = cell.cellID;
+                fit.stackID = cell.stackID;
+                
+                % Collect the parameters
+                this_fit.amplitude = params(1);
+                this_fit.center = params(2); this_fit.width = params(3);
+                
+                dev_time = cell.dev_time;
+                num_frames = numel(dev_time);
+                center_frame = findnearest(this_fit.center,dev_time);
+                
+                % Get pulse margin-time frame
+                [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
+                [right_margin,pad_r] = min([ center_frame + opt.right_margin , num_frames]);
+                this_fit.margin_frames = left_margin:right_margin;
+                
+                % Get pulse width-time frame
+                left_width = max( ...
+                    center_frame - findnearest(this_fit.width,cumsum(diff(dev_time))) , 1);
+                right_width = min( ...
+                    center_frame + findnearest(this_fit.width,cumsum(diff(dev_time))) , num_frames);
+                this_fit.width_frames = left_width:right_width;
+                
+                % Get pulse time WRT dev_time
+                this_fit.dev_time = dev_time(left_width:right_width);
+                
+                % Collect the pulse-centric fitted curves
+                x = dev_time( left_margin : right_margin );
+                fitted_y = lsq_gauss1d( params , x );
+                this_fit.raw = ...
+                    cell.(opt.to_fit)( left_margin : right_margin );
+                this_fit.fit = fitted_y;
+                this_fit.aligned_time = x - this_fit.center;
+                
+                
+                % PAD the margin-time frame for plotting purposes
+                if pad_l > 1
+                    fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
+                    x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
                 end
-                obj.manually_added = 0;
+                if pad_r > 1
+                    fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
+                    x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
+                end
+                this_fit.aligned_time_padded = x;
+                this_fit.fit_padded = fitted_y;
+                        
+%                 names = fieldnames(this_fit);
+%                 for i = 1:numel(names)
+%                     [fit.(names{i})] = deal(this_fit.(names{i}));
+%                 end
+                this_fit.manually_added = 0;
+                
             end
         end % constructor
         
@@ -63,7 +121,6 @@ classdef Fitted
         function obj_array = add_fit(obj_array,new_fit)
             
             new_fit.fitID = max([obj_array.fitID]) + 1;
-            new_fit = Fitted( new_fit );
             new_fit.manually_added = 1;
             
             if any(obj_array == new_fit)
@@ -79,7 +136,7 @@ classdef Fitted
         function obj_array = removeFit(obj_array,fitID)
 			%removeFit Removes a fit of a given fitID from an array
 			% USAGE: obj_array = obj_array.removeFit(fitID)
-            obj_array(obj_array.get_fitID(fitID)) = [];
+            obj_array([obj_array.fitID] == fitID) = [];
         end % removeFit
         
 % --------------------- Array access/set ----------------------------------

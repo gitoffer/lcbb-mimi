@@ -211,57 +211,57 @@ classdef Pulse
             pulse.fits = fit;
             pulse.tracks = track;
             pulse.categories = matches;
-            if ~consistent(pulse,matchedTF_trackID,matchedFT_fitID)
-                error('Something doesn''t add up!');
-            end
+%             if ~consistent(pulse)
+%                 error('Something doesn''t add up!');
+%             end
             
             % -- Subfunctions of categorize_mapping -- %
-            function flag2cont = consistent(pulse,matchedTF_trackID,matchedFT_fitID)
-                match = pulse.categories;
-                num_tracks = numel(pulse.tracks);
-                num_fit = numel(pulse.fits);
+%             function flag2cont = consistent(pulse)
+%                 match = pulse.categories;
+%                 num_tracks = numel(pulse.tracks);
+%                 num_fit = numel(pulse.fits);
+%                 
+%                 num_one2one = numel(match.one2one);
+%                 if isfield(match,'miss')
+%                     num_miss_track = numel([match.miss.trackID]);
+%                 else
+%                     num_miss_track = 0;
+%                 end
+%                 if isfield(match,'add')
+%                     num_add_fit = numel([match.add.fitID]);
+%                 else
+%                     num_add_fit = 0;
+%                 end
+%                 if isfield(match,'merge')
+%                     num_merge_track = numel([match.merge.trackID]);
+%                     num_merge_fit = numel([match.merge.fitID]);
+%                 else
+%                     num_merge_track = 0;
+%                     num_merge_fit = 0;
+%                 end
+%                 if isfield(match,'split')
+%                     num_split_track = numel([match.split.trackID]);
+%                     num_split_fit = numel([match.split.fitID]);
+%                 else
+%                     num_split_track = 0;
+%                     num_split_fit = 0;
+%                 end
+%                 
+%                 flag2cont = num_tracks == ...
+%                     num_one2one + num_miss_track + num_merge_track + num_split_track;
+%                 
+%                 flag2cont = flag2cont || ...
+%                     num_fit == num_one2one + num_add_fit + num_merge_fit + num_split_fit;
+%                 
+% %                 flag2cont = flag2cont || ...
+% %                     numel(matchedTF_trackID) == ...
+% %                     num_one2one + num_merge_track + num_split_track;
+% %                 
+% %                 flag2cont = flag2cont || ...
+% %                     numel(matchedFT_fitID) == ...
+% %                     num_one2one + num_merge_fit + num_split_fit;
                 
-                num_one2one = numel(match.one2one);
-                if isfield(match,'miss')
-                    num_miss_track = numel([match.miss.trackID]);
-                else
-                    num_miss_track = 0;
-                end
-                if isfield(match,'add')
-                    num_add_fit = numel([match.add.fitID]);
-                else
-                    num_add_fit = 0;
-                end
-                if isfield(match,'merge')
-                    num_merge_track = numel([match.merge.trackID]);
-                    num_merge_fit = numel([match.merge.fitID]);
-                else
-                    num_merge_track = 0;
-                    num_merge_fit = 0;
-                end
-                if isfield(match,'split')
-                    num_split_track = numel([match.split.trackID]);
-                    num_split_fit = numel([match.split.fitID]);
-                else
-                    num_split_track = 0;
-                    num_split_fit = 0;
-                end
-                
-                flag2cont = num_tracks == ...
-                    num_one2one + num_miss_track + num_merge_track + num_split_track;
-                
-                flag2cont = flag2cont || ...
-                    num_fit == num_one2one + num_add_fit + num_merge_fit + num_split_fit;
-                
-                flag2cont = flag2cont || ...
-                    numel(matchedTF_trackID) == ...
-                    num_one2one + num_merge_track + num_split_track;
-                
-                flag2cont = flag2cont || ...
-                    numel(matchedFT_fitID) == ...
-                    num_one2one + num_merge_fit + num_split_fit;
-                
-            end
+%             end
             function match = delete_empty(match)
                 if isempty( [match.one2one.trackID] )
                     match = rmfield(match,'one2one');
@@ -324,13 +324,12 @@ classdef Pulse
                         display('Cannot remove FITTED: given fitID does not exist.');
                         return
                     end
-                    pulse.fitsOI_ID( indices ) = [];
-                    pulse.fits( indices ) = [];
+                    pulse.fits = pulse.fits.removeFit( pulseID );
+                    pulse.fitsOI_ID(pulse.fitsOI_ID == pulseID) = [];
     
-                    stackID = [pulse.fits(indices).stackID];
-                    for i = 1:numel(stackID)
-                        pulse.cells(stackID(i)) = pulse.cells(stackID(i)).removeFit(pulseID);
-                    end
+                    stackID = [pulse.fits( indices ).stackID];
+                    pulse.cells( stackID ) = ...
+                        pulse.cells( stackID ).removeFit(pulseID);
                     
                     if isfield(pulse.changes,'fitIDRemoved')
                         pulse.changes.fitIDRemoved = ...
@@ -338,7 +337,8 @@ classdef Pulse
                     else
                         pulse.changes.fitIDRemoved = pulseID;
                     end
-                        
+                    
+                    display(['Deleting fitID: ' num2str(pulseID)]);
                     
                 case 'track'
                     indices = ismember([pulse.tracks.trackID], pulseID);
@@ -360,11 +360,14 @@ classdef Pulse
                         pulse.changes.trackIDRemoved = pulseID;
                     end
                     
+                    display(['Deleting trackID: ' num2str(pulseID)]);
+                    
                 otherwise
                     error('Invalid type: expecting TRACK or FIT.')
             end
             
             % Redo categorizing
+            pulse = pulse.match_pulse(pulse.match_thresh);
             pulse = pulse.categorize_mapping;
             
         end %removePulse
@@ -378,6 +381,15 @@ classdef Pulse
             
             fit = pulse.fits.get_fitID(fitID);
             if isempty(fit), error('No FIT found with fitID.'); end
+            if isfield(pulse.changes,'tracksMadeFromFit')
+                if any( fitID == [pulse.changes.tracksMadeFromFit.fitID])
+                    display(['Fit #' num2str(fitID) ' already used to add a track.']);
+                    return
+                end
+            end
+            
+            display(['Creating track from fitID ' num2str(fitID)]);
+            
             % Add to tracks stack
             this_track.embryoID = fit.embryoID;
             this_track.cellID = fit.cellID;
@@ -399,11 +411,14 @@ classdef Pulse
             pulse.cells(fit.stackID) = ...
                 pulse.cells(fit.stackID).addTrack( pulse.tracks(end).trackID);
             
+            % Record changes
+            this_change.trackID = pulse.tracks(end).trackID;
+            this_change.fitID = fitID;
             if isfield(pulse.changes,'tracksMadeFromFit')
                 pulse.changes.tracksMadeFromFit = ...
-                    [pulse.changes.tracksMadeFromFit pulse.tracks(end).trackID];
+                    [pulse.changes.tracksMadeFromFit this_change];
             else
-                pulse.changes.tracksMadeFromFit = pulse.tracks(end).trackID;
+                pulse.changes.tracksMadeFromFit = this_change;
             end
             
         end % createTrackFromFit
@@ -415,88 +430,65 @@ classdef Pulse
 			% USAGE: pulse = pulse.createFitFromTrack(cells,trackID,fit_opt)
 			% xies@mit.edu Feb 2013
 
-			% Extract track
+			% Extract track / make sure it's not duplicated
 			track = pulse.tracks.get_trackID(trackID);
-			if isempty(track), error('Cannot create FIT: No track with trackID found.'); end
-			% Get embryo/stackID
-			this_fit.embryoID = track.embryoID;
-			this_fit.cellID = track.cellID;
-			this_fit.stackID = track.stackID;
-            this_cell = cells(track.stackID);
-            num_frames = numel(this_cell.dev_time);
+			if isempty(track), display('Cannot create FIT: No track with trackID found.'); return; end
+            if isfield(pulse.changes,'fitsMadeFromTrack');
+                if any(trackID == [pulse.changes.fitsMadeFromTrack.trackID])
+                    display(['Track #' num2str(trackID) ' already used to add a fit.']);
+                    return
+                end
+            end
+            
+            display(['Creating fit from trackID ' num2str(trackID)])
+            
 			% Launch the manual fit GUI
-            params = manual_fit([mean(track.dev_time) 20],cells,track.stackID);
-
-			% Get parameters of the manual fit
-			this_fit.amplitude = params(1);
-			this_fit.center = params(2);
-			this_fit.width = params(3);
+            params = manual_fit( ...
+                [mean(track.dev_time) 20],cells,track.stackID);
             
-            % Get dev frames
-            center_frame = findnearest( this_cell.dev_time, params(2) );
-            [left_margin,pad_l] = max([ center_frame - opt.left_margin, 1 ]);
-            [right_margin,pad_r] = min([ center_frame + opt.right_margin, num_frames ]);
-			this_fit.margin_frames = left_margin:right_margin;
+            % Construct a new FITTED object from parameters
+            new_fit = Fitted( cells(track.stackID), params, NaN, opt);
             
-            % Get width frames
-            left_width = max( center_frame - ...
-                findnearest(params(3), cumsum(diff(this_cell.dev_time))), 1);
-            right_width = min( center_frame + ...
-                findnearest(params(3), cumsum(diff(this_cell.dev_time))), num_frames);
-			this_fit.width_frames = left_width : right_width;
+            % Add into stack
+            fits = pulse.fits.add_fit(new_fit);
             
-			this_fit.dev_time = this_cell.dev_time(left_width:right_width);
-            
-            % Get curves
-			Y = this_cell.(opt.to_fit);
-            x = this_cell.dev_time(left_margin:right_margin);
-            this_fit.raw = Y(left_margin:right_margin);
-			fitted_y = lsq_gauss1d(params,x);
-            this_fit.fit = fitted_y;
-			this_fit.aligned_time = x - this_fit.center;
-
-            % Get padded objects
-            if pad_l > 1
-                fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
-                x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
-            end
-            if pad_r > 1
-                fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
-                x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
-            end
-            this_fit.aligned_time_padded = x;
-			this_fit.fit_padded = fitted_y;
-            
-            fits = add_fit(pulse.fits,this_fit);
             pulse.fitsOI_ID = [pulse.fitsOI_ID fits(end).fitID];
             pulse.fits = fits;
-            pulse = pulse.match_pulse(pulse.match_thresh); % Redo match
+            
+            % Redo match/categorizing
+            pulse = pulse.match_pulse(pulse.match_thresh);
             pulse = pulse.categorize_mapping;
            
+            % Update cell tracklist
             pulse.cells(track.stackID) = ...
                 pulse.cells(track.stackID).addFit( pulse.fits(end).fitID);
             
-            if isfield(pulse.changes,'fitsMadeFromTrackID')
-                pulse.changes.fitsMadeFromTrackID = ...
-                    [pulse.changes.fitsMadeFromTrackID pulse.fits(end).fitID];
+            % Record changes
+            this_change.fitID = pulse.fits(end).fitID;
+            this_change.trackID = trackID;
+            if isfield(pulse.changes,'fitsMadeFromTrack')
+                pulse.changes.fitsMadeFromTrack = ...
+                    [pulse.changes.fitsMadeFromTrack this_change];
             else
-                pulse.changes.fitsMadeFromTrackID = pulse.fits(end).fitID;
+                pulse.changes.fitsMadeFromTrack = this_change;
             end
+            
         end
 
 		function pulse = reassignFit(pulse,fitID,newTrackID)
 			%@Pulse.reassginFit Reassign FIT to TRACK: works only if neither
 			% FIT and TRACK have been assigned previously.
 			nbm = pulse.map.reassign(newTrackID,fitID);
-			pulse.map = nbm;
+			pulse.map = nbm;            
             pulse = pulse.categorize_mapping;
             
+            this_change.trackID = newTrackID;
+            this_change.fitID = fitID;
             if isfield(pulse.changes,'reassignedTrackFit')
                 pulse.changes.reassignedTrackFit = ...
-                    cat(2, pulse.changes.reassignedTrackFit, ...
-                    [newTrackID fitID]);
+                    [pulse.changes.reassignedTrackFit, this_change];
             else
-                pulse.changes.reassignedTrackFit = [newTrackID fitID];
+                pulse.changes.reassignedTrackFit = this_change;
             end
             
 		end
