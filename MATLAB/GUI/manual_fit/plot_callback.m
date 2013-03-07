@@ -4,6 +4,7 @@ this_cell = handles.this_cell;
 if ~isfield(handles,'params')
     
     handles.center = handles.init_params(1);
+    set(handles.center_display,'String',handles.center);
     handles.std = handles.init_params(2);
     set(handles.std_display,'String',handles.std);
     handles.frame = findnearest(this_cell.dev_time,handles.center);
@@ -11,6 +12,8 @@ if ~isfield(handles,'params')
     handles.amplitude = handles.this_cell.myosin_sm(handles.frame);
     set(handles.amplitude_display,'String',handles.amplitude);
     set(handles.center_display,'String',handles.frame);
+    handles.display = 100;
+    set(handles.
     
 end
 
@@ -37,7 +40,7 @@ set( handles.axes1, 'Xlim', [nanmin(this_cell.fit_time) nanmax(this_cell.fit_tim
 hold(handles.axes1,'on');
 
 plot( handles.axes1, this_cell.fit_time, ...
-    lsq_gauss1d( handles.params, this_cell.fit_time ) ,'r-');
+    lsq_gauss1d_offset( handles.params, this_cell.fit_time ) ,'r-');
 
 hold(handles.axes1,'off');
 

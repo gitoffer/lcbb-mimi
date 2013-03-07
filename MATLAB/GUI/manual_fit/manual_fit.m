@@ -22,7 +22,7 @@ function varargout = manual_fit(varargin)
 
 % Edit the above text to modify the response to help manual_fit
 
-% Last Modified by GUIDE v2.5 26-Feb-2013 17:15:32
+% Last Modified by GUIDE v2.5 07-Mar-2013 17:43:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -173,4 +173,27 @@ if isequal(get(hObject, 'waitstatus'), 'waiting')
 else
     % The GUI is no longer waiting, just close it
     delete(hObject);
+end
+
+
+
+function offset_display_Callback(hObject, eventdata, handles)
+% hObject    handle to offset_display (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of offset_display as text
+%        str2double(get(hObject,'String')) returns contents of offset_display as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function offset_display_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to offset_display (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
