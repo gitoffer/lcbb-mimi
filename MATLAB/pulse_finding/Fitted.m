@@ -56,12 +56,12 @@ classdef Fitted
             if nargin > 0
                 
                 % FitID
-                fit.fitID = fitID;
+                this_fit.fitID = fitID;
                 
                 % Collect the relevant indices
-                fit.embryoID = cell.embryoID;
-                fit.cellID = cell.cellID;
-                fit.stackID = cell.stackID;
+                this_fit.embryoID = cell.embryoID;
+                this_fit.cellID = cell.cellID;
+                this_fit.stackID = cell.stackID;
                 
                 % Collect the parameters
                 this_fit.amplitude = params(1);
