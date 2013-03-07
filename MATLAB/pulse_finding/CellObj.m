@@ -147,55 +147,57 @@ classdef CellObj
                         
                         % Assign fitID
                         fitID = fitID + 1;
-                        this_fit.fitID = fitID;
+%                         this_fit.fitID = fitID;
+                        
+                        fit(fitID) = Fitted(this_cell, gauss_p(:,j), fitID, opt);
                         
                         % Collect the relevant IDs
-                        this_fit.embryoID = embryoID;
-                        this_fit.stackID = stackID;
-                        this_fit.cellID = this_cell.cellID;
+%                         this_fit.embryoID = embryoID;
+%                         this_fit.stackID = stackID;
+%                         this_fit.cellID = this_cell.cellID;
                         
-                        % Collect the parameters
-                        amplitude = gauss_p(1,j); center = gauss_p(2,j); width = gauss_p(3,j);
-                        this_fit.amplitude = amplitude;
-                        this_fit.center = center; this_fit.width = width;
+%                         % Collect the parameters
+%                         amplitude = gauss_p(1,j); center = gauss_p(2,j); width = gauss_p(3,j);
+%                         this_fit.amplitude = amplitude;
+%                         this_fit.center = center; this_fit.width = width;
                         
-                        dev_time = this_cell.dev_time;
-                        center_frame = findnearest(center,dev_time);
-                        
-                        % Get pulse margin-time frame
-                        [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
-                        [right_margin,pad_r] = min([ center_frame + opt.right_margin , num_frames]);
-                        this_fit.margin_frames = left_margin:right_margin;
-                        
-                        % Get pulse width-time frame
-                        left_width = max( center_frame - findnearest(width,cumsum(diff(t))) , 1);
-                        right_width = min( center_frame + findnearest(width,cumsum(diff(t))) , num_frames);
-                        this_fit.width_frames = left_width:right_width;
-                        
-                        % Get pulse time WRT dev_time
-%                         this_fit.img_frames = this_cell.dev_frame(left_width:right_width);
-                        this_fit.dev_time = this_cell.dev_time(left_width:right_width);
-                        
-                        % Collect the pulse-centric fitted curves
-                        x = dev_time(left_margin:right_margin);
-                        fitted_y = lsq_gauss1d(gauss_p(:,j),x);
-                        this_fit.raw = Y(left_margin:right_margin);
-                        this_fit.fit = fitted_y;
-                        this_fit.aligned_time = x - center;
+%                         dev_time = this_cell.dev_time;
+%                         center_frame = findnearest(center,dev_time);
+%                         
+%                         % Get pulse margin-time frame
+%                         [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
+%                         [right_margin,pad_r] = min([ center_frame + opt.right_margin , num_frames]);
+%                         this_fit.margin_frames = left_margin:right_margin;
+%                         
+%                         % Get pulse width-time frame
+%                         left_width = max( center_frame - findnearest(width,cumsum(diff(t))) , 1);
+%                         right_width = min( center_frame + findnearest(width,cumsum(diff(t))) , num_frames);
+%                         this_fit.width_frames = left_width:right_width;
+%                         
+%                         % Get pulse time WRT dev_time
+% %                         this_fit.img_frames = this_cell.dev_frame(left_width:right_width);
+%                         this_fit.dev_time = this_cell.dev_time(left_width:right_width);
+%                         
+%                         % Collect the pulse-centric fitted curves
+%                         x = dev_time(left_margin:right_margin);
+%                         fitted_y = lsq_gauss1d(gauss_p(:,j),x);
+%                         this_fit.raw = Y(left_margin:right_margin);
+%                         this_fit.fit = fitted_y;
+%                         this_fit.aligned_time = x - center;
                         
                         % PAD the margin-time frame for plotting purposes
-                        if pad_l > 1
-                            fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
-                            x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
-                        end
-                        if pad_r > 1
-                            fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
-                            x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
-                        end
-                        this_fit.aligned_time_padded = x;
-                        this_fit.fit_padded = fitted_y;
+%                         if pad_l > 1
+%                             fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
+%                             x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
+%                         end
+%                         if pad_r > 1
+%                             fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
+%                             x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
+%                         end
+%                         this_fit.aligned_time_padded = x;
+%                         this_fit.fit_padded = fitted_y;
                         
-                        fit(fitID) = Fitted(this_fit);
+%                         fit(fitID) = Fitted(this_fit);
                         
                         % Construct Fitted object
                         this_cell.fitID = [this_cell.fitID fitID];
