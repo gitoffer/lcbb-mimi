@@ -220,18 +220,47 @@ classdef Pulse
                 match = pulse.categories;
                 num_tracks = numel(pulse.tracks);
                 num_fit = numel(pulse.fits);
-                flag2cont = num_tracks ~= ...
-                    numel(match.one2one) + numel(match.miss.trackID) ...
-                    + numel([match.merge.trackID]);
+                
+                num_one2one = numel(match.one2one);
+                if isfield(match,'miss')
+                    num_miss_track = numel([match.miss.trackID]);
+                else
+                    num_miss_track = 0;
+                end
+                if isfield(match,'add')
+                    num_add_fit = numel([match.add.fitID]);
+                else
+                    num_add_fit = 0;
+                end
+                if isfield(match,'merge')
+                    num_merge_track = numel([match.merge.trackID]);
+                    num_merge_fit = numel([match.merge.fitID]);
+                else
+                    num_merge_track = 0;
+                    num_merge_fit = 0;
+                end
+                if isfield(match,'split')
+                    num_split_track = numel([match.split.trackID]);
+                    num_split_fit = numel([match.split.fitID]);
+                else
+                    num_split_track = 0;
+                    num_split_fit = 0;
+                end
+                
+                flag2cont = num_tracks == ...
+                    num_one2one + num_miss_track + num_merge_track + num_split_track;
+                
                 flag2cont = flag2cont || ...
-                    num_fit ~= numel(match.one2one) + numel(match.add.fitID) ...
-                    + numel([match.add.fitID]);
+                    num_fit == num_one2one + num_add_fit + num_merge_fit + num_split_fit;
+                
                 flag2cont = flag2cont || ...
-                    numel(matchedTF_trackID) ~= numel(match.one2one) ...
-                    + numel([ match.merge.trackID ]) + numel([ match.split.trackID ]);
+                    numel(matchedTF_trackID) == ...
+                    num_one2one + num_merge_track + num_split_track;
+                
                 flag2cont = flag2cont || ...
-                    numel(matchedFT_fitID) ~= numel(match.one2one) ...
-                    + numel([ match.merge.fitID ]) + numel([ match.split.fitID ]);
+                    numel(matchedFT_fitID) == ...
+                    num_one2one + num_merge_fit + num_split_fit;
+                
             end
             function match = delete_empty(match)
                 if isempty( [match.one2one.trackID] )
