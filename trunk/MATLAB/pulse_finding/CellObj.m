@@ -245,7 +245,7 @@ classdef CellObj
         
         function obj = removeTrack(obj,trackID)
             %@Cell.addTrack Add a trackID from a cell
-            obj([obj.trackID] == trackID) = [];
+            obj.trackID([obj.trackID] == trackID) = [];
             obj.num_tracks = obj.num_tracks - 1;
         end
         

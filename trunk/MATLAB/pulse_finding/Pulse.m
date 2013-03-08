@@ -64,6 +64,7 @@ classdef Pulse
         tracks 		% Set of TRACK pulses for this embryo
         tracks_mdf_file % The filename of the MDF file from which .tracks was loaded
         cells 		% An array of CELL of cells in this embryo (Contains the raw data)
+        next_fitID
         
         map			% The two-way mapping between Track and Fit
         match_thresh % The threshold of frames overlap above which a TRACK and a FITTED is matched (usually 1)
@@ -98,6 +99,7 @@ classdef Pulse
             pulse.tracks_mdf_file = filename;
 			pulse.fit_opt = opts;
             pulse.fitsOI_ID = fitsOI_ID;
+            pulse.next_fitID = fits(1).embryoID*10000;
             pulse.cells = cells;
 
         end % Constructor
@@ -167,6 +169,8 @@ classdef Pulse
             trackID = ...
                 [ track(~ismember([track.trackID],cell2mat(matchedTF_trackID))).trackID ];
             % Annotate track with misses
+            matches.miss.trackID = [];
+            matches.miss.fitID = [];
             for i = 1:numel(trackID)
                 matches.miss(i).trackID = trackID(i);
                 matches.miss(i).fitID = [];
@@ -174,6 +178,8 @@ classdef Pulse
             end
 %             [ track( ismember([track.trackID],[matches.miss.trackID])).category ] = deal('miss');
             % adds
+            matches.add.trackID = [];
+            matches.add.fitID = [];
             fitID = ...
                 [ fit(~ismember([fit.fitID],cell2mat(matchedFT_fitID))).fitID ];
             for i = 1:numel(fitID)
@@ -209,6 +215,7 @@ classdef Pulse
             matches = delete_empty(matches);
             
             pulse.fits = fit;
+%             pulse.fits(ismember( [pulse.fits.fitID] , pulse.fitsOI_ID) ) = fit;
             pulse.tracks = track;
             pulse.categories = matches;
 %             if ~consistent(pulse)
@@ -272,12 +279,12 @@ classdef Pulse
                 if isempty( [match.split.trackID] )
                     match = rmfield(match,'split');
                 end
-%                 if isempty( [match.miss] )
-%                     match = rmfield(match,'miss');
-%                 end
-%                 if isfield( match, 'add')
-%                     match = rmfield(match,'add');
-%                 end
+                if isempty( [match.miss.trackID] )
+                    match = rmfield(match,'miss');
+                end
+                if isempty( [match.add.trackID] )
+                    match = rmfield(match,'add');
+                end
             end
             % --- End categorize_mapping subfunctions
         end % Categorize_mapping
@@ -324,13 +331,16 @@ classdef Pulse
                         display('Cannot remove FITTED: given fitID does not exist.');
                         return
                     end
-                    pulse.fits = pulse.fits.removeFit( pulseID );
-                    pulse.fitsOI_ID(pulse.fitsOI_ID == pulseID) = [];
-    
-                    stackID = [pulse.fits( indices ).stackID];
+                    % Remove from cell obj
+                    stackID = [pulse.fits.get_fitID(pulseID).stackID];
                     pulse.cells( stackID ) = ...
                         pulse.cells( stackID ).removeFit(pulseID);
                     
+                    % Remove from fits stack
+                    pulse.fits = pulse.fits.removeFit( pulseID );
+                    pulse.fitsOI_ID(pulse.fitsOI_ID == pulseID) = [];
+                    
+                    % Record
                     if isfield(pulse.changes,'fitIDRemoved')
                         pulse.changes.fitIDRemoved = ...
                             [pulse.changes.fitIDRemoved pulseID];
@@ -346,13 +356,13 @@ classdef Pulse
                         display('Cannot remove TRACK: given trackID does not exist.');
                         return
                     end
-                    pulse.tracks( indices ) = [];
                     
                     stackID = [pulse.tracks(indices).stackID];
                     for i = 1:numel(stackID)
                         pulse.cells(stackID(i)) = pulse.cells(stackID(i)).removeTrack(pulseID);
                     end
                     
+                    pulse.tracks( indices ) = [];
                     if isfield(pulse.changes,'trackIDRemoved')
                         pulse.changes.trackIDRemoved = ...
                             [pulse.changes.trackIDRemoved pulseID];
@@ -447,7 +457,8 @@ classdef Pulse
                 [mean(track.dev_time) 20],cells,track.stackID);
             
             % Construct a new FITTED object from parameters
-            new_fit = Fitted( cells(track.stackID), params, NaN, opt);
+            new_fit = Fitted( cells(track.stackID), params, pulse.next_fitID, opt);
+            pulse.next_fitID = pulse.next_fitID + 1;
             
             % Add into stack
             fits = pulse.fits.add_fit(new_fit);
