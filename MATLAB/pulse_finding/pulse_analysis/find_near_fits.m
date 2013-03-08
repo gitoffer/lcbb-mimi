@@ -45,7 +45,7 @@ for i = 1:num_fits
     % Get the center frame of this pulse
     center_frame = fix( mean(this_fit.margin_frames) );
     % Get all neighboring cells
-    neighbor_cells = neighborID{ center_frame , this_pulse.stackID};
+    neighbor_cells = neighborID{ center_frame , this_fit.stackID};
     
     for j = neighbor_cells % j - neighbor cell's stackID
         
@@ -54,8 +54,8 @@ for i = 1:num_fits
         
         if ~isempty( neighbor_fits )
             % Collect fits within window
-            within_window = [pulse.center] - this_fits.center < time_window;
-            nearby_fits{j} = neighbor_fits(within_window);
+            within_window = abs([neighbor_fits.center] - this_fit.center) < time_window;
+            nearby_fits{i} = neighbor_fits(within_window);
             nearIDs{i} = [ neighbor_fits(within_window).fitID ];
             
         end

@@ -9,11 +9,10 @@ num_near = zeros(6,num_peaks);
 
 for j = 1:6
     time_window = time_windows(j);
-    for i = 1:num_peaks
-        [near_pulses{j,i},nearID{j,i}] = ...
-            find_near_pulses(fits,i,time_window,neighborID);
-        %     near_pulses{i} = near;
-        num_near(j,i) = numel(near_pulses{j,i});
-    end
+    
+    [near_pulses{j,:},nearID{j,:}] = ...
+        find_near_fits(fits,time_window,neighborID);
+    %     near_pulses{i} = near;
+    num_near(j,:) = cellfun(@numel,near_pulses(j,:));
     
 end

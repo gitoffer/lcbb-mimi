@@ -120,9 +120,6 @@ classdef Fitted
         
         function obj_array = add_fit(obj_array,new_fit)
             
-            new_fit.fitID = max([obj_array.fitID]) + 1;
-            new_fit.manually_added = 1;
-            
             if any(obj_array == new_fit)
                 disp('Cannot create new fit: Fit already exists.');
                 beep
