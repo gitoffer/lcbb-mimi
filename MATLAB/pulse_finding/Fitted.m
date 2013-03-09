@@ -2,8 +2,32 @@ classdef Fitted
 	%Fitted A fitted pulse as found by multiple-Gaussian fitting
 	%
 	% Methods
-	%	Fitted - cosntructor, see @Cell.FIT_GAUSSIANS
-	%	removeFit
+    % --- Constructor ---
+	%	Fitted - INPUT: CellObj, parameter, fitID, and opt_struct
+    % --- Array editing ---
+	%	add_fit - tries to append a given new_fit onto an array. Fails if
+	%   	the same pulse already exists in the array
+	%	removeFit - given a fitID, remove it from the object stack
+    % --- Array access/set ---
+    %   get_stackID - get all FITs with a certain stackID
+    %   get_fitID - get the fit with the given fitID
+    %   set_fitID - replace a fit in the array with a given fitID with a
+    %       new_fit
+    % --- Alignment ---
+    %   aling_fits - align the measurement according to the maxima of fits
+    %   assign_datafield - given a matrix, assign each vector to a fit
+    %   resample_traces - re-sample all data in a given fit array so as to
+    %      have the same framerate (INTERP1)
+    %   retrace - re-do the sub-sequence selection
+    % --- Comparator ---
+    %   eq - right now will be equal if overlap of width_frame is > 3
+    % --- Array operations ---
+    %   sort - sort according to amplitude
+    %   bin_fits - bin each embryo by amplitude
+    % ---Visualization ---
+    %   plot_binned_fits
+    %   plot_heatmap (sorted)
+    
     properties (SetAccess = private)
         
         % Initialized with
@@ -119,7 +143,10 @@ classdef Fitted
 % --------------------- Edit pulse ----------------------------------------
         
         function obj_array = add_fit(obj_array,new_fit)
-            
+            %ADD_FIT tries to append a new_fit to a FITS array. Fails if
+            % any fit in the array is equal to the new_fit.
+            %
+            % See also: FITTED.eq
             if any(obj_array == new_fit)
                 disp('Cannot create new fit: Fit already exists.');
                 beep
@@ -287,7 +314,7 @@ classdef Fitted
                 if fit1(j).stackID == fit2.stackID
                 % can't use bsxfun because of un-uniform output
                     if numel(fit1(j).width_frames( ...
-                            ismember(fit1(j).width_frames, fit2.width_frames))) > 2
+                            ismember(fit1(j).width_frames, fit2.width_frames))) > 3
                         equality(j) = 1;
                     end
                 end
