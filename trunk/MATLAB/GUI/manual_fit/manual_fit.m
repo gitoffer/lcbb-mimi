@@ -181,7 +181,9 @@ function offset_display_Callback(hObject, eventdata, handles)
 % hObject    handle to offset_display (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+handles.offset = str2double(get(hObject,'String'));
+handles = plot_callback(handles);
+guidata(hObject,handles);
 % Hints: get(hObject,'String') returns contents of offset_display as text
 %        str2double(get(hObject,'String')) returns contents of offset_display as a double
 

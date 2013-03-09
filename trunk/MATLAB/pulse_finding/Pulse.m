@@ -50,6 +50,9 @@ classdef Pulse
 	%		was...
 	%	reassignFit - re-assign a FITTED to a TRACK, will only work if neither have
 	% 		prior assignments
+    % --- Saving methods ---
+    %   export_manual_fits - writes manually fitted parameters into a CSV
+    %       file
 	% --- Display methods ---
 	%	graph - Generates a 1x3 subplot of the TRACK/FIT/CELL
 	% 	display - In-line display, reporting the number of objects and the quality of
@@ -99,7 +102,7 @@ classdef Pulse
             pulse.tracks_mdf_file = filename;
 			pulse.fit_opt = opts;
             pulse.fitsOI_ID = fitsOI_ID;
-            pulse.next_fitID = fits(1).embryoID*10000;
+            pulse.next_fitID = fits(fitsOI_ID(1)).embryoID*10000;
             pulse.cells = cells;
 
         end % Constructor
@@ -282,7 +285,7 @@ classdef Pulse
                 if isempty( [match.miss.trackID] )
                     match = rmfield(match,'miss');
                 end
-                if isempty( [match.add.trackID] )
+                if isempty( [match.add.fitID] )
                     match = rmfield(match,'add');
                 end
             end
@@ -390,7 +393,7 @@ classdef Pulse
             % USAGE: pulse = pulse.createTrackFromFit(fitID);
             
             fit = pulse.fits.get_fitID(fitID);
-            if isempty(fit), error('No FIT found with fitID.'); end
+            if isempty(fit), display('No FIT found with fitID.'); return; end
             if isfield(pulse.changes,'tracksMadeFromFit')
                 if any( fitID == [pulse.changes.tracksMadeFromFit.fitID])
                     display(['Fit #' num2str(fitID) ' already used to add a track.']);
@@ -452,9 +455,23 @@ classdef Pulse
             
             display(['Creating fit from trackID ' num2str(trackID)])
             
+            % Load already manually fitted params
+            already_done = ...
+                csvread( [ fileparts(pulse.tracks_mdf_file), '/', 'manual_fits.csv' ] );
+            
+            I = find( already_done(:,1) == trackID )
+            if ~isempty(I)
+                
+                params = already_done( I , 2:4 );
+                
+            else
+            
 			% Launch the manual fit GUI
             params = manual_fit( ...
                 [mean(track.dev_time) 20],cells,track.stackID);
+            
+            end
+            keyboard
             
             % Construct a new FITTED object from parameters
             new_fit = Fitted( cells(track.stackID), params, pulse.next_fitID, opt);
@@ -502,20 +519,48 @@ classdef Pulse
                 pulse.changes.reassignedTrackFit = this_change;
             end
             
-		end
+        end
+        
+% ----------------------- saving ------------------------------------------
 
-%---------------------- graph/display -------------------------------------
+        function export_manual_fits(pulse)
+            %EXPORT_MANUAL_PULSES
+            % Writes down the manual fit parameters for fits created from
+            % tracks
+        changes = pulse.changes;
+        num_changes = numel(changes.fitsMadeFromTrack);
+
+        mat2write = nan(num_changes,4);
+
+        for i = 1:num_changes
+            this_change = changes.fitsMadeFromTrack(i);
+
+            trackID = this_change.trackID;
+            fitID = this_change.fitID;
+
+            this_fit = pulse.fits.get_fitID(fitID);
+
+            params = [this_fit.amplitude this_fit.center this_fit.width];
+
+            mat2write(i,1) = trackID;
+            mat2write(i,2:4) = params;
+
+        end
+
+        csvwrite( [fileparts(pulse.tracks_mdf_file), '/', 'manual_fits.csv'], ...
+            mat2write );
+
+% ---------------------- graph/display ------------------------------------
         
         function varargout = graph(pulse,cat,ID,axes_handle)
             % Graph the selected cateogry
-            % USAGE: pulse.graph(category,cells,ID,handles)
-            %        pulse.graph(category,cells,ID)
+            % USAGE: pulse.graph(category,ID,handles)
+            %        pulse.graph(category,ID)
             %
             % INPUT: category - string corresponding to category name, e.g.
             %               'one2one' or 'merge'
-            %        cells - cells structure (for plotting)
             %        ID - out of this category, a vector of IDs
-            %        handles.axes - subplot axes
+            %        axes_handle - subplot axes
             
             % get the data
             fits = pulse.fits; tracks = pulse.tracks; cells = pulse.cells;
@@ -525,7 +570,7 @@ classdef Pulse
             num_disp = numel(ID);
             
             % Default axes = gca
-            if nargin < 4, axes_handle = gca; end
+            if nargin < 4, axes_handle = gcf; end
             
             for i = 1:num_disp
                 
@@ -553,11 +598,11 @@ classdef Pulse
                 binary_trace = concatenate_pulse(track,dev_time); % get binary track
                 if ~isempty(trackID) % highlight pulse if applicable
                     on = highlight_track(track,trackID);
-                    binary_trace(on,:) = binary_trace(on,:) + 3;
+%                     binary_trace(on,:) = binary_trace(on,:) + 3;
                 end
                 if num_track > 1 % Plot
                     %                     if nargin > 4
-                    imagesc(dev_time,1:num_track,binary_trace,'Parent',h(1));
+                    imagesc(dev_time,1:num_track,~binary_trace,'Parent',h(1));
                     
                 elseif num_track == 1
                     plot(h(1),dev_time,binary_trace);
@@ -634,12 +679,17 @@ classdef Pulse
 			display('------ Cells ------------------- ')
 			display(['Total number of cells: ' num2str(numel(pulse.cells))])
 			display(['Total tracked cells: ' ...
-                num2str(numel(pulse.cells([pulse.cells.flag_tracked]==1))) ])
+                num2str( numel(pulse.cells([pulse.cells.flag_tracked] == 1)) ) ]);
             fprintf('\n')
 
             display('------ Matching ---------------- ')
 			if isfield(pulse.categories,'one2one')
 				num_one2one = numel( pulse.categories.one2one );
+                foo = [pulse.categories.one2one.trackID];
+                bar = find_one2one(pulse.map);
+                bar = [bar.trackID];
+                
+                if any( ~ismember(foo,bar)), keyboard; end
 			else
 				num_one2one = 0;
 			end

@@ -310,7 +310,7 @@ classdef CellObj
                 
                 hold(handle,'off');
 
-                %     title(handle,['EDGE #' num2str(this_cell.cellID)])
+                    title(handle,['EDGE #' num2str(this_cell.cellID)])
 
             end
 
