@@ -202,12 +202,20 @@ classdef Fitted
             for i = 1:num_fits
                 
                 frames = fits(i).margin_frames;
-                [~,max_idx] = max( fits(i).fit );
+                [max_val,max_idx] = max( fits(i).fit );
+                if numel( fits(i).fit( fits(i).fit == max_val ) ) > 1
+                    maxes = find( fits(i).fit == max_val );
+                    theoretical_middle = ceil(max(durations)/2);
+                    which = findnearest(maxes,theoretical_middle);
+                    max_idx = maxes(which);
+                end
                 
                 left_len = max_idx - 1;
                 
                 m = nan(1, l + r + 1); % Make the padded vector
-                m( (center_idx - left_len) : (center_idx - left_len + durations(i) - 1) ) = ...
+                lb = center_idx - left_len;
+                ub = min(center_idx - left_len + durations(i) - 1, max(durations) );
+                m( lb: ub) = ...
                     measurement( fits(i).margin_frames, fits(i).stackID );
 
                 fits(i).(name) = m;
