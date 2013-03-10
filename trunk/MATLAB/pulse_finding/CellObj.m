@@ -319,6 +319,38 @@ classdef CellObj
             % if nargout > 0, varargout{1} = h; end
 
         end
+        
+        function F = movie(cells,stackID,embryo_stack)
+            % MOVIE - make a movie of the cell
+            % USAGE: F = movie(cells,stackID,embryo_stack)
+            % xies@mit.edu
+            
+            % Extract cell
+            this_cell = cells.get_stackID(stackID);
+            % Get its embryo
+            this_embryo = embryo_stack(this_cell.embryoID);
+            % Get IDs
+            h.cellID = this_cell.cellID;
+            h.input = this_embryo.input;
+            
+            % Get vertices
+            h.vx = this_embryo.vertex_x;
+            h.vy = this_embryo.vertex_y;
+            
+            h.border = 'on';
+            h.frames2load = find(~isnan(this_cell.dev_time));
+            
+            h.channels = {'Membranes','Myosin'};
+            
+            if this_cell.flag_fitted
+                h.measurement = nan(numel(h.frames2load),3);
+                I = find( ismember(this_cell.fit_time, this_cell.dev_time) );
+                h.measurement(I,:) = this_cell.fit_colorized;
+            end
+                
+            F = make_cell_img(h);
+            
+        end
 
     end
     

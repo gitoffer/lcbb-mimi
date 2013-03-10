@@ -6,9 +6,8 @@ function varargout = make_cell_img(h)
 %
 % INPUT: handle fields:
 %        vx, vy - cell arrays of vertex coordinates exported by EDGE
-%        frames - a vector of frames to include in the movie (image_frames)
-%        dev_frame - the developmental_frame
-%        cellID - the cell you want to make a movie of
+%        frames2load - a vector of frames to include in the movie (image_frames)
+%        cellID - EDGE ID
 %        channels - the names of the image channels you want to use... as
 %                   defined by EDGE. e.g. {'Myosin','Membranes'}
 %        border - 'on'/'off' (turn on the segmented cell border, default 'off')

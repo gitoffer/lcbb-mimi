@@ -459,7 +459,7 @@ classdef Pulse
             already_done = ...
                 csvread( [ fileparts(pulse.tracks_mdf_file), '/', 'manual_fits.csv' ] );
             
-            I = find( already_done(:,1) == trackID )
+            I = find( already_done(:,1) == trackID );
             if ~isempty(I)
                 
                 params = already_done( I , 2:4 );
@@ -471,7 +471,6 @@ classdef Pulse
                 [mean(track.dev_time) 20],cells,track.stackID);
             
             end
-            keyboard
             
             % Construct a new FITTED object from parameters
             new_fit = Fitted( cells(track.stackID), params, pulse.next_fitID, opt);
@@ -526,7 +525,7 @@ classdef Pulse
         function export_manual_fits(pulse)
             %EXPORT_MANUAL_PULSES
             % Writes down the manual fit parameters for fits created from
-            % tracks
+            % tracks. Saveas as manual_fit.csv
         changes = pulse.changes;
         num_changes = numel(changes.fitsMadeFromTrack);
 
@@ -549,6 +548,8 @@ classdef Pulse
 
         csvwrite( [fileparts(pulse.tracks_mdf_file), '/', 'manual_fits.csv'], ...
             mat2write );
+        
+        end
 
 % ---------------------- graph/display ------------------------------------
         
@@ -657,6 +658,7 @@ classdef Pulse
                     binary(j,frames{j}) = 1;
                 end
             end
+            
             function on = highlight_track(pulse,ID)
                 % Parse the ID field and match the correct pulse to highlight
                 if strcmp(class(pulse),'Fitted')
