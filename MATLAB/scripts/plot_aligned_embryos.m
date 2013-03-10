@@ -1,16 +1,23 @@
 %align_embryos
 
-num_embryos = 2;
-dt = [8 8];
+num_embryos = numel(input);
+name2plot = 'myosin_intensity_fuzzy';
 
 figure
 color = hsv(num_embryos);
 for i = 1:num_embryos
     
-    H(i) = shadedErrorBar(t(:)*dt(i),nanmean(anisotropies(:,c==i),2), ...
-        nanstd(anisotropies(:,c==i),[],2),{'color',color(i,:)},1);
+    time = embryo_stack(i).dev_time;
+    
+    H(i) = shadedErrorBar(time, ...
+        nanmean(embryo_stack(i).(name2plot),2), ...
+        nanstd(embryo_stack(i).(name2plot),[],2),{'color',color(i,:)},1);
+    
+    entries{i} = ['Embryo ' num2str(i) ', ' num2str(input(i).dt) ' sec/frame'];
+    
     hold on
+    
 end
 hold off
 xlabel('Time (sec)')
-legend([H.mainLine],'Embryo 1, 7.4 sec/frame','Embryo 2, 6.7 sec/frame')
+legend([H.mainLine],entries)
