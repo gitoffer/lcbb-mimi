@@ -478,6 +478,7 @@ classdef Pulse
             
             % Add into stack
             fits = pulse.fits.add_fit(new_fit);
+            fits(end).manually_added = 1;
             
             pulse.fitsOI_ID = [pulse.fitsOI_ID fits(end).fitID];
             pulse.fits = fits;

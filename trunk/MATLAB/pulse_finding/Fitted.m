@@ -507,7 +507,7 @@ classdef Fitted
             title('Aligned area response');
             xlabel('Aligned time (sec)');
             
-        end
+        end %plot_heatmap
         
         function varargout = movie(fits, fitID, embryo_stack, cells)
             % MOVIE - Wrapper for MAKE_CELL_IMG to make a movie of a single
@@ -548,9 +548,33 @@ classdef Fitted
             
             if nargout, varargout{1} = F; end
             
-        end
+        end %movie
         
-    end
+% ------------------------- Export ----------------------------------------
+
+        function export_fits(fits,filepath,fieldname)
+            %Exports the given FIELDNAME of a FIT array to CSV file
+            %
+            % USAGE: export_fits(fits,filepath,fieldname);
+                        
+            fitIDs = [fits.fitID]';
+            manual_flag = [fits.manually_added]';
+            
+            mat2write = cat(2,fitIDs,manual_flag);
+            
+            data = cat(1,fits.(fieldname));
+            
+            mat2write = cat(2,mat2write,data);
+            
+            header = [NaN NaN 1:numel(fits(1).(fieldname))];
+            
+            mat2write = cat(1,header,mat2write);
+            
+            csvwrite([filepath '/fits_' fieldname,'.csv'] , mat2write);
+            
+        end %export_fits
+        
+    end % Dynamic methods
  
     methods (Static)
         
