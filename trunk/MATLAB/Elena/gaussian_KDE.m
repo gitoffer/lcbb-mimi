@@ -24,7 +24,7 @@ n = length(nums);
 K = zeros(size(x));
 for i=1:n
     params = [1/sqrt(2*pi*h), nums(i), h]; 
-    K = lsq_gauss1d(params, x);
+    K = K + lsq_gauss1d(params, x);
 end
 
-
+end
