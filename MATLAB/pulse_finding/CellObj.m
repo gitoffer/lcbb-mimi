@@ -27,6 +27,24 @@ classdef CellObj
     %   fit_gausses
     %
     % Methods
+	%	--- Constructor ---
+	%		CellObj - use from edge2cell
+	%	--- Fit pulses ---
+	%		fit_gaussians - returns updated CellObj array
+	%			and FITTED array
+	%	--- Edit fit/tracks ---
+	%		addFit
+	%		removeFit
+	%		addTrack
+	%		removeTrack
+	%	--- Array set/access ---
+	%		get_stackID
+	%		get_fitID
+	%		get_trackID
+	%		get_embryoID_cellID
+	%	--- Visualization/display ---
+	%		visualize - plots myosin + area v. time
+	%		movie - makes movie of cell
     properties (SetAccess= private)
         
         % IDs
@@ -68,6 +86,7 @@ classdef CellObj
     methods
         
         function obj = CellObj(this_cell)
+			% CellObj - Contructs object of CellObj class. Use from EDGE2CELL
             field_names = fieldnames(this_cell);
             for i = 1:numel(field_names)
                 obj.(field_names{i}) = this_cell.(field_names{i});
@@ -223,7 +242,7 @@ classdef CellObj
             
         end % fit_gaussians
         
-%---------------------- Editing fit/tracks --------------------------------
+% ---------------------- Editing fit/tracks -------------------------------
         
         function obj = addFit(obj,fitID)
             %@Cell.addFit Add a fitID to a cell
@@ -248,6 +267,8 @@ classdef CellObj
             obj.trackID([obj.trackID] == trackID) = [];
             obj.num_tracks = obj.num_tracks - 1;
         end
+
+% --------------------- Array set/access --------------------------------
         
         function obj = get_stackID(obj_array, stackID)
             %@Cell.get_stackID Returns the obj from an array with the given
@@ -342,7 +363,7 @@ classdef CellObj
             
             h.channels = {'Membranes','Myosin'};
             
-            if this_cell.flag_fitted
+            if ~this_cell.flag_fitted
                 h.measurement = nan(numel(h.frames2load),3);
                 I = find( ismember(this_cell.fit_time, this_cell.dev_time) );
                 h.measurement(I,:) = this_cell.fit_colorized;
