@@ -20,30 +20,30 @@ G = make_pulse_movie(tracked_pulse(196),input,vertices_x,vertices_y,master_time)
 %     movie2avi(f,['~/desktop/edge processed/embryo '  var_name '/pulse_movies/pulse_' num2str(pulseID)]);
 % end
 
-%% Plot individual pulses
-
-ID = 217;
-
-figure
-nonantime = pulse(ID).width_frames;
-frame = master_time(pulse(ID).embryoID).frame(pulse(ID).width_frames)
-time = master_time(pulse(ID).embryoID).aligned_time(pulse(ID).width_frames);
-
-center = pulse(ID).center;
-
-plotyy(time,myosins_sm(nonantime,pulse(ID).cell),...
-    time,areas_sm(nonantime,pulse(ID).cell));
-hold on
-% plot(cell_fits(pulse(ID).cell).time,cell_fits(pulse(ID).cell).bg,'r-')
-
-%% Plot MTracJ pulses
-
-mjID = 280;
-
-figure,
-
-frame = tracked_pulse(mjID).frame;
-time = master_time(tracked_pulse(mjID).embryoID).aligned_time(frame);
-
-plotyy(time,myosins_sm(frame,tracked_pulse(mjID).cell),...
-    time,areas_sm(frame,tracked_pulse(mjID).cell));
+% %% Plot individual pulses
+% 
+% ID = 217;
+% 
+% figure
+% nonantime = pulse(ID).width_frames;
+% frame = master_time(pulse(ID).embryoID).frame(pulse(ID).width_frames)
+% time = master_time(pulse(ID).embryoID).aligned_time(pulse(ID).width_frames);
+% 
+% center = pulse(ID).center;
+% 
+% plotyy(time,myosins_sm(nonantime,pulse(ID).cell),...
+%     time,areas_sm(nonantime,pulse(ID).cell));
+% hold on
+% % plot(cell_fits(pulse(ID).cell).time,cell_fits(pulse(ID).cell).bg,'r-')
+% 
+% %% Plot MTracJ pulses
+% 
+% mjID = 280;
+% 
+% figure,
+% 
+% frame = tracked_pulse(mjID).frame;
+% time = master_time(tracked_pulse(mjID).embryoID).aligned_time(frame);
+% 
+% plotyy(time,myosins_sm(frame,tracked_pulse(mjID).cell),...
+%     time,areas_sm(frame,tracked_pulse(mjID).cell));

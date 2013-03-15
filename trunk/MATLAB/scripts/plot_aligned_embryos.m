@@ -1,7 +1,7 @@
 %align_embryos
 
 num_embryos = numel(input);
-name2plot = 'myosin_intensity_fuzzy';
+name2plot = 'area';
 
 figure
 color = hsv(num_embryos);

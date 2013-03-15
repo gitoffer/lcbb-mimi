@@ -268,7 +268,7 @@ classdef CellObj
             obj.num_tracks = obj.num_tracks - 1;
         end
 
-% --------------------- Array set/access --------------------------------
+% --------------------- Array set/access ----------------------------------
         
         function obj = get_stackID(obj_array, stackID)
             %@Cell.get_stackID Returns the obj from an array with the given
@@ -363,7 +363,7 @@ classdef CellObj
             
             h.channels = {'Membranes','Myosin'};
             
-            if ~this_cell.flag_fitted
+            if this_cell.flag_fitted
                 h.measurement = nan(numel(h.frames2load),3);
                 I = find( ismember(this_cell.fit_time, this_cell.dev_time) );
                 h.measurement(I,:) = this_cell.fit_colorized;
