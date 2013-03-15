@@ -408,23 +408,28 @@ classdef Fitted
                 % Get all neighboring cells
                 neighbor_cells = neighborID{ center_frame , this_fit.stackID};
                 
-                for j = neighbor_cells % j - neighbor cell's stackID
+                for j = 1:numel(neighbor_cells) % j - neighbor cell's stackID
                     
                     % Find all neighboring fits
-                    neighbor_fits = same_embryo([same_embryo.cellID] == i);
+                    neighbor_fits = same_embryo([same_embryo.cellID] == neighbor_cells(j));
                     
                     if ~isempty( neighbor_fits )
                         % Collect fits within window
-                        within_window = abs([neighbor_fits.center] - this_fit.center) < time_window;
-                        nearby_fits{i} = neighbor_fits(within_window);
-                        nearIDs{i} = [ neighbor_fits(within_window).fitID ];
+                        within_window = abs([neighbor_fits.center] - this_fit.center) < time_window ...
+                            & ~( neighbor_fits == this_fit );
+                        if sum(within_window) > 0
+                            nearby_fits{i} = neighbor_fits(within_window);
+                            
+                            nearIDs{i} = [ neighbor_fits(within_window).fitID ];
+                        end 
                         
                     end
                     
                 end
                 
-            end
-        end
+            end % loop over all fits
+            
+        end %find_near_fits
 
 % --------------------- Visualization -------------------------------------
         
