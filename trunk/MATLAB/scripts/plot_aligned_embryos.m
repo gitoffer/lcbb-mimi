@@ -1,17 +1,19 @@
 %align_embryos
 
-num_embryos = numel(input);
-name2plot = 'area';
+num_embryos = numel(input) - 2;
+name2plot = 'myosin_sm';
 
 figure
 color = hsv(num_embryos);
+
 for i = 1:num_embryos
     
     time = embryo_stack(i).dev_time;
     
     H(i) = shadedErrorBar(time, ...
         nanmean(embryo_stack(i).(name2plot),2), ...
-        nanstd(embryo_stack(i).(name2plot),[],2),{'color',color(i,:)},1);
+        nanstd(embryo_stack(i).(name2plot),[],2), ...
+        {'color',color(i,:)},1);
     
     entries{i} = ['Embryo ' num2str(i) ', ' num2str(input(i).dt) ' sec/frame'];
     

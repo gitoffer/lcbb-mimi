@@ -1,5 +1,6 @@
 %CLUSTER_DATA_SCRIPT Script to interface with MATLAB Bioinformatics Toolbox
 % Collection of scripts used to visualize clusters
+
 %% Select data to cluster or plot
 
 data2cluster = corrected_area_norm(:,:);

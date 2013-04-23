@@ -1,9 +1,9 @@
 %BG_SUBTRACT_MYOSIN script to remove background level of myosin
 
 % Path to the raw myosin stack (TIF)
-path = '~/Desktop/Mimi/Data/01-30-2012/7/myosin_stack.tif';
-num_frames = 117;
-num_slices = 10;
+path = '~/Desktop/Mimi/Data/01-31-2013/cta Sqh Gap/3/myosin_stack.tif';
+num_frames = 120;
+num_slices = 11;
 
 %% Load images
 
@@ -14,11 +14,11 @@ raw_myo = permute(raw_myo,[1 2 4 5 3]);
 
 %% Crop images
 
-reference_z = 5;
+reference_z = 6;
 reference_t = 1;
 
-end_z = 9;
-end_t = 15;
+end_z = 6;
+end_t = 10;
 
 [~,bg_box] = imcrop(raw_myo(:,:,reference_z,reference_t),[]);
 x0 = round(bg_box(1)); y0 = round(bg_box(2));
@@ -41,13 +41,15 @@ showsub( ...
 
 % imsequence_play(bg);
 
-threshold = mean(flat(bg)) + 2.5*std(flat(bg));
+nstd = 2.5;
+
+threshold = mean(flat(bg)) + nstd*std(flat(bg))
 
 %% Get and display thresholded myosin image
 
-display_time = 1;
-
-myosin_max = max(raw_myo(:,:,1:5,:),[],3);
+display_time = 10;
+beg_z = 1; end_z = 5;
+myosin_max = max(raw_myo(:,:,beg_z:end_z,:),[],3);
 myosin_max = permute(myosin_max,[1 2 4 3]);
 
 myosin_th = myosin_max.*(myosin_max > threshold);
@@ -62,7 +64,10 @@ showsub_vertlink( ...
 
 %% Write to a TIF stack
 
-output_path = '~/Desktop/Mimi/Data/01-30-2012/7/myosin_th_1_5_2-5sigma.TIF';
+output_path = ...
+    [fileparts(path) ...
+    '/myosin_th_' num2str(beg_z) '_' num2str(end_z) '_' num2str(nstd) '.tif'];
+
 
 write_tiff_stack(myosin_th,output_path);
 
