@@ -1,11 +1,11 @@
-wt_cutoff = find([sub_pulse.embryo]<6,1,'last');
+
+IDs = kmeans_c5_pearson(:,1);
+labels = kmeans_c5_pearson(:,2) + 1;
+
+%%
 
 % pulseOI = pulse(1:wt_cutoff);
-clusterID1 = kmeansID_filt(kmeans_filt_labels==1);
-clusterID2 = kmeansID_filt(kmeans_filt_labels==2);
 
-binned1 = bin_pulses(pulse(clusterID1(clusterID1 < wt_cutoff)));
-binned2 = bin_pulses(pulse(clusterID2(clusterID2 < wt_cutoff)));
-
-binned1_topIDs = [binned1{1}.pulseID binned1{2}.pulseID];
-binned2_topIDs = [binned2{1}.pulseID binned2{2}.pulseID];
+for i = 1:5
+    eval(['cluster' num2str(i) ' = fits_wt.get_fitID(IDs(labels == ' num2str(i) '));']);
+end

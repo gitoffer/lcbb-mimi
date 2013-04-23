@@ -1,7 +1,8 @@
 classdef Fitted
 	%Fitted A fitted pulse as found by multiple-Gaussian fitting
 	%
-	% Methods
+	% Methods:
+    % 
     % --- Constructor ---
 	%	Fitted - INPUT: CellObj, parameter, fitID, and opt_struct
     % --- Array editing ---
@@ -27,6 +28,7 @@ classdef Fitted
     % ---Visualization ---
     %   plot_binned_fits
     %   plot_heatmap (sorted)
+    %   movie
     
     properties (SetAccess = private)
         
@@ -63,9 +65,14 @@ classdef Fitted
     end
     properties (SetAccess = public)
         
-        category
+        category % one2one, added, missed, so forth
         manually_added
-        bin
+        bin % intra-embryo pulse strength bin
+
+        time_windows % 
+        nearIDs % fitIDs of 'nearby' fits, ordered w.r.t. time_windows
+        
+        cluster_label
         
     end
     methods % Dynamic methods
@@ -308,6 +315,9 @@ classdef Fitted
             
         end %retrace
         
+%         function fits = recenter
+%         end
+        
 % --------------------- Comparator ----------------------------------------
 
         function equality = eq(fit1,fit2)
@@ -381,13 +391,14 @@ classdef Fitted
             
         end
         
-        function [nearby_fits,nearIDs] = find_near_fits(fits,time_window,neighborID)
+        function fits = find_near_fits(fits,time_windows,neighborID)
             %FIND_NEAR_FITS Find the number (and fitID) of each fitted
-            % pulse within an time-widow and the first-order neighbors, 
-            % given array of fitted pulses
+            % pulse within an range of time-windows and the first-order
+            % neighbors, given array of fitted pulses. Results will
+            % populate the fits object array.
             %
-            % USAGE: [nearby_fits,nearIDs] = ...
-            %           fits.find_near_fits(time_window,neighborID)
+            % USAGE: fits = ...
+            %           fits.find_near_fits(time_windows,neighborID)
             %
             % Note that neighborID returns original EDGE IDs (cellID) and
             % not stackIDs.
@@ -395,8 +406,8 @@ classdef Fitted
             % xies@mit
             
             num_fits = numel(fits);
-            nearby_fits = cell(1,num_fits);
-            nearIDs = cell(1,num_fits);
+%             nearby_fits = cell(1,num_fits);
+%             nearIDs = cell(1,num_fits);
             
             for i = 1:num_fits
                 
@@ -408,6 +419,8 @@ classdef Fitted
                 % Get all neighboring cells
                 neighbor_cells = neighborID{ center_frame , this_fit.stackID};
                 
+                fits(i).time_windows = time_windows;
+                
                 for j = 1:numel(neighbor_cells) % j - neighbor cell's stackID
                     
                     % Find all neighboring fits
@@ -415,13 +428,18 @@ classdef Fitted
                     
                     if ~isempty( neighbor_fits )
                         % Collect fits within window
-                        within_window = abs([neighbor_fits.center] - this_fit.center) < time_window ...
-                            & ~( neighbor_fits == this_fit );
-                        if sum(within_window) > 0
-                            nearby_fits{i} = neighbor_fits(within_window);
-                            
-                            nearIDs{i} = [ neighbor_fits(within_window).fitID ];
-                        end 
+                        
+                        for k = 1:numel( time_windows )
+                        
+                            within_window = ...
+                                abs([neighbor_fits.center] - this_fit.center) < time_windows(k) ...
+                                & ~( neighbor_fits == this_fit );
+                            if sum(within_window) > 0
+                                nearby_fits = neighbor_fits(within_window);
+                                %                             nearIDs{i} = [ neighbor_fits(within_window).fitID ];
+                                fits(i).nearIDs(k) = [neighbor_fits.fitID];
+                            end
+                        end
                         
                     end
                     

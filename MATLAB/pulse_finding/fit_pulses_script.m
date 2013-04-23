@@ -4,8 +4,8 @@ clear fit_opts
 [fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity_fuzzy');
 [fit_opts(1:num_embryos).bg] = deal('on');
 
-[fit_opts(1:num_embryos).left_margin] = deal(10);
-[fit_opts(1:num_embryos).right_margin] = deal(10);
+[fit_opts(1:num_embryos).left_margin] = deal(8);
+[fit_opts(1:num_embryos).right_margin] = deal(8);
 [fit_opts(1:num_embryos).nan_thresh] = deal(20);
 [fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
 [fit_opts(1:num_embryos).end_tol] = deal(30);
@@ -14,9 +14,9 @@ clear fit_opts
 [fit_opts(1:num_embryos).sigma_lb] = deal(10);
 [fit_opts(1:num_embryos).sigma_ub] = deal(30);
 % 
-% fit_opts(2).alpha = 0.01;
-% fit_opts(2).sigma_lb = 15;
-% fit_opts(2).sigma_ub = 40;
+[fit_opts(8:9).alpha] = deal(0.05);
+[fit_opts(8:9).sigma_lb] = deal(5);
+[fit_opts(8:9).sigma_ub] = deal(45);
 
 %%
 
@@ -60,3 +60,7 @@ corrected_area = cat(1, fits.area);
 corrected_area_norm = cat(1, fits.area_norm);
 corrected_area_rate = cat(1, fits.area_rate);
 corrected_myosin = cat(1, fits.myosin);
+
+fits_wt = fits([fits.embryoID] < 6);
+fits_twist = fits([fits.embryoID] > 5 & [fits.embryoID] < 8);
+fits_cta = fits([fits.embryoID] > 7);
