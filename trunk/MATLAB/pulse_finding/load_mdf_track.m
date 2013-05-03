@@ -76,7 +76,7 @@ for i = 1:num_tracks
 
 	% Assign trackID
 	trackID = trackID + 1;
-    this_track.trackID = trackID;
+    this_track.trackID = trackID; % assign non-ambiguous trackID
     
 	% Collect relevant information into track struct
     this_track.embryoID = input.embryoID; this_track.mdfID = i;
@@ -90,9 +90,9 @@ for i = 1:num_tracks
 %     this_track.img_frame = img_frame;
     
 	% Construct Track object
-    cells(order(index)).trackID = trackID;
 	cells(order(index)).flag_tracked = 1;
     cells(order(index)).num_tracks = cells(order(index)).num_tracks + 1;
+	
 	tracks(trackID) = Track(this_track);
 
 end
@@ -104,7 +104,8 @@ unfit_cells = tracked_cells( ~[cells(tracked_cells).flag_fitted] );
 [tracks(ismember([tracks.stackID],unfit_cells))] = [];
 
 for i = 1:numel(tracks)
-    tracks(i).trackID = i;
+    tracks(i).trackID = i + input.embryoID*1000;
+    cells( tracks(i).stackID ).trackID = i + input.embryoID*1000;
 end
 
 end

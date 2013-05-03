@@ -20,7 +20,7 @@ clear fit_opts
 
 %%
 
-cells = edge2cell(embryo_stack);
+cells = embryo2cell(embryo_stack);
 [cells,fits] = fit_gaussians(cells,fit_opts);
 
 %% sub-set of pulses

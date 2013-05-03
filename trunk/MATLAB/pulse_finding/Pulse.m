@@ -1,5 +1,6 @@
 classdef Pulse
-	%Pulse A housekeeping class to keep track of TRACK pulses and FITTED pulses,
+    %--- PULSE ------------------------------------------------------------
+	%A housekeeping class to keep track of TRACK pulses and FITTED pulses,
 	% as well as the bi-directional correspondence between the two sets.
 	%
 	% Matches tracked pulses (TRACK) to fitted pulses (FITTED), with a generalized
@@ -20,7 +21,7 @@ classdef Pulse
 	%		those from cells with tracked pulses
 	%	tracks - the array of TRACK pulses for this embryo
 	%	tracks_mdf_file - the MDF filename
-	%	cells - an array of CELL of data from cells found in this embryo
+	%	cells - an array of CELLOBJ of data from cells found in this embryo
 	%
 	% Properties (public)
 	% 	embryoID - the index of this embryo (see also LOAD_EDGE_SCRIPT)
@@ -62,8 +63,10 @@ classdef Pulse
 	%	graph - Generates a 1x3 subplot of the TRACK/FIT/CELL
 	% 	display - In-line display, reporting the number of objects and the quality of
 	%		matching
+    %
+    % See also: CELLOBJ, FITTED, TRACK, FIND_ONE2ONE
 	%
-	% xies@mit.edu
+	% xiies@mit.edu April 2013.
 
     properties (SetAccess = private)
         
@@ -73,7 +76,8 @@ classdef Pulse
         tracks 		% Set of TRACK pulses for this embryo
         tracks_mdf_file % The filename of the MDF file from which .tracks was loaded
         cells 		% An array of CELL of cells in this embryo (Contains the raw data)
-        next_fitID
+        inputs      % input array with info about identifiy of each embryo
+        next_fitID  % bookkeeping
         
         map			% The two-way mapping between Track and Fit
         match_thresh % The threshold of frames overlap above which a TRACK and a FITTED is matched (usually 1)
@@ -86,7 +90,7 @@ classdef Pulse
         changes
         
     end
-    methods %Dynamic methods
+    methods % Dynamic methods
 % --------------------------- Constructor -------------------
         function pulse = Pulse(tracks,filename,fits,opts,cells)
 			%PULSE Constructor for the Pulse object (see main documentation)
@@ -108,8 +112,11 @@ classdef Pulse
             pulse.tracks_mdf_file = filename;
 			pulse.fit_opt = opts;
             pulse.fitsOI_ID = fitsOI_ID;
-            pulse.next_fitID = fits(fitsOI_ID(1)).embryoID*10000;
-            pulse.cells = cells;
+            pulse.next_fitID = fits.get_fitID(fitsOI_ID(1)).embryoID*10000;
+            pulse.cells = cells([cells.embryoID] == fits.get_fitID(fitsOI_ID(1)).embryoID);
+            if any( [pulse.cells.embryoID] ~= [pulse.cells(1).embryoID ] )
+                error('Cannot create Pulse object: all data must come from single embryo.');
+            end
 
         end % Constructor
         
@@ -267,18 +274,42 @@ classdef Pulse
                 {category.(ID)});
 			catID = find(catID);
 
-        end
+        end %search_catID
         
         function pulse = cat(pulse1,pulse2)
             %CAT - overloaded concatenation method for putting together two
-            % Pulse objects. Will look through fitID/trackIDs to ensure
-%             if any( ismember([pulse1.embryoID],[pulse2.embryoID] )
-                
-                
-                
-%             end
+            % Pulse objects. Will look through embryoIDs to ensure there
+            % are no colliding ID numbers.
             
-        end
+            pulse = pulse1;
+            embryoIDs1 = [pulse1.embryoID]; embryoIDs2 = [pulse2.embryoID];
+            
+            % find colliding/not colliding embryoIDs
+            conflicting_embryoIDs = union( embryoIDs1, embryoIDs2 );
+            
+            if isempty( conflicting_embryoIDs)
+                pulse = [pulse pulse2];
+            else
+                
+                for i = 1:numel(conflicting_embryoIDs)
+                    
+                    this_embryo_pulse = [pulse2.embryoIDs];
+                    % new embryoID is +1 to max embryoIDs
+                    new_embryoID = max([embryoIDs1,embryoIDs2]) + 1;
+                    % reindex fitIDs
+                    this_embryo_pulse.fits = ...
+                        this_embryo_pulse.fits.reindex_fitID(new_embryoID);
+                    % reindex trackIDs
+                    this_embryo_pulse.tracks = ...
+                        this_embryo_pulse.tracks.reindex_trackID(new_embryoID);
+                    
+                    pulse = [pulse this_embryo_pulse];
+                    
+                end
+                
+            end
+            
+        end % cat
         
 %--------------------- edit pulse/tracks ----------------------------------
         
@@ -640,6 +671,12 @@ classdef Pulse
         
         function disp(pulse)
             %---- Display overloaded method ---
+            
+            if numel(pulse) > 1
+                display(['Array of Pulse objects of size: [' num2str(size(pulse)) ']']);
+                return
+            end
+            
             fprintf('\n')
             display('------ Tracked pulses ---------- ')
             display(['Total tracked pulses: ' num2str(numel(pulse.tracks))])

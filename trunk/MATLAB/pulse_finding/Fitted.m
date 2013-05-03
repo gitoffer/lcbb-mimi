@@ -1,11 +1,12 @@
 classdef Fitted
-	%Fitted A fitted pulse as found by multiple-Gaussian fitting
+    %--- FITTEd -----------------------------------------------------------
+	% A fitted pulse as found by multiple-Gaussian fitting
 	%
 	% Methods:
     % 
     % --- Constructor ---
 	%	Fitted - INPUT: CellObj, parameter, fitID, and opt_struct
-    % --- Array editing ---
+    % --- Edit fit array ---
 	%	add_fit - tries to append a given new_fit onto an array. Fails if
 	%   	the same pulse already exists in the array
 	%	removeFit - given a fitID, remove it from the object stack
@@ -26,10 +27,17 @@ classdef Fitted
     % --- Array operations ---
     %   sort - sort according to amplitude
     %   bin_fits - bin each embryo by amplitude
-    % ---Visualization ---
+	%	find_near_fits - find fits near a 'central' fit given a time-window
+    % --- Visualization ---
     %   plot_binned_fits
     %   plot_heatmap (sorted)
     %   movie
+	% --- Export ---
+	%   export (export given measurement to csv file)
+    %
+    % See also: PULSE, TRACK, CELLOBJ
+    %
+    % xies@mit.edu April 2013.
     
     properties (SetAccess = private)
         
@@ -78,7 +86,9 @@ classdef Fitted
         
     end
     methods % Dynamic methods
-        
+    
+% --------------------- Constructor -----------------------------------------
+    
         function this_fit = Fitted(cell,params,fitID,opt)
             %Fitted Constructor - use from FIT_GAUSSIANS (array constructor)
             % Will populate the pulse-centric fields, like the margins, and
@@ -149,7 +159,7 @@ classdef Fitted
             end
         end % constructor
         
-% --------------------- Edit pulse ----------------------------------------
+% --------------------- Edit fit array -----------------------------------
         
         function [obj_array,errorflag] = add_fit(obj_array,new_fit)
             %ADD_FIT tries to append a new_fit to a FITS array. Fails if
@@ -173,6 +183,29 @@ classdef Fitted
 			% USAGE: obj_array = obj_array.removeFit(fitID)
             obj_array([obj_array.fitID] == fitID) = [];
         end % removeFit
+
+        function fit_array = reindex_fitID( fit_array, new_embryoID )
+			%reindex_fitID Given an fit-array of the same embryoID, and a
+			% new_embryoID, re-index the fitIDs of the array with a new set
+			% of identifiers beginning with the new_embryoID
+			
+            old_embryoID = fit_array(1).embryoID;
+            if any( [fit_array.embryoID] ~= old_embryoID )
+                error('Must input an array with the same original embryoID');
+            end
+            
+            old_fitIDs = [fit_array.fitID];
+            new_fitIDs = old_fitIDs;
+            % re-index 'normal' fitIDs
+            new_fitIDs(~[fit_array.manually_added]) = ...
+                new_fitIDs(~[fit_array.manually_added]) ...
+                + (new_embryoID - old_embryoID)*1000;
+            % re-index 'manually fitted' fitIDs
+            new_fitIDs([fit_array.manually_added]) = ...
+                new_fitIDs([fit_array.manually_added]) ...
+                + (new_embryoID - old_embryoID)*10000;
+            
+        end % reindex_fitID
         
 % --------------------- Array access/set ----------------------------------
         
@@ -189,9 +222,7 @@ classdef Fitted
         end %get_fitID
         
         function fits = set_fitID(fits,fitID, fit)
-            
             fits( [fits.fitID] == fitID ) = fit;
-            
         end %set_fitID
         
 % --------------------- Alignment functions -------------------------------
@@ -336,14 +367,16 @@ classdef Fitted
             
         end %retrace
         
-%         function fits = recenter
-%         end
+%        function fits = recenter
+%        end
         
 % --------------------- Comparator ----------------------------------------
 
         function equality = eq(fit1,fit2)
             % Equality comparator for FITTED
-            % right now slow, expecting array in first argument
+            % right now slow, expecting array in first argument and single object
+			% in the second (fit2). Will return equal if the width_frame of two
+			% fits have overlap > 3.
             if numel(fit1) > 1 && numel(fit2) > 1
                 error('Cannot handle TWO array inputs.');
             end
@@ -364,7 +397,7 @@ classdef Fitted
 % --------------------- Array operations ----------------------------------
         
 		function fits = bin_fits(fits)
-            %BIN_FITS Bin fits according to their amplitudes
+            %BIN_FITS Bin fits according to their amplitudes. Quartile binning.
 
             [fits.bin] = deal(NaN);
             
@@ -405,12 +438,11 @@ classdef Fitted
         
         function fits = sort(fits)
             %SORT fitted pulses by their amplitudes (descending order)
-%             sizes = [fits.size];
             
             [~,sortID] = sort( [fits.amplitude] , 2,'descend');
             fits = fits(sortID);
             
-        end
+        end % sort
         
         function fits = find_near_fits(fits,time_windows,neighborID)
             %FIND_NEAR_FITS Find the number (and fitID) of each fitted
@@ -460,11 +492,11 @@ classdef Fitted
                                 %                             nearIDs{i} = [ neighbor_fits(within_window).fitID ];
                                 fits(i).nearIDs(k) = [neighbor_fits.fitID];
                             end
-                        end
+                        end % loop over time window
                         
                     end
                     
-                end
+                end % loop over neighbors
                 
             end % loop over all fits
             
@@ -587,7 +619,6 @@ classdef Fitted
             h.border = 'on';
             
             figure
-            
             F = make_cell_img(h);
             
             if nargout, varargout{1} = F; end
