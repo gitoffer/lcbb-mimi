@@ -1,4 +1,4 @@
-function cells = edge2cell(embryo_stack)
+function cells = embryo2cell(embryo_stack)
 %EDGE2CELL
 %
 % USAGE: cells = edge2cell(embryo_stack);
@@ -16,10 +16,10 @@ for i = 1:sum(num_cells)
     
     % Collect the indices
     stackID = i;
-    embryoID = find( (num_cells_padded - i) < 0, 1, 'last');
-    cellID = i - num_cells_padded(embryoID);
+    embryo_index = find( (num_cells_padded - i) < 0, 1, 'last');
+    cellID = i - num_cells_padded(embryo_index);
     
-    this_cell.embryoID = embryoID;
+    this_cell.embryoID = embryo_stack(embryo_index).input.embryoID;
     this_cell.stackID = stackID;
     this_cell.cellID = cellID;
     
@@ -29,7 +29,7 @@ for i = 1:sum(num_cells)
     % Put the relevant measurements into the cell structure
     for j = 1:numel(measurements)
         % Extract single measurement for this cell
-        meas_this_cell = embryo_stack(embryoID).(measurements{j})(:,cellID);
+        meas_this_cell = embryo_stack( embryo_index ).(measurements{j})(:,cellID);
         % Try to make into numeric array
         try cell2mat(meas_this_cell);
         catch err
@@ -40,7 +40,8 @@ for i = 1:sum(num_cells)
     end
     
     % Collect the time
-    this_cell.dev_time = embryo_stack(embryoID).dev_time;
+    this_cell.dev_time = embryo_stack( embryo_index ).dev_time;
+    this_cell.folder_name = embryo_stack( embryo_index ).input.folder2load;
     
     cells(i) = CellObj(this_cell);
     
