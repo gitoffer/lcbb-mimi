@@ -45,12 +45,14 @@ classdef CellObj
 	%	--- Visualization/display ---
 	%		visualize - plots myosin + area v. time
 	%		movie - makes movie of cell
+    
     properties (SetAccess= private)
         
         % IDs
         embryoID % embryo index
         cellID	% cellID in EDGE
         stackID	% stackID in collated cell stack
+        folder_name % EDGE folder name
         
         % measurements
         area		% area time series
@@ -65,6 +67,7 @@ classdef CellObj
         
         % Time
         dev_time	% multiple-embryo-aligned, developmental time
+        
     end % Private properties (can't be changed)
     
     properties
@@ -108,11 +111,12 @@ classdef CellObj
             [cells(1:sum(num_cells)).flag_fitted] = deal(0);
             num_frames = numel(cells(1).dev_time);
             
-            fitID = 0;
+            fitID = 0; last_embryoID = cells(1).embryoID; fit = [];
             
             for stackID = 1:sum(num_cells)
                 
                 this_cell = cells(stackID);
+                if this_cell.embryoID ~= last_embryoID, fitID = 0; end % reset fitID count
                 
                 % Get relevant indices
                 embryoID = this_cell.embryoID;
@@ -131,7 +135,8 @@ classdef CellObj
                 
                 consec_nan = find_consecutive_logical( isnan(Y(shift:endI)) );
                 
-                % Reject curves without the requisite number of non-NAN data poitns
+                % Reject curves without the requisite number of non-NaN
+                % data points. Also reject if too many consecutive NaN
                 if max(consec_nan) < opt.nan_consec_thresh && any(Y > 0) && ~failed && ...
                         numel(Y(~isnan(Y))) > opt.nan_thresh
                     
@@ -150,7 +155,7 @@ classdef CellObj
                     this_cell.flag_fitted = 1;
                     
                     % --- Get fitted curves, except for array of Gaussians ---
-                    curve = synthesize_gaussians(gauss_p(:,2:end),t); % Get gaussians/time
+%                     curve = synthesize_gaussians(gauss_p(:,2:end),t); % Get gaussians/time
                     background = lsq_exponential(gauss_p(:,1),t); % Get background
                     P = plot_peak_color(gauss_p(:,2:end),t); % Get colorized fit
                     this_cell.fit_colorized = P; this_cell.fit_bg = background;
@@ -162,68 +167,23 @@ classdef CellObj
                     this_cell.fitID = [];
                     
 					fit_gausses = nan( numel(t), max(size(gauss_p,2) - 1, 1) );
+                    
                     for j = 2 : size(gauss_p,2)
                         
                         % Assign fitID
                         fitID = fitID + 1;
-%                         this_fit.fitID = fitID;
                         
-                        fit(fitID) = Fitted(this_cell, gauss_p(:,j), fitID, opt);
-                        
-                        % Collect the relevant IDs
-%                         this_fit.embryoID = embryoID;
-%                         this_fit.stackID = stackID;
-%                         this_fit.cellID = this_cell.cellID;
-                        
-%                         % Collect the parameters
-%                         amplitude = gauss_p(1,j); center = gauss_p(2,j); width = gauss_p(3,j);
-%                         this_fit.amplitude = amplitude;
-%                         this_fit.center = center; this_fit.width = width;
-                        
-%                         dev_time = this_cell.dev_time;
-%                         center_frame = findnearest(center,dev_time);
-%                         
-%                         % Get pulse margin-time frame
-%                         [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
-%                         [right_margin,pad_r] = min([ center_frame + opt.right_margin , num_frames]);
-%                         this_fit.margin_frames = left_margin:right_margin;
-%                         
-%                         % Get pulse width-time frame
-%                         left_width = max( center_frame - findnearest(width,cumsum(diff(t))) , 1);
-%                         right_width = min( center_frame + findnearest(width,cumsum(diff(t))) , num_frames);
-%                         this_fit.width_frames = left_width:right_width;
-%                         
-%                         % Get pulse time WRT dev_time
-% %                         this_fit.img_frames = this_cell.dev_frame(left_width:right_width);
-%                         this_fit.dev_time = this_cell.dev_time(left_width:right_width);
-%                         
-%                         % Collect the pulse-centric fitted curves
-%                         x = dev_time(left_margin:right_margin);
-%                         fitted_y = lsq_gauss1d(gauss_p(:,j),x);
-%                         this_fit.raw = Y(left_margin:right_margin);
-%                         this_fit.fit = fitted_y;
-%                         this_fit.aligned_time = x - center;
-                        
-                        % PAD the margin-time frame for plotting purposes
-%                         if pad_l > 1
-%                             fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
-%                             x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
-%                         end
-%                         if pad_r > 1
-%                             fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
-%                             x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
-%                         end
-%                         this_fit.aligned_time_padded = x;
-%                         this_fit.fit_padded = fitted_y;
-                        
-%                         fit(fitID) = Fitted(this_fit);
+                        embryo_fitID = fitID + this_cell.embryoID*1000;
+
+                        fit = [fit Fitted(this_cell, gauss_p(:,j), embryo_fitID, opt)];
                         
                         % Construct Fitted object
-                        this_cell.fitID = [this_cell.fitID fitID];
+                        this_cell.fitID = [this_cell.fitID embryo_fitID];
                         
 						% Collect the cell-centric fitted curve for this peak
 						fit_gausses(:,j - 1) = lsq_gauss1d(gauss_p(:,j),this_cell.fit_time);
                     end
+                    
                 this_cell.fit_gausses = fit_gausses;    
                 else
                     this_cell.fit_colorized = NaN;
@@ -237,6 +197,8 @@ classdef CellObj
                     this_cell.trackID = NaN;
                 end
                 new_cells(stackID) = this_cell;
+                
+                last_embryoID = this_cell.embryoID;
                 
             end
             
