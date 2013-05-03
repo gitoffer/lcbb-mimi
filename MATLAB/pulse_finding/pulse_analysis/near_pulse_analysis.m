@@ -1,5 +1,4 @@
 
-
 num_fits = numel( fits_wt );
 
 time_windows = 1:5:60; %seconds
@@ -16,7 +15,6 @@ for j = 1:12
     num_near(j,:) = cellfun( @numel, IDs );
     
 end
-
 
 %%
 

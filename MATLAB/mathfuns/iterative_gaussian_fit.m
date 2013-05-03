@@ -35,20 +35,21 @@ opt = optimset('Display','off');
 
 % Initial guess
 [height,max] = extrema(y);
+% [A center width]
 guess = [height(1);x(max(1));x(3)-x(1)];
 
 % Initialize
 if background
     significant = 1;
     resnorm_old = sum(y.^2);
-    guess_bg = [1;x(1);30];
+    guess_bg = [1;0;100]; % [A, offset, lambda]
     
     n_peaks = 0;
     % Negative
-    LB = cat(2,[0;x(1);lb(3)],lb);
-    UB = cat(2,[Inf;Inf;ub(3)],ub);
-    guess = cat(2,guess_bg,guess);
-%     keyboard
+    LB = cat(2,[0;0;lb(3)],lb); % lower bounds for ALL params
+    UB = cat(2,[nanmax(y);nanmax(y);ub(3)],ub); % upper bounds for ALL params
+    guess = cat(2,guess_bg,guess); % concatenate bg and peak guesses
+
 else
     significant = 1;
     resnorm_old = sum(y.^2);
@@ -68,7 +69,8 @@ while significant
     
     n_peaks = n_peaks + 1;
     
-    F = ((resnorm_old-resnorm)/3)/(resnorm/(T-n_peaks*3-1+3));
+    F = ((resnorm_old-resnorm)/3) ...
+        /(resnorm/(T-n_peaks*3-1+3));
     %     F = (resnorm/(T-n_peaks*3))/(resnorm_old/(T-n_peaks*3-3))
     Fcrit = finv(1-alpha,3,T-n_peaks*3-1+3);
     %     P = fcdf(F,T-n_peaks*3-3,T-n_peaks*3)
@@ -89,7 +91,8 @@ while significant
         % Guess the new n+1 peak parameters from the residuals
         [height,max] = extrema(-residual);
         if numel(height) > 0
-            guess = cat(2,guess,[height(1);x(max(1));x(3)-x(1)]);
+            % update guess with current params and next guess
+            guess = cat(2,p,[height(1);x(max(1));x(3)-x(1)]);
         else
             significant = 0;
             break
@@ -108,7 +111,8 @@ p_bg = lsqcurvefit(@lsq_exponential,guess_bg,x,y,[0 -inf 0],[inf inf inf],opt);
 residuals = lsq_exponential(p_bg,x) - y;
 resnorm_bg = sum(residuals.^2);
 % F-Test
-F_bg = ((resnorm_bg-resnorm)/(3*n_peaks))/(resnorm/(T-n_peaks*3-1+3));
+F_bg = ((resnorm_bg-resnorm)/(3*n_peaks)) ...
+    /(resnorm/(T-n_peaks*3 -1 +3));
 Fcrit = finv(1-alpha,3*n_peaks,T-n_peaks*3-1+3);
 if F_bg < Fcrit
     parameters = p_bg;

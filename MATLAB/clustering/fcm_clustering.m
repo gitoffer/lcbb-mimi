@@ -74,4 +74,5 @@ end
 function J = get_obj_fun(U,D)
 J = U.*D;
 J = sum(J(:));
+
 end

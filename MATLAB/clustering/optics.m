@@ -1,4 +1,4 @@
-function [reach_dist,core_dist,order] = optics(X,min_pts,dist_fun)
+function [reach_dist,core_dist,order] = optics(D,min_pts)
 % OPTICS algorithm to cluster data
 %
 % SYNOPSIS: [reach_dist,core_dist,order] = optics(D,min_pts);
@@ -35,10 +35,8 @@ function [reach_dist,core_dist,order] = optics(X,min_pts,dist_fun)
 % Updated Nov 2012, xies @mit.edu
 
 % Initialize variables
-N = size(X,1);
+N = size(D,1);
 reach_dist = inf(1,N);
-
-D = squareform(pdist(X,dist_fun));
 
 % Get the core distances between objects (convension: the first dimension
 % in D is the reference object)

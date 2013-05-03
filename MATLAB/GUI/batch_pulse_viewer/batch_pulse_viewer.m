@@ -56,18 +56,48 @@ switch numel(varargin)
     case 2
         fits = varargin{1};
         embryo_stack = varargin{2};
+        
     otherwise
-        error('2 inputs: fits, embryo_stack');
+        error('3 inputs: fits, embryo_stack');
 end
 %Input
 handles.fits = fits;
 handles.embryo_stack = embryo_stack;
+% handles.weights = weights;
 
 %Set fitID selecter
-set(handles.fit_selecter,'String',cellfun(@num2str,{fits.fitID},'UniformOutput',0));
 set(handles.fit_selecter,'Value',1);
+set(handles.fit_selecter,'String',cellfun(@num2str,{fits.fitID},'UniformOutput',0));
 
-handles = update_plotter(handles);
+% Initialize slider bounds
+set( handles.frame_selecter, ...
+    'Min', nanmin(fits(1).margin_frames) , ...
+    'Max', nanmax(fits(1).margin_frames), ...
+    'SliderStep', [1, 1]/(numel(fits(1).margin_frames) - 1), ...
+    'Value', nanmin(fits(1).margin_frames) );
+
+handles.this_fit = fits(1);
+
+handles = update_movie(handles);
+
+% initialize text
+set( handles.weight_display,'String', num2str(fits(1).cluster_weight) );
+
+% initialize static plots
+axes(handles.avg_axes);
+% median estimates
+H = shadedErrorBar( handles.fits(1).corrected_time, ...
+    nanmedian( cat(1,handles.fits.corrected_area_norm) ), ...
+    mad( cat(1,handles.fits.corrected_area_norm), 1, 1), 'r-', 1);
+hold on;
+% mean
+J = shadedErrorBar( handles.fits(1).corrected_time, ...
+    nanmean( cat(1,handles.fits.corrected_area_norm) ), ...
+    nanstd( cat(1,handles.fits.corrected_area_norm), 1, 1), 'b-', 1);
+legend([H.mainLine J.mainLine],{'Median', 'Mean'});
+hold off;
+xlabel( 'Aligned time (sec)' )
+ylabel( '\Delta area (\mum^2)');
 
 % Choose default command line output for batch_pulse_viewer
 handles.output = hObject;
@@ -93,22 +123,21 @@ varargout{1} = handles.output;
 % --------------- Plotters ----------------------------
 function handles = update_plotter(handles)
 
-% get selected fit
-allIDs = get(handles.fit_selecter,'String');
-fitID = get(handles.fit_selecter,'Value');
-fitID = str2double(allIDs(fitID));
-this_fit = handles.fits.get_fitID(fitID);
+% get current fit
+this_fit = handles.this_fit;
 
-% update handles
-handles.fitID = fitID;
-handles.this_fit = this_fit;
-
-frames = this_fit.aligned_time;
+frames = this_fit.aligned_time_padded;
 
 % plot myosin + area
 ax = plotyy(handles.plot_axes, ...
    frames, this_fit.area, ...
    frames, this_fit.myosin);
+% draw vertical bar at movie frame selected
+hold( handles.plot_axes,'on' );
+vline( handles.this_time ,'k--');
+hold( handles.plot_axes,'off' );
+
+% legends + labels
 legend('Area','Myosin');
 ylabel(ax(2), 'Myosin intensity (a.u.)');
 ylabel(ax(1), 'Apical area (\mum^2)');
@@ -116,20 +145,18 @@ xlabel(ax(1), 'Aligned time (sec)');
 title(['Embryo #' num2str(this_fit.embryoID) ', EDGE #' num2str(this_fit.cellID)...
     ', center = ' num2str(this_fit.center) ' sec']);
 
-% update slider bounds
-set( handles.frame_selecter, ...
-    'Min', nanmin(this_fit.margin_frames) , ...
-    'Max', nanmax(this_fit.margin_frames), ...
-    'SliderStep', [1, 1]/(numel(this_fit.margin_frames) - 1), ...
-    'Value', nanmin(this_fit.margin_frames) );
-
-% update movies
-handles = update_movie(handles);
+plot(handles.all_axes, ...
+    handles.fits(1).corrected_time, cat(1,handles.fits.corrected_area_norm)');
+hold(handles.all_axes,'on');
+plot(handles.all_axes, this_fit.corrected_time, this_fit.corrected_area_norm, 'k-');
+hold(handles.all_axes,'off');
+xlabel( handles.all_axes, 'Aligned time (sec)' )
+ylabel( handles.all_axes, '\Delta area (\mum^2)');
 
 
 function handles = update_movie(handles)
 
-% get current fit
+% get this-fit
 this_fit = handles.this_fit;
 this_embryo = handles.embryo_stack( this_fit.embryoID );
 
@@ -140,24 +167,25 @@ h.input = this_embryo.input;
 h.channels = {'Membranes','Myosin'};
 h.border = 'on';
 h.axes = handles.movie_axes;
-
 cla(h.axes);
 set(h.axes,'XTick',[],'YTick',[]);
 
 selected_frame = get( handles.frame_selecter, 'Value');
 h.frames2load = selected_frame;
 handles.frame = selected_frame;
+handles.this_time = this_fit.aligned_time( this_fit.margin_frames == selected_frame );
 
 % update text
 set( handles.current_frame,'String',num2str( selected_frame ) );
 set( handles.time_display, 'String', ...
-    num2str( this_fit.aligned_time( this_fit.margin_frames == selected_frame ) ) );
-
-% draw vertical bar on
-hold( handles.plot_axes );
-
+    num2str( handles.this_time ) );
+set( handles.weight_display,'String', ...
+    num2str(this_fit.cluster_weight) );
 
 make_cell_img(h);
+
+% update plotter
+handles = update_plotter(handles);
 
 
 % --------------- Updaters + creators -----------------
@@ -168,7 +196,24 @@ function fit_selecter_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles = update_plotter(handles);
+% get selected fit
+allIDs = get(handles.fit_selecter,'String');
+fitID = get(handles.fit_selecter,'Value');
+fitID = str2double(allIDs(fitID));
+this_fit = handles.fits.get_fitID(fitID);
+
+% update handles
+handles.fitID = fitID;
+handles.this_fit = this_fit;
+
+% update slider bounds
+set( handles.frame_selecter, ...
+    'Min', nanmin( handles.this_fit.margin_frames ) , ...
+    'Max', nanmax( handles.this_fit.margin_frames ), ...
+    'SliderStep', [1, 1]/(numel(handles.this_fit.margin_frames ) - 1), ...
+    'Value', nanmin( handles.this_fit.margin_frames ) );
+
+handles = update_movie(handles);
 % Update handles structure
 guidata(hObject, handles);
 

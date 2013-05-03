@@ -11,8 +11,10 @@ n_peaks = size(params,2);
 [~,order] = sort(params(2,:),'ascend');
 params = params(:,order);
 
-% C = hsv(n_peaks);
-% C = C(randperm(n_peaks),:);
+% if nargin < 3
+%     C = hsv(n_peaks);
+%     C = C(randperm(n_peaks),:);
+% end
 
 P = zeros(numel(t),3);
 for i = 1:n_peaks

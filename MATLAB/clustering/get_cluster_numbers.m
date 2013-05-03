@@ -14,4 +14,5 @@ for i = 1:num_clusters
     num_members(i) = numel(cluster_labels(cluster_labels == i));
     cluster_names{i} = ['Cluster ' num2str(i)];
 end
+
 end
