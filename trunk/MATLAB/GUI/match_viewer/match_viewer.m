@@ -22,7 +22,7 @@ function varargout = match_viewer(varargin)
 
 % Edit the above text to modify the response to help match_viewer
 
-% Last Modified by GUIDE v2.5 25-Feb-2013 15:15:25
+% Last Modified by GUIDE v2.5 02-May-2013 21:00:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -338,3 +338,76 @@ function trackID_display_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to trackID_display (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in add_button.
+function add_button_Callback(hObject, eventdata, handles)
+% hObject    handle to add_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+pulse = handles.pulse;
+this_pulse = handles.this_pulse;
+
+switch class( this_pulse)
+    case 'Track'
+        if any(strcmpi( this_pulse.category, {'miss','merge'} ))
+            
+            pulse = pulse.createFitFromTrack( ...
+                handles.cells, this_pulse.trackID, pulse.fit_opt(this_pulse.embryoID));
+            
+        end
+    case 'Fitted'
+        if any(strcmpi( this_pulse.category, {'add','split'} ))
+            
+            pulse = pulse.createTrackFromFit( this_pulse.fitID );
+            
+        end
+end
+
+handles.pulse = pulse;
+handles = match_category_id_selecter_callback(handles);
+handles = movie_pulse_selecter_callback(handles);
+guidata(hObject,handles);
+
+
+% --- Executes on button press in remove_button.
+function remove_button_Callback(hObject, eventdata, handles)
+% hObject    handle to remove_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+pulse = handles.pulse;
+this_pulse = handles.this_pulse;
+
+switch class( this_pulse)
+    case 'Track'
+        if any(strcmpi( this_pulse.category, {'miss','merge','one2one'} ))
+            
+            pulse = pulse.removePulse('track', this_pulse.trackID );
+            
+        elseif strcmpi( this_pulse.category, 'one2one' )
+            keyboard
+            
+            
+        end
+    case 'Fitted'
+        if any(strcmpi( this_pulse.category, {'add','split','one2one'} ))
+            
+            pulse = pulse.removePulse('fit', this_pulse.fitID );
+            
+        end
+end
+
+handles.pulse = pulse;
+handles = match_category_id_selecter_callback(handles);
+handles = movie_pulse_selecter_callback(handles);
+guidata(hObject,handles);
+
+
+% --- Executes on button press in export_button.
+function export_button_Callback(hObject, eventdata, handles)
+% hObject    handle to export_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+pulse_curated = handles.pulse;
+save('~/Desktop/fit_curated','pulse_curated');

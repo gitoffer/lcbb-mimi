@@ -9,6 +9,7 @@ classdef Fitted
 	%	add_fit - tries to append a given new_fit onto an array. Fails if
 	%   	the same pulse already exists in the array
 	%	removeFit - given a fitID, remove it from the object stack
+    %   cat - concatenate two Fitted arrays
     % --- Array access/set ---
     %   get_stackID - get all FITs with a certain stackID
     %   get_fitID - get the fit with the given fitID
@@ -73,6 +74,7 @@ classdef Fitted
         nearIDs % fitIDs of 'nearby' fits, ordered w.r.t. time_windows
         
         cluster_label
+        cluster_weight
         
     end
     methods % Dynamic methods
@@ -149,14 +151,16 @@ classdef Fitted
         
 % --------------------- Edit pulse ----------------------------------------
         
-        function obj_array = add_fit(obj_array,new_fit)
+        function [obj_array,errorflag] = add_fit(obj_array,new_fit)
             %ADD_FIT tries to append a new_fit to a FITS array. Fails if
             % any fit in the array is equal to the new_fit.
             %
             % See also: FITTED.eq
+            errorflag = 0;
             if any(obj_array == new_fit)
                 disp('Cannot create new fit: Fit already exists.');
                 beep
+                errorflag = 1;
                 return
             end
             
@@ -242,22 +246,25 @@ classdef Fitted
             end
         end % assign_datafield
         
-        function pulses = resample_traces(pulses,name,dt,opt)
+        function fits = resample_traces(fits,name,dt,opt)
             %RESAMPLE_TRACES Uses INTERP1 to resample short traces
             %
             % [aligned_traces,aligned_time] = resample_traces(traces,embryoID,dt);
             %
             % xies@mit.edu Oct 2012
             
-            traces = cat(1,pulses.(name));
+            % concatenate traces
+            traces = cat(1,fits.(name));
             
+            % get dimensions
             num_traces = size(traces,1);
+            embryoIDs = [fits.embryoID];
             
-            embryoIDs = [pulses.embryoID];
             if numel(embryoIDs) ~= num_traces
                 error('The number of traces and the number of embryoID must be the same.');
             end
             
+            % find the aligned DT
             aligned_dt = round(mean(dt)*100)/100;
             l = opt.left_margin; r = opt.right_margin;
             % w = floor(T/2);
@@ -267,9 +274,16 @@ classdef Fitted
             
             % Resample using the SIGNAL_PROCESSING TOOLBOX
             for i = 1:num_traces
-                pulses(i).(['corrected_' name]) = ...
-                    interp1((-l:r)*dt(embryoIDs(i)),traces(i,:),(-(l-2):r-2)*aligned_dt);
-                pulses(i).corrected_time = aligned_t(3:end-2);
+                
+                trace = traces(i,:);
+                trace = trace( ~isnan(trace) );
+                x = (-l:r)*dt( embryoIDs(i) );
+                x = x( ~isnan(trace) );
+                
+                fits(i).(['corrected_' name]) = ...
+                    interp1( x, trace, (-(l-2):r-2)*aligned_dt );
+                
+                fits(i).corrected_time = aligned_t(3:end-2);
             end
             
         end % resample_traces
@@ -281,10 +295,15 @@ classdef Fitted
             for i = 1:numel(fits)
                 
                 this_fit = fits(i);
+                
                 this_cell = cells.get_stackID(this_fit.stackID);
-                num_frames = numel(this_cell.dev_time);
+                num_frames = numel(nonans(this_cell.dev_time));
                 opt = opts(this_fit.embryoID);
                 center_frame = findnearest( this_fit.center, this_cell.dev_time );
+                % check for double-nearest
+                if numel(center_frame) > 1
+                    center_frame = center_frame(end);
+                end
                 
                 % Get margin frame
                 [left_margin,pad_l] = max( ...
@@ -304,13 +323,15 @@ classdef Fitted
                 % PAD
                 if pad_l > 1
                     fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
+                    x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
                 end
                 if pad_r > 1
-                    fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
+                    fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames + 1)];
+                    x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
                 end
-                
+                this_fit.aligned_time_padded = x - this_fit.center;
                 fits = fits.set_fitID(this_fit.fitID, this_fit);
-                
+
             end
             
         end %retrace

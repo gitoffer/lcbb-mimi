@@ -40,6 +40,10 @@ classdef Pulse
 	% 		.split - one Track per two Fitted
 	%		.miss - Track with no Fitted
 	% 		.add - Fitted with no Track
+    %   .search_catID Search for the category_index (catID) of a pulse
+    %       (track/fit).
+    %   .cat - concatenate two Pulse objects (for example from different
+    %       embryos)
 	% --- Manual editing methods ---
 	%	search_catID - given a tracked or fit from a PULSE object, find the index
 	%		of that object within its current .cagetory
@@ -50,6 +54,7 @@ classdef Pulse
 	%		was...
 	%	reassignFit - re-assign a FITTED to a TRACK, will only work if neither have
 	% 		prior assignments
+    %
     % --- Saving methods ---
     %   export_manual_fits - writes manually fitted parameters into a CSV
     %       file
@@ -61,6 +66,7 @@ classdef Pulse
 	% xies@mit.edu
 
     properties (SetAccess = private)
+        
         fits 		% Complete set of FITTED pulses from ALL cells, including non-tracked and other embryos
         fitsOI_ID 	% fitID from only trakced cells in TRACKS
 		fit_opt 	% The fitting option file for this embryo
@@ -179,7 +185,7 @@ classdef Pulse
                 matches.miss(i).fitID = [];
                 track( [track.trackID] == trackID(i) ).category = 'miss';
             end
-%             [ track( ismember([track.trackID],[matches.miss.trackID])).category ] = deal('miss');
+
             % adds
             matches.add.trackID = [];
             matches.add.fitID = [];
@@ -190,8 +196,6 @@ classdef Pulse
                 matches.add(i).trackID = [];
                 fit( [fit.fitID] == fitID(i) ).category = 'add';
             end
-            % Annotate track with adds
-%             [ fit( ismember([fit.fitID],[matches.add.fitID])).category ] = deal('add');
             
             % -- Quantify one-to-one matches --
             % Find all tracks within the fit-fitted cells, and not belonging to
@@ -218,60 +222,10 @@ classdef Pulse
             matches = delete_empty(matches);
             
             pulse.fits = fit;
-%             pulse.fits(ismember( [pulse.fits.fitID] , pulse.fitsOI_ID) ) = fit;
             pulse.tracks = track;
             pulse.categories = matches;
-%             if ~consistent(pulse)
-%                 error('Something doesn''t add up!');
-%             end
             
             % -- Subfunctions of categorize_mapping -- %
-%             function flag2cont = consistent(pulse)
-%                 match = pulse.categories;
-%                 num_tracks = numel(pulse.tracks);
-%                 num_fit = numel(pulse.fits);
-%                 
-%                 num_one2one = numel(match.one2one);
-%                 if isfield(match,'miss')
-%                     num_miss_track = numel([match.miss.trackID]);
-%                 else
-%                     num_miss_track = 0;
-%                 end
-%                 if isfield(match,'add')
-%                     num_add_fit = numel([match.add.fitID]);
-%                 else
-%                     num_add_fit = 0;
-%                 end
-%                 if isfield(match,'merge')
-%                     num_merge_track = numel([match.merge.trackID]);
-%                     num_merge_fit = numel([match.merge.fitID]);
-%                 else
-%                     num_merge_track = 0;
-%                     num_merge_fit = 0;
-%                 end
-%                 if isfield(match,'split')
-%                     num_split_track = numel([match.split.trackID]);
-%                     num_split_fit = numel([match.split.fitID]);
-%                 else
-%                     num_split_track = 0;
-%                     num_split_fit = 0;
-%                 end
-%                 
-%                 flag2cont = num_tracks == ...
-%                     num_one2one + num_miss_track + num_merge_track + num_split_track;
-%                 
-%                 flag2cont = flag2cont || ...
-%                     num_fit == num_one2one + num_add_fit + num_merge_fit + num_split_fit;
-%                 
-% %                 flag2cont = flag2cont || ...
-% %                     numel(matchedTF_trackID) == ...
-% %                     num_one2one + num_merge_track + num_split_track;
-% %                 
-% %                 flag2cont = flag2cont || ...
-% %                     numel(matchedFT_fitID) == ...
-% %                     num_one2one + num_merge_fit + num_split_fit;
-                
-%             end
             function match = delete_empty(match)
                 if isempty( [match.one2one.trackID] )
                     match = rmfield(match,'one2one');
@@ -313,7 +267,18 @@ classdef Pulse
                 {category.(ID)});
 			catID = find(catID);
 
-		end
+        end
+        
+        function pulse = cat(pulse1,pulse2)
+            %CAT - overloaded concatenation method for putting together two
+            % Pulse objects. Will look through fitID/trackIDs to ensure
+%             if any( ismember([pulse1.embryoID],[pulse2.embryoID] )
+                
+                
+                
+%             end
+            
+        end
         
 %--------------------- edit pulse/tracks ----------------------------------
         
@@ -477,7 +442,8 @@ classdef Pulse
             pulse.next_fitID = pulse.next_fitID + 1;
             
             % Add into stack
-            fits = pulse.fits.add_fit(new_fit);
+            [fits,errorflag] = pulse.fits.add_fit(new_fit);
+            if errorflag, return; end
             fits(end).manually_added = 1;
             
             pulse.fitsOI_ID = [pulse.fitsOI_ID fits(end).fitID];
@@ -600,11 +566,11 @@ classdef Pulse
                 binary_trace = concatenate_pulse(track,dev_time); % get binary track
                 if ~isempty(trackID) % highlight pulse if applicable
                     on = highlight_track(track,trackID);
-%                     binary_trace(on,:) = binary_trace(on,:) + 3;
+                    binary_trace(on,:) = binary_trace(on,:) + 3;
                 end
                 if num_track > 1 % Plot
                     %                     if nargin > 4
-                    imagesc(dev_time,1:num_track,~binary_trace,'Parent',h(1));
+                    imagesc(dev_time,1:num_track,binary_trace,'Parent',h(1));
                     
                 elseif num_track == 1
                     plot(h(1),dev_time,binary_trace);

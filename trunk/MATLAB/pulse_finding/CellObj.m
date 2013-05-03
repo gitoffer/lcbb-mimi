@@ -313,7 +313,7 @@ classdef CellObj
             if nargin < 3, handle = gca; end
 
             % Plot raw data: myosin + area
-            [h,fig1,fig2] = plotyy(handle, time, this_cell.myosin_intensity_fuzzy(nonan_frame), ...
+            [h,fig1,fig2] = plotyy(handle, time, this_cell.myosin_sm(nonan_frame), ...
                 time, this_cell.area_sm(nonan_frame) );
 
             set(fig1,'Color','g'); set(fig2,'Color','k')
