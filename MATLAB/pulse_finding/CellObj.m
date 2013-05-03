@@ -1,5 +1,6 @@
 classdef CellObj
-	%CellObj Collects EDGE measurements for each cell, as well as the TRACK
+	%--- CellObj ----------------------------------------------------------
+    % Collects EDGE measurements for each cell, as well as the TRACK
 	% and FITTED pulses found in that cell.
 	%
 	% PROPERTIES (private)
@@ -28,23 +29,28 @@ classdef CellObj
     %
     % Methods
 	%	--- Constructor ---
-	%		CellObj - use from edge2cell
+	%		CellObj - use from embryo2cell
 	%	--- Fit pulses ---
 	%		fit_gaussians - returns updated CellObj array
 	%			and FITTED array
 	%	--- Edit fit/tracks ---
-	%		addFit
-	%		removeFit
-	%		addTrack
-	%		removeTrack
+	%		addFit - add fit to a cell
+	%		removeFit - remove a fit from a cell
+	%		addTrack - add a track to a cell
+	%		removeTrack - remove trackID from a cell's records
 	%	--- Array set/access ---
-	%		get_stackID
-	%		get_fitID
-	%		get_trackID
-	%		get_embryoID_cellID
+	%		get_stackID - search by stackID
+	%		get_fitID - search for cells containing fitID
+	%		get_trackID - search for cells containing trackID
+	%		get_embryoID_cellID - search using embryoID + cellID (useful
+    %           coming from EDGE)
 	%	--- Visualization/display ---
 	%		visualize - plots myosin + area v. time
 	%		movie - makes movie of cell
+	%
+	% See also: PULSE, FITTED, TRACK, EMBRYO2CELL
+	%
+	% xies@mit.edu April 2013.
     
     properties (SetAccess= private)
         
@@ -206,28 +212,30 @@ classdef CellObj
         
 % ---------------------- Editing fit/tracks -------------------------------
         
-        function obj = addFit(obj,fitID)
-            %@Cell.addFit Add a fitID to a cell
-            obj.fitID = [obj.fitID fitID];
-            obj.num_fits = obj.num_fits + 1;
+        function cellobj = addFit(cellobj,fitID)
+            %@CellObj.addFit Add a fitID to a cell
+            cellobj.fitID = [cellobj.fitID fitID];
+            cellobj.num_fits = cellobj.num_fits + 1;
         end % addFit
         
-        function obj = removeFit(obj,fitID)
-            %@Cell.removeFit remove a fitID from a cell
-            obj.fitID([obj.fitID] == fitID) = [];
-            obj.num_fits = obj.num_fits - 1;
+        function cellobj = removeFit(cellobj,fitID)
+            %@CellObj.removeFit remove a fitID from a cell
+            idx = find([cellobj.fitID] == fitID); % find removing index
+            cellobj.fitID(idx) = []; % remove fitID 
+            cellobj.fit_gausses(idx,:) = []; % remove Gaussian colorized peak
+            cellobj.num_fits = cellobj.num_fits - 1;
         end % removeFit
         
-        function obj = addTrack(obj,trackID)
-            %@Cell.addTrack Add a trackID to a cell
-            obj.trackID = [ [obj.trackID] trackID];
-            obj.num_tracks = obj.num_tracks + 1;
+        function cellobj = addTrack(cellobj,trackID)
+            %@CellObj.addTrack Add a trackID to a cell
+            cellobj.trackID = [ [cellobj.trackID] trackID];
+            cellobj.num_tracks = cellobj.num_tracks + 1;
         end
         
-        function obj = removeTrack(obj,trackID)
-            %@Cell.addTrack Add a trackID from a cell
-            obj.trackID([obj.trackID] == trackID) = [];
-            obj.num_tracks = obj.num_tracks - 1;
+        function cellobj = removeTrack(cellobj,trackID)
+            %@CellObj.addTrack Add a trackID from a cell
+            cellobj.trackID([cellobj.trackID] == trackID) = [];
+            cellobj.num_tracks = cellobj.num_tracks - 1;
         end
 
 % --------------------- Array set/access ----------------------------------
@@ -301,7 +309,7 @@ classdef CellObj
 
             % if nargout > 0, varargout{1} = h; end
 
-        end
+        end % visualize
         
         function F = movie(cells,stackID,embryo_stack)
             % MOVIE - make a movie of the cell
@@ -333,7 +341,7 @@ classdef CellObj
                 
             F = make_cell_img(h);
             
-        end
+        end % movie
 
     end
     

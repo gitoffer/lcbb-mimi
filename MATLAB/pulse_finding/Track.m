@@ -1,20 +1,42 @@
 classdef Track
-	%TRACK Tracked pulses loaded from a MDF file as output from MTrackJ
+	%--- TRACK ------------------------------------------------------------
+    % Tracked pulses loaded from a MDF file as output from MTrackJ
 	% and cross-checked against EDGE cells
 	%
 	% Properties:
+	% (SetAccess = private)
 	%	embryoID - the embryo index
 	%	cellID - EDGE cellID
 	%	stackID - stacked index of all cells
 	% 	mdfID - the original mdfID
-	%	dev_frame
-	% 	dev_time
-	%	img_frame
+	%	dev_frame - frames (same as image-frame)
+	% 	dev_time - wrt aligned time
 	%
-	% 	trackID - unique index
+	% (SetAccess = public)
+	% 	trackID - unique index (leading digit = embryoID)
 	% 	category - matching category to FITTED
 	%	manually_added - flag for artificially added tracks
 	%
+	% Methods:
+	% --- Constructor ---
+	%	Track - currently only usable from LOAD_MDF_TRACK
+	% --- Search methods ---
+	%	get_trackID - search by trackID (vector OK)
+	%	get_stackID - search by a cell's stackID (vector OK)
+	% --- Comparator ---
+	%	eq - equality comparitor. Expecting second argument to be single
+    %       object. Equality defined by exact overlap of all fields.
+	% --- Array operations --
+	%	add_track - add a new_track to an array. Mainly check for
+    %       duplicates via @eq.
+	%	reindex_trackID - reindex the leading digit of trackIDs according
+    %       to new embryoID.
+    %
+    % See also: PULSE, FITTED, CELLOBJ, LOAD_MDF_TRACK
+    %
+	% xies@mit.edu
+	% April 2013
+	
 	
     properties (SetAccess = private)
 
@@ -84,10 +106,11 @@ classdef Track
                 equality(j) = eqs;
             end
             
-        end
-    end
+        end %eq
+
+    end % Public methods
     
-    methods
+    methods % Methods
 % --------------------- Array operations ---------------------------------
         function obj_array = add_track(obj_array,new_track)
             % Check for previously existing
@@ -104,6 +127,21 @@ classdef Track
             
             obj_array = [obj_array new_track];
         end
+		function obj_array = reindex_trackID( obj_array, new_embryoID)
+			% Reindex_trackID Given a track array of the same embryoID, and
+			% a new_embryoID, re-index the trackIDs of the array with a set
+			% of new identifiers beginning with the new_embryoID
+			
+			old_embryoID = obj_array(1).embryoID;
+			if any( [obj_array.embryoID] ~= old_embryoID )
+				error('Must input an array with the same original embryoID');
+			end
+			
+			old_trackIDs = [obj_array.trackID];
+			new_trackIDs = old_trackIDs;
+			new_trackIDs = new_trackIDs + (new_embryoID - old_embryoID)*1000;
+
+		end	% reindex_trackID
         
     end
 
