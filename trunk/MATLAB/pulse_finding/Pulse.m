@@ -55,10 +55,12 @@ classdef Pulse
 	%		was...
 	%	reassignFit - re-assign a FITTED to a TRACK, will only work if neither have
 	% 		prior assignments
+	%	read_changes - given a .change structure, edit current Pulse object
     %
     % --- Saving methods ---
     %   export_manual_fits - writes manually fitted parameters into a CSV
     %       file
+	%	export_changes - writes all changes into a CSV
 	% --- Display methods ---
 	%	graph - Generates a 1x3 subplot of the TRACK/FIT/CELL
 	% 	display - In-line display, reporting the number of objects and the quality of
@@ -110,13 +112,12 @@ classdef Pulse
                 ismember( [fits.stackID], [tracks.stackID] )).fitID];
             
             pulse.tracks_mdf_file = filename;
-			pulse.fit_opt = opts;
             pulse.fitsOI_ID = fitsOI_ID;
             pulse.next_fitID = fits.get_fitID(fitsOI_ID(1)).embryoID*10000;
-            pulse.cells = cells([cells.embryoID] == fits.get_fitID(fitsOI_ID(1)).embryoID);
-            if any( [pulse.cells.embryoID] ~= [pulse.cells(1).embryoID ] )
-                error('Cannot create Pulse object: all data must come from single embryo.');
-            end
+            pulse.fit_opt = opts( fits.get_fitID(fitsOI_ID(1)).embryoID );
+            pulse.cells = cells;
+            
+            save([fileparts(pulse.tracks_mdf_file) '/pulse_raw.mat'], 'pulse');
 
         end % Constructor
         
@@ -432,12 +433,14 @@ classdef Pulse
             
         end % createTrackFromFit
 
-		function pulse = createFitFromTrack(pulse,cells,trackID,opt)
+		function pulse = createFitFromTrack(pulse,trackID,opt)
             %@Pulse.createFitFromTrack Using the stackID/embryoID and timing to create an
 			% artificial 'fit'.
 			%
 			% USAGE: pulse = pulse.createFitFromTrack(cells,trackID,fit_opt)
 			% xies@mit.edu Feb 2013
+            
+            cells = pulse.cells;
 
 			% Extract track / make sure it's not duplicated
 			track = pulse.tracks.get_trackID(trackID);
@@ -452,14 +455,20 @@ classdef Pulse
             display(['Creating fit from trackID ' num2str(trackID)])
             
             % Load already manually fitted params
-            already_done = ...
+            try already_done = ...
                 csvread( [ fileparts(pulse.tracks_mdf_file), '/', 'manual_fits.csv' ] );
+            catch err
+                if strcmpi(err.identifier,'MATLAB:csvread:FileNotFound')
+                    already_done = NaN;
+                else
+                    rethrow(err);
+                end
+            end
             
             I = find( already_done(:,1) == trackID );
             if ~isempty(I)
-                
+                % If already_done, then load recorded change
                 params = already_done( I , 2:4 );
-                
             else
             
 			% Launch the manual fit GUI
@@ -498,7 +507,7 @@ classdef Pulse
                 pulse.changes.fitsMadeFromTrack = this_change;
             end
             
-        end
+        end % createFitFromTrack
 
 		function pulse = reassignFit(pulse,fitID,newTrackID)
 			%@Pulse.reassginFit Reassign FIT to TRACK: works only if neither
@@ -516,7 +525,47 @@ classdef Pulse
                 pulse.changes.reassignedTrackFit = this_change;
             end
             
-        end
+        end % reassignFit
+		
+		function pulse = read_changes( pulse, changes )
+            % READ_CHANGES Make edits to track/fit given recorded changes
+            
+            if isfield(changes,'fitsMadeFromTrack')
+                trackIDs = changes.fitsMadeFromTrack;
+                trackIDs = [trackIDs.trackID];
+                for i = 1:numel(trackIDs)
+                    opt = pulse.fit_opt;
+                    pulse = pulse.createFitFromTrack(trackIDs(i),opt);
+                end
+            end
+            
+            if isfield(changes,'tracksMadeFromFit')
+                fitIDs = changes.tracksMadeFromFit;
+                fitIDs = [fitIDs.fitID];
+                for i = 1:numel(fitIDs)
+                    pulse = pulse.createTrackFromFit(fitIDs(i));
+                end
+            end
+            if isfield(changes,'fitIDRemoved')
+                fitIDs = [changes.fitIDRemoved];
+                for i = 1:numel(fitIDs)
+                    pulse = removePulse(pulse,'fit',fitIDs(i));
+                end
+            end
+            if isfield(changes,'trackIDRemoved')
+                trackIDs = [changes.trackIDRemoved];
+                for i = 1:numel(trackIDs)
+                    pulse = removePulse(pulse,'track',trackIDs(i));
+                end
+            end
+            if isfield(changes,'reassignedTrackFit')
+                changes = changes.reassignedTrackFit;
+                for i = 1:numel(changes)
+                    pulse = reassignFit(pulse,changes.fitID,changes.trackID);
+                end
+            end
+			
+		end % read_changes
         
 % ----------------------- saving ------------------------------------------
 
@@ -525,7 +574,11 @@ classdef Pulse
             % Writes down the manual fit parameters for fits created from
             % tracks. Saveas as manual_fit.csv
         changes = pulse.changes;
-        num_changes = numel(changes.fitsMadeFromTrack);
+        if isfield(changes,'fitsMadeFromTrack')
+            num_changes = numel(changes.fitsMadeFromTrack);
+        else
+            num_changes = 0;
+        end
 
         mat2write = nan(num_changes,4);
 
@@ -544,10 +597,24 @@ classdef Pulse
 
         end
 
-        csvwrite( [fileparts(pulse.tracks_mdf_file), '/', 'manual_fits.csv'], ...
+        if isfield(changes,'fitsMadeFromTrack')
+            csvwrite( [fileparts(pulse.tracks_mdf_file), '/', 'manual_fits.csv'], ...
             mat2write );
-        
         end
+        
+        end % export_manual_fits
+		
+		function export_changes( pulse )
+			%EXPORT_CHANGES
+			% Export all .changes to a .mat file
+			
+			changes = pulse.changes;
+			save( [fileparts(pulse.tracks_mdf_file), '/', 'changes.mat'], 'changes');
+            
+            % export manual changes
+            pulse.export_manual_fits;
+			
+		end % export_changes
 
 % ---------------------- graph/display ------------------------------------
         
