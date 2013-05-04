@@ -222,7 +222,7 @@ classdef CellObj
             %@CellObj.removeFit remove a fitID from a cell
             idx = find([cellobj.fitID] == fitID); % find removing index
             cellobj.fitID(idx) = []; % remove fitID 
-            cellobj.fit_gausses(idx,:) = []; % remove Gaussian colorized peak
+            cellobj.fit_gausses(:,idx) = []; % remove Gaussian colorized peak
             cellobj.num_fits = cellobj.num_fits - 1;
         end % removeFit
         

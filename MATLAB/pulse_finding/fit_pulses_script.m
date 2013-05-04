@@ -6,13 +6,13 @@ clear fit_opts
 
 [fit_opts(1:num_embryos).left_margin] = deal(8);
 [fit_opts(1:num_embryos).right_margin] = deal(8);
-[fit_opts(1:num_embryos).nan_thresh] = deal(50);
+[fit_opts(1:num_embryos).nan_thresh] = deal(30);
 [fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
 [fit_opts(1:num_embryos).end_tol] = deal(30);
 
-[fit_opts(1:num_embryos).alpha] = deal(0.05);
-[fit_opts(1:num_embryos).sigma_lb] = deal(5);
-[fit_opts(1:num_embryos).sigma_ub] = deal(25);
+[fit_opts(1:num_embryos).alpha] = deal(0.01);
+[fit_opts(1:num_embryos).sigma_lb] = deal(10);
+[fit_opts(1:num_embryos).sigma_ub] = deal(30);
 
 % [fit_opts(8:9).alpha] = deal(0.05);
 % [fit_opts(8:9).sigma_lb] = deal(5);
