@@ -6,13 +6,22 @@ function handles = match_category_id_selecter_callback(handles)
 
 % Get data
 pulse = handles.pulse;
-cells = handles.cells;
+cells = pulse.cells;
 % embryo_struct = handles.embryo_struct;
 % fits = handles.pulse.fits;
 % tracks = handles.pulse.tracks;
 
+% Update category selecter dropdown menu
+categories = pulse.categories;
+cat_names = fieldnames(categories);
+set(handles.category,'String', cat_names(end:-1:1));
+handles.current_category = cat_names{1};
+
 % Get the currently selected category
 categories = get( handles.category,'String');
+if get(handles.category,'Value') > numel(categories)
+	set(handles.category,'Value',1);
+end
 current_cat = lower( categories{get(handles.category,'Value')} );
 % Set catID selecter values to number of match objects
 set( handles.categoryID, ...
