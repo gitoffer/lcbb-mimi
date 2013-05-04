@@ -25,9 +25,10 @@ if strcmpi( which,'trackID' )
     this_pulse = tracks.get_trackID( cats.(current_cat)(catID).(which) (whichID) );
     frames = [this_pulse.dev_frame];
 else
+    % get all frames and bounds of non-nan frames
     this_pulse = fits.get_fitID( cats.(current_cat)(catID).(which) (whichID) );
-    min_nan = find(~isnan(handles.cells(this_pulse.stackID).dev_time),1,'first');
-    max_nan = find(~isnan(handles.cells(this_pulse.stackID).dev_time),1,'last');
+    min_nan = find(~isnan(handles.pulse.cells(this_pulse.stackID).dev_time),1,'first');
+    max_nan = find(~isnan(handles.pulse.cells(this_pulse.stackID).dev_time),1,'last');
     frames = [this_pulse.width_frames];
     frames = frames( frames >= min_nan & frames <= max_nan );
 end

@@ -59,8 +59,8 @@ handles.output = hObject;
 pulse = varargin{1}; handles.pulse = pulse;
 categories = pulse.categories;
 
-cells = varargin{2}; handles.cells = cells;
-embryo_struct = varargin{3}; handles.embryo_struct = embryo_struct;
+cells = pulse.cells;
+embryo_struct = varargin{2}; handles.embryo_struct = embryo_struct;
 
 % Initialize category selecter
 cat_names = fieldnames(categories);
@@ -98,19 +98,6 @@ function category_Callback(hObject, eventdata, handles)
 % hObject    handle to category (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% match = handles.pulses.match;
-% cells = handles.cells;
-% 
-% categories = get(hObject,'String');
-% current_category = lower(categories{get(hObject,'Value')});
-% % Set ID range
-% set(handles.categoryID, ...
-%     'String', num2cell(1:numel( match.(current_category) )) );
-% set(handles.categoryID,'Value',1);
-% categoryID = get(handles.categoryID,'Value');
-% 
-% graph_match(match.(current_category),cells,tracks,pulses,categoryID);
 
 set(handles.categoryID,'Value',1);
 
@@ -354,7 +341,7 @@ switch class( this_pulse)
         if any(strcmpi( this_pulse.category, {'miss','merge'} ))
             
             pulse = pulse.createFitFromTrack( ...
-                handles.cells, this_pulse.trackID, pulse.fit_opt(this_pulse.embryoID));
+                this_pulse.trackID, pulse.fit_opt);
             
         end
     case 'Fitted'
@@ -410,4 +397,5 @@ function export_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 pulse_curated = handles.pulse;
-save('~/Desktop/fit_curated','pulse_curated');
+save( [fileparts(pulse_curated.tracks_mdf_file) '/' 'pulse_curated.mat'] ,'pulse_curated');
+pulse_curated.export_changes;
