@@ -212,10 +212,13 @@ classdef CellObj
         
 % ---------------------- Editing fit/tracks -------------------------------
         
-        function cellobj = addFit(cellobj,fitID)
+        function cellobj = addFit(cellobj,fit)
             %@CellObj.addFit Add a fitID to a cell
-            cellobj.fitID = [cellobj.fitID fitID];
+            cellobj.fitID = [cellobj.fitID fit.fitID];
             cellobj.num_fits = cellobj.num_fits + 1;
+			cellobj.fit_gausses = ...
+				cat(2,cellobj.fit_gausses,...
+                lsq_gauss1d([fit.amplitude;fit.center;fit.width],cellobj.fit_time)');
         end % addFit
         
         function cellobj = removeFit(cellobj,fitID)
@@ -291,7 +294,7 @@ classdef CellObj
             % set x-axis limits
             set(h(2) , 'Xlim', [min(time) max(time)] );
 
-            if this_cell.flag_fitted
+            if this_cell.flag_fitted && this_cell.num_fits > 0
 
                 hold(handle,'on');
                 

@@ -113,6 +113,10 @@ classdef Fitted
                 dev_time = cell.dev_time;
                 num_frames = numel(dev_time);
                 center_frame = findnearest(this_fit.center,dev_time);
+                % ensure center_frame isn't two frames
+                if numel(center_frame) > 1
+                    center_frame = center_frame(1);
+                end
                 
                 % Get pulse margin-time frame
                 [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
