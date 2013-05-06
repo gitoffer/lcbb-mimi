@@ -164,7 +164,6 @@ classdef Pulse
             [ matches.merge( 1:numel(trackID) ).fitID ] = deal(fitID{:});
             % Annotate fit/track with merges
             for i = 1:numel(trackID)
-                %                 keyboard
                 [ fit( ismember([fit.fitID], fitID{i}) ).category ] = deal('merge');
                 [ track( ismember([track.trackID], trackID{i}) ).category ] = deal('merge');
             end
@@ -447,7 +446,7 @@ classdef Pulse
 			if isempty(track), display('Cannot create FIT: No track with trackID found.'); return; end
             if isfield(pulse.changes,'fitsMadeFromTrack');
                 if any(trackID == [pulse.changes.fitsMadeFromTrack.trackID])
-                    display(['Track #' num2str(trackID) ' already used to add a fit.']);
+                    display(['Track ID' num2str(trackID) ' already used to add a fit.']);
                     return
                 end
             end
@@ -470,16 +469,14 @@ classdef Pulse
                 % If already_done, then load recorded change
                 params = already_done( I , 2:4 );
             else
-            
-			% Launch the manual fit GUI
-            params = manual_fit( ...
-                [mean(track.dev_time) 20],cells,track.stackID);
-            
+				% Launch the manual fit GUI
+        	    params = manual_fit( ...
+            	    [mean(track.dev_time) 20],cells,track.stackID);
             end
             
             % Construct a new FITTED object from parameters
             new_fit = Fitted( cells(track.stackID), params, pulse.next_fitID, opt);
-            pulse.next_fitID = pulse.next_fitID + 1;
+            pulse.next_fitID = pulse.next_fitID + 1; %increment fitIDs
             
             % Add into stack
             [fits,errorflag] = pulse.fits.add_fit(new_fit);
@@ -495,7 +492,7 @@ classdef Pulse
            
             % Update cell tracklist
             pulse.cells(track.stackID) = ...
-                pulse.cells(track.stackID).addFit( pulse.fits(end).fitID);
+                pulse.cells(track.stackID).addFit( pulse.fits(end));
             
             % Record changes
             this_change.fitID = pulse.fits(end).fitID;
