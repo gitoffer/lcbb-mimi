@@ -485,16 +485,16 @@ classdef Fitted
                     
                     if ~isempty( neighbor_fits )
                         % Collect fits within window
-                        
+                        fits(i).nearIDs = zeros( 1, numel(time_windows ) );
                         for k = 1:numel( time_windows )
                         
                             within_window = ...
                                 abs([neighbor_fits.center] - this_fit.center) < time_windows(k) ...
                                 & ~( neighbor_fits == this_fit );
+                            
                             if sum(within_window) > 0
                                 nearby_fits = neighbor_fits(within_window);
-                                %                             nearIDs{i} = [ neighbor_fits(within_window).fitID ];
-                                fits(i).nearIDs(k) = [neighbor_fits.fitID];
+                                fits(i).nearIDs(k) = numel(nearby_fits);
                             end
                         end % loop over time window
                         
@@ -652,6 +652,28 @@ classdef Fitted
             csvwrite([filepath '/fits_' fieldname,'.csv'] , mat2write);
             
         end %export_fits
+        
+        function binary = make_binary_sequence(fits,cells)
+            %MAKE_BINARY_SEQUENCE Uses width_frames to generate a binary
+            % sequence of pulses
+			% USAGE: binary_seq = fits.make_binary_sequence(cells);
+			
+            % Preallocate
+			binary = zeros( numel(cells(1).dev_time), max( [cells.cellID] ));
+			% Filter relevant fits
+			fits = fits.get_fitID( [cells.fitID] );
+
+			for i = 1:numel(cells)
+
+				this_cell_fits = fits.get_fitID( cells(i).fitID );
+				for j = 1:numel( this_cell_fits )
+					binary( this_fit(j).width_frames, cells(i).cellID ) = ...
+						binary( this_fit(j).width_frames, cell(i).cellID ) + j;
+				end
+
+			end
+            
+        end
         
     end % Dynamic methods
  
