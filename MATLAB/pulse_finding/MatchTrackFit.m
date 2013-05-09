@@ -1,7 +1,8 @@
 classdef MatchTrackFit
-    % A class to handle non-bijective mapping between two Map objects.
+    % A class to handle non-bijective mapping between two Map objects. Impelemented specifically
+	% for Tracked pulses (TRACK) and Fitted pulses (FITTED)
     %
-    % See also: MAP
+    % See also: MAP, TRACK, FITTED, Pulse
     %
     % xies@mit.edu Feb 2013
     properties (SetAccess = private)

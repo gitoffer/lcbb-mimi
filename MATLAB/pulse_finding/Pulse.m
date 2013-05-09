@@ -99,26 +99,29 @@ classdef Pulse
 			% Will not generate the .map property.
 			%
 			% USAGE: pulse = Pulse(tracks,mdf_filename,fits,fit_opt,cells);
-
-            if strcmp(class(tracks),'Track')
-                pulse.fits = fits;
-                pulse.tracks = tracks;
-            else
-                pulse.fits = tracks;
-                pulse.tracks = fits;
-            end
             
-            fitsOI_ID = [fits( ... filter out non-tracked cells
-                ismember( [fits.stackID], [tracks.stackID] )).fitID];
-            
-            pulse.tracks_mdf_file = filename;
-            pulse.fitsOI_ID = fitsOI_ID;
-            pulse.next_fitID = fits.get_fitID(fitsOI_ID(1)).embryoID*10000;
-            pulse.fit_opt = opts( fits.get_fitID(fitsOI_ID(1)).embryoID );
-            pulse.cells = cells;
-            
-            save([fileparts(pulse.tracks_mdf_file) '/pulse_raw.mat'], 'pulse');
-
+            if nargin > 0
+                
+                if strcmp(class(tracks),'Track')
+                    pulse.fits = fits;
+                    pulse.tracks = tracks;
+                else
+                    pulse.fits = tracks;
+                    pulse.tracks = fits;
+                end
+                
+                fitsOI_ID = [fits( ... filter out non-tracked cells
+                    ismember( [fits.stackID], [tracks.stackID] )).fitID];
+                
+                pulse.tracks_mdf_file = filename;
+                pulse.fitsOI_ID = fitsOI_ID;
+                pulse.next_fitID = fits.get_fitID(fitsOI_ID(1)).embryoID*10000;
+                pulse.fit_opt = opts( fits.get_fitID(fitsOI_ID(1)).embryoID );
+                pulse.cells = cells;
+                
+                save([fileparts(pulse.tracks_mdf_file) '/pulse_raw.mat'], 'pulse');
+                
+            end % non-empty constructor
         end % Constructor
         
         function pulse = match_pulse(pulse,threshold)

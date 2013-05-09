@@ -13,7 +13,7 @@ function mask = make_cell_mask(m,frames,cellID,input)
 %
 % OUTPUT: mask - binary mask of size [X,Y,numel(frames)]
 %
-% See also draw_measurement_on_cells, draw_measurement_on_cell_small
+% See also draw_measurement_on_cells, draw_measurement_on_cell_patch
 %
 % xies@mit Dec 2011.
 

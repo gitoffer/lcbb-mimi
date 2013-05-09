@@ -27,9 +27,10 @@ end
 %% FCM
 
 X = cat(1,fits.corrected_area_norm);
+
 X( isnan(X) ) = 0;
 
-num_clusters = 10;
+num_clusters = 8;
 
 [center,U,obj] = fcm(X,num_clusters); [max_prob,labels] = max(U);
 
@@ -48,7 +49,10 @@ fits_wt = fits([fits.embryoID] < 6);
 fits_twist = fits([fits.embryoID] < 8 & [fits.embryoID] > 5);
 fits_cta = fits([fits.embryoID] > 7);
 
-for i = 1:num_clusters 
+%%
+
+for i = 1:num_clusters
+    
     eval(['cluster' num2str(i) ' = fits([fits.cluster_label] == ' num2str(i) ');']);
     eval(['cluster' num2str(i) '_wt = fits_wt([fits_wt.cluster_label] == ' num2str(i) ');']);
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(i) ');']);

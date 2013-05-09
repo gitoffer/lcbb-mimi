@@ -368,7 +368,7 @@ this_pulse = handles.this_pulse;
 
 switch class( this_pulse)
     case 'Track'
-        if any(strcmpi( this_pulse.category, {'miss','merge','one2one'} ))
+        if ~strcmpi( this_pulse.category, 'add' )
             
             pulse = pulse.removePulse('track', this_pulse.trackID );
             
@@ -378,7 +378,7 @@ switch class( this_pulse)
             
         end
     case 'Fitted'
-        if any(strcmpi( this_pulse.category, {'add','split','one2one'} ))
+        if ~strcmpi( this_pulse.category, 'miss' )
             
             pulse = pulse.removePulse('fit', this_pulse.fitID );
             

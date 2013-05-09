@@ -73,7 +73,6 @@ for i = 1:num_frames
             obj = patch(vert_x,vert_y,color);
             %             alpha(obj,.5);
             
-%             colorbar
             hold on
             axis equal ij fill
             axis([100 900 0 400]);

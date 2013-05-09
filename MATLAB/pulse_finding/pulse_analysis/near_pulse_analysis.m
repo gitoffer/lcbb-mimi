@@ -5,16 +5,11 @@ time_windows = 1:5:60; %seconds
 % nearby = cell( 6,num_fits );
 % nearID = cell( 6 , num_fits);
 
-num_near = zeros(12,num_fits);
-% 
-for j = 1:12
-    time_window = time_windows(j);
-    
-    fits = fits_wt.find_near_fits(time_window, neighborID);
-%     nearby{i} = near;
-    num_near(j,:) = cellfun( @numel, IDs );
-    
-end
+fits_wt = fits_wt.find_near_fits(time_windows, neighborID);
+
+%%
+
+num_near =  {fits_wt.nearIDs(1,:)};
 
 %%
 

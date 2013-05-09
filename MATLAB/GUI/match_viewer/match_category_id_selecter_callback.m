@@ -54,7 +54,12 @@ handles.current_category = current_cat;
 
 % Update cell/track/fit being displayed
 candidate_tracks = pulse.tracks.get_trackID(trackID);
-handles.current_cell = candidate_tracks(1).cellID;
+if ~isempty(candidate_tracks)
+    handles.current_cell = candidate_tracks(1).cellID;
+else
+    candidate_fits = pulse.fits.get_fitID(fitID);
+    handles.current_cell = candidate_fits(1).cellID;
+end
 handles.current_tracks = trackID;
 handles.current_fits = fitID;
 

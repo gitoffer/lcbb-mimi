@@ -4,7 +4,7 @@
 %% Generate correlations
 
 wt = 10;
-correlations = nanxcorr(myosins_rate,areas_rate,wt,1);
+correlations = nanxcorr(myosins_rate_cta,areas_rate_cta,wt,1);
 % [correlations,no_nan_cells] = delete_nan_rows(correlations,2);
 
 %% Plot myosin, area, rates and average correlation

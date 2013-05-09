@@ -667,8 +667,8 @@ classdef Fitted
 
 				this_cell_fits = fits.get_fitID( cells(i).fitID );
 				for j = 1:numel( this_cell_fits )
-					binary( this_fit(j).width_frames, cells(i).cellID ) = ...
-						binary( this_fit(j).width_frames, cell(i).cellID ) + j;
+					binary( this_cell_fits(j).width_frames, cells(i).cellID ) = ...
+						binary( this_cell_fits(j).width_frames, cells(i).cellID ) + j;
 				end
 
 			end
