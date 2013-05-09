@@ -8,11 +8,12 @@ mdf_file{3} = '~/Desktop/Tracked pulses/10-15-2012-1/10-15-2012-1.mdf'; embryoID
 mdf_file{4} = '~/Desktop/Tracked pulses/10-25-2012-1/10-25-2012-1-acm.mdf'; embryoID(4) = 4;
 mdf_file{5} = '~/Desktop/Tracked pulses/11-07-2012-1/11-07-2012-1_acm.mdf'; embryoID(5) = 5;
 mdf_file{6} = '~/Desktop/Tracked pulses/Twist injection series 006/twist_series_006_mimi.mdf'; embryoID(6) = 6;
-% mdf_file{8} = '~/Desktop/Tracked pulses/11-10-2012-3/11-10-2012-3_mimi.mdf'; embryoID = 1;
+embryoID(7) = 7;
+mdf_file{8} = '~/Desktop/Tracked pulses/11-10-2012-3/11-10-2012-3_mimi.mdf'; embryoID(8) = 8;
 
 match_thresh = 1;
 
-for i = 1:6
+for i = 8
     
     % Load MDF into matrix
     mdf_mat = read_mdf(mdf_file{i});
@@ -20,7 +21,7 @@ for i = 1:6
 
     % Perform matching to fitted pulses
     
-    pulse(i) = Pulse(tracks,mdf_file{i},fits,fit_opts(embryoID),cells);
+    pulse(i) = Pulse(tracks,mdf_file{i},fits_raw,fit_opts(embryoID),cells);
     pulse(i) = pulse(i).match_pulse(match_thresh);
     pulse(i) = pulse(i).categorize_mapping;
     

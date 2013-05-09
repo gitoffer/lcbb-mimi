@@ -4,8 +4,8 @@ clear fit_opts
 [fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity_fuzzy');
 [fit_opts(1:num_embryos).bg] = deal('on');
 
-[fit_opts(1:num_embryos).left_margin] = deal(8);
-[fit_opts(1:num_embryos).right_margin] = deal(8);
+[fit_opts(1:num_embryos).left_margin] = deal(6);
+[fit_opts(1:num_embryos).right_margin] = deal(12);
 [fit_opts(1:num_embryos).nan_thresh] = deal(30);
 [fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
 [fit_opts(1:num_embryos).end_tol] = deal(30);
