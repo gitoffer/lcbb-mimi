@@ -4,7 +4,6 @@ import numpy as np
 import scipy.sparse as sparse
 import pylab as pl
 
-from PIL import Image, ImageFilter
 import matplotlib.pyplot as plt
 
 import time
@@ -17,62 +16,63 @@ import time
 # 	Lattice size
 #		Temporal discretization
 #		Simulation size
-# --- Movie parameters ---
-#		Frames per second
 
 
-def createLattice( Nx,Ny ):
-	lattice = np.matrix( np.ones( (Nx,Ny) ) )
-	return lattice
-
-def calcNextState( ui,dx2,dy2 ):
-	uf = ui
+def spatialLaplacian( A, dx2, dy2):
+	lapA = A
 	
-	ddx = ( ui[2:,1:-1] - 2*ui[1:-1,1:-1] + ui[:-2,1:-1])/dx2 
-	ddy = ( ui[1:-1,2:] - 2*ui[1:-1,1:-1] + ui[1:-1,:-2])/dy2
+	dxx = ( A[2: ,1:-1] - 2 * A[1:-1,1:-1] + A[ :-2,1:-1] ) / dy2
+	dyy = ( A[1:-1,2: ] - 2 * A[1:-1,1:-1] + A[1:-1, :-2] ) / dx2
 
-	uf[1:-1, 1:-1] = ui[1:-1 , 1:-1] + ddx + ddy
+	lapA[1:-1,1:-1] = dxx + dyy
 
-	return uf
-
+	return lapA
 
 # Diffusion constant
 D = 0.5
-# Reaction rate
-k = 0.1
+# Reaction rate (degredation)
+k = 0
 
 # Lattice size(s) and stepsize(s)
 dx = 0.01
 dy = 0.01
-Nx = int( 1 / dx)
-Ny = int( 1 / dy)
-
-# Create lattice
-lattice = createLattice( Nx,Ny )
+Nx = int( 1. / dx)
+Ny = int( 1. / dy)
+x = np.array( range(Nx) )
+y = np.array( range(Ny) )
+latXX, latYY = np.meshgrid( x,y )
 
 # Determine temporal stepsize by stability criterion
 dx2 = dx**2
 dy2 = dy**2
-dt = (dx2 * dy2) / ( 2*D*(dx2 + dy2))
+dt = (dx2 * dy2) / ( 2*D*(dx2 + dy2) )
 
 # Number of steps
 numTimeStep = 500
 
 # Initial Conditions
-currentState = np.random.rand( Nx,Ny )
+# u = np.random.rand( Nx,Ny )
+u = np.zeros( (Nx,Ny) )
+
+# u[ int(Nx/2),int(Ny/2) ] = 1./Nx**2
+radials = (latXX - int(Nx/2) )**2 + (latYY - int(Ny/2) )**2
+circIdx = np.logical_and( radials < 50, radials > 20 )
+u[ circIdx] = 1
+ui = u
 
 historyOfStates = []
-
 tstart = time.time()
 for i in range( numTimeStep ):
+	state = np.copy(u)
+	historyOfStates.append(state)
 	
-	currentState = calcNextState( currentState,dx2,dy2 )
-	currentState = currentState * D * dt
-	historyOfStates.append(currentState)
+	diffusionTerm = D * spatialLaplacian( u,dx2,dy2 )
+	reactionTerm = k * u * ( 1-u )
 	
+	u = ui + (diffusionTerm + reactionTerm) * dt
+	ui = np.copy(u)
 
 tfinish = time.time()
 
 print "Time elapsed: ", tfinish-tstart, " (sec)"
-
 
