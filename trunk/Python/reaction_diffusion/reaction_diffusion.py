@@ -1,55 +1,78 @@
 #!/usr/bin/python
 
 import numpy as np
-import scipy.sparse.linalg as sparse
+import scipy.sparse as sparse
 import pylab as pl
-import include.CreateMovie as movie
+
 from PIL import Image, ImageFilter
 import matplotlib.pyplot as plt
 
+import time
+
+# --- Model paramters ---
+#		Initial conditions
+#		Diffusion constant
+#		Reaction coefficient
+# --- Simulation parameters ---
+# 	Lattice size
+#		Temporal discretization
+#		Simulation size
+# --- Movie parameters ---
+#		Frames per second
 
 
-# Number of grids
-N = 200
+def createLattice( Nx,Ny ):
+	lattice = np.matrix( np.ones( (Nx,Ny) ) )
+	return lattice
 
-# Spatial stepsizes
-h = 1/(N+1.0)
+def calcNextState( ui,dx2,dy2 ):
+	uf = ui
+	
+	ddx = ( ui[2:,1:-1] - 2*ui[1:-1,1:-1] + ui[:-2,1:-1])/dx2 
+	ddy = ( ui[1:-1,2:] - 2*ui[1:-1,1:-1] + ui[1:-1,:-2])/dy2
 
-# Temporal steps
-k = h/2
-TFinal = 1
-num_time_steps = int(TFinal/k)
+	uf[1:-1, 1:-1] = ui[1:-1 , 1:-1] + ddx + ddy
+
+	return uf
+
+
+# Diffusion constant
+D = 0.5
+# Reaction rate
+k = 0.1
+
+# Lattice size(s) and stepsize(s)
+dx = 0.01
+dy = 0.01
+Nx = int( 1 / dx)
+Ny = int( 1 / dy)
 
 # Create lattice
-x = np.linspace(0,1,N+2)
-x = x[1:-1]
+lattice = createLattice( Nx,Ny )
+
+# Determine temporal stepsize by stability criterion
+dx2 = dx**2
+dy2 = dy**2
+dt = (dx2 * dy2) / ( 2*D*(dx2 + dy2))
+
+# Number of steps
+numTimeStep = 500
 
 # Initial Conditions
-u = np.transpose(np.mat(10*np.sin(np.pi*x)))
+currentState = np.random.rand( Nx,Ny )
 
-# Second-derivative matrix
-data = np.ones(3,N)
-data[1] = -2*data[1]
-diags = [-1, 0, 1]
-D2 = sparse.spdiags(data,diags,N,N)/(h**2)
+historyOfStates = []
 
-I = sparse.identity(N)
+tstart = time.time()
+for i in range( numTimeStep ):
+	
+	currentState = calcNextState( currentState,dx2,dy2 )
+	currentState = currentState * D * dt
+	historyOfStates.append(currentState)
+	
 
-data = []
+tfinish = time.time()
 
-for i in range(num_time_steps):
-	A = (I - k/2 * D2)
-	b = (I + k/2 * D2) *u
-	u = np.transpose(np.mat( sparse.linalg.spsolve(A,b) ))
+print "Time elapsed: ", tfinish-tstart, " (sec)"
 
-	data.append(u)
-
-FPS = 20
-num_frames = 10
-
-def plotFunction( frame ):
-	plt.plot(x, data[int(num_time_steps*frame / (FPS*num_frames))])
-	plt.axis((0,1,0,10.1))
-
-movie.CreateMovie(plotFunction,int(num_frames(FPS), FPS)
 
