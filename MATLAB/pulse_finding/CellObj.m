@@ -206,6 +206,8 @@ classdef CellObj
                 
                 last_embryoID = this_cell.embryoID;
                 
+                display(['Done with cell #', num2str(stackID)])
+                
             end
             
         end % fit_gaussians
@@ -277,7 +279,7 @@ classdef CellObj
             % xies@mit.edu Feb 2013
 
             % Extract cell
-            this_cell = cells(ID);
+            this_cell = cells.get_stackID(ID);
 
             nonan_frame = this_cell.dev_time;
             nonan_frame = ~isnan(nonan_frame);
@@ -289,7 +291,7 @@ classdef CellObj
             [h,fig1,fig2] = plotyy(handle, time, this_cell.myosin_sm(nonan_frame), ...
                 time, this_cell.area_sm(nonan_frame) );
 
-            set(fig1,'Color','g'); set(fig2,'Color','k')
+%             set(fig1,'Color','g'); set(fig2,'Color','k')
 
             % set x-axis limits
             set(h(2) , 'Xlim', [min(time) max(time)] );

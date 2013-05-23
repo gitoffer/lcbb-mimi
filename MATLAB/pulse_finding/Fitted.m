@@ -207,7 +207,7 @@ classdef Fitted
             % re-index 'manually fitted' fitIDs
             new_fitIDs([fit_array.manually_added]) = ...
                 new_fitIDs([fit_array.manually_added]) ...
-                + (new_embryoID - old_embryoID)*10000;
+                + (new_embryoID - old_embryoID)*100000;
             
         end % reindex_fitID
         

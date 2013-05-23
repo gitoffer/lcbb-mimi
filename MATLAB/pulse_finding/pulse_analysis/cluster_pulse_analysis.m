@@ -7,12 +7,13 @@ X( isnan(X) ) = 0;
 
 % X = standardize_matrix(X, 2);
 
-Niter = 1;
+Niter = 1000;
 labels_all = nan( Niter, size(X,1) );
 
 for i = 1:Niter
     
-    [labels_all(i,:),centroids] = kmeans(X,5);
+    [~,U] = fcm(X,10);
+    [~,labels_all(i,:)] = max(U);
     
 end
 
@@ -58,8 +59,36 @@ for i = 1:num_clusters
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(i) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(i) ');']);
     
-    eval([ 'cluster' num2str(i) '_wt.plot_heatmap']);
+    eval([ 'cluster' num2str(i) '.plot_heatmap']);
     
-    eval(['[~,order' num2str(i) '] = sort([cluster' num2str(i) '_wt.cluster_weight]);']);
+    eval(['[~,order' num2str(i) '] = sort([cluster' num2str(i) '.cluster_weight]);']);
+    
+end
+
+%%
+
+fits_cta = fits([fits.embryoID] == 8);
+
+[N_const,bins] = hist([fits_cta( c([fits_cta.cellID]) == 1 ).cluster_label],1:num_clusters);
+[N_exp,bins] = hist([fits_cta( c([fits_cta.cellID]) == 2 ).cluster_label],1:num_clusters);
+
+
+figure
+subplot(2,num_clusters,1:num_clusters)
+
+[N_wt] = hist( [fits_wt.cluster_label], 1:num_clusters);
+[N_twist] = hist( [fits_twist.cluster_label], 1:num_clusters);
+[N_cta] = hist( [fits_cta.cluster_label], 1:num_clusters);
+bar(1:num_clusters, cat(1,N_wt,N_twist,N_cta)','stacked'),legend('Wild-type','twist','cta')
+bar(bins,cat(1,N_const,N_exp)','grouped'),legend('Constricting','Expanding')
+
+for i = 1:num_clusters
+    
+    subplot(2,num_clusters,num_clusters+i);
+    
+    eval(['cluster_area = cat(1,cluster' num2str(i) '.corrected_area_norm);']);
+    eval(['weights = cat(1,cluster' num2str(i) '.cluster_weight);']);
+    shadedErrorBar( fits(1).corrected_time, ...
+        nanwmean(cluster_area,weights), nanstd(cluster_area) );
     
 end
