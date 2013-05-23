@@ -4,7 +4,7 @@ clear fit_opts
 [fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity_fuzzy');
 [fit_opts(1:num_embryos).bg] = deal('on');
 
-[fit_opts(1:num_embryos).left_margin] = deal(6);
+[fit_opts(1:num_embryos).left_margin] = deal(8);
 [fit_opts(1:num_embryos).right_margin] = deal(12);
 [fit_opts(1:num_embryos).nan_thresh] = deal(30);
 [fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
@@ -21,7 +21,8 @@ clear fit_opts
 %%
 
 cells = embryo2cell(embryo_stack);
-[cells,fits] = fit_gaussians(cells,fit_opts);
+[cells_raw,fits_raw] = fit_gaussians(cells,fit_opts);
+save('~/Desktop/fits_raw.mat','fits_raw','cells_raw')
 
 %% sub-set of pulses
 
@@ -57,7 +58,7 @@ fits = assign_datafield(fits,aligned_area_norm,'area_norm');
 % correlate for framerate differences
 fits = resample_traces(fits,'area_norm',[input.dt],fit_opts);
 fits = resample_traces(fits,'area',[input.dt],fit_opts);
-fits = resample_traces(fits,'myosin',[input.dt],fit_opts);
+ fits = resample_traces(fits,'myosin',[input.dt],fit_opts);
 fits = resample_traces(fits,'area_rate',[input.dt],fit_opts);
 
 corrected_area = cat(1, fits.corrected_area);

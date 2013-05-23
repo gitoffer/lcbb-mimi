@@ -30,27 +30,30 @@ data = cell(1,num_embryos);
 for j = 1:numel(meas_fieldnames)
     IDs = [];
     for i = 1:num_embryos
-        % Collect the same measurement
+        % Collect the same measurement (e.g. myosin)
         m = EDGEstack(i,strcmpi({EDGEstack(i,:).name},meas_names{j})).data;
         m = squeeze(m(:,input(i).zslice,:));
+        % If possible convert to mat array
         try m = cell2mat(m);
         catch err
         end
         
+        % Construct embryoID/cellID/stackID
         x{i,j} = m;
         IDs = cat(2,IDs,i * ones( 1,num_cells(i) ));
         
     end
+    
     [foo,time] = stitch_embryos(x(:,j),input);
     data{j} = foo;
+    
 end
 
 for i = 1:num_embryos
     for j = 1:numel(meas_fieldnames)
-        
+        % Construct the struct
         embryo_structs(i).(meas_fieldnames{j}) = ...
             data{j}(:, IDs == i );
-        
         
     end
 end
@@ -59,10 +62,12 @@ end
 [embryo_structs(1:num_embryos).input] = deal([]);
 [embryo_structs(1:num_embryos).dev_time] = deal([]);
 
+% Collect other house-keeping non-EDGE data
 for i = 1:num_embryos
     embryo_structs(i).num_cell = num_cells(i);
     embryo_structs(i).input = input(i);
     embryo_structs(i).dev_time = time(i,:);
+    embryo_structs(i).num_frame = numel( nonans(time(i,:)) );
 end
 
 % frame = nan(num_embryos,numel(time)); t = nan(num_embryos,numel(time));

@@ -3,16 +3,17 @@ in = input;
 
 
 %% Select the embryo
-embryo = 7;
+embryoID = 3;
 
 %% Plot cells as patch objects
 
-h.m = cat(1,cell_fits([IDs.which] == embryo).cluster_labels)';
+X = fits_all.make_binary_sequence(cells([cells.embryoID] == embryoID));
 
-h.vertex_x = vertices_x(find(~isnan(master_time(embryo).frame)),find([IDs.which]==embryo));
-h.vertex_y = vertices_y(find(~isnan(master_time(embryo).frame)),find([IDs.which]==embryo));
-h.todraw = 1:num_cells(embryo);
-h.input = in(embryo);
+h.m = X;
+h.vertex_x = embryo_stack(embryoID).vertex_x;
+h.vertex_y = embryo_stack(embryoID).vertex_y;
+h.todraw = 1:num_cells(embryoID);
+h.input = in(embryoID);
 
 h.title = '';
 

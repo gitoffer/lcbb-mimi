@@ -15,20 +15,34 @@ bg_areas_sm = smooth2a(bg_areas,1,0);
 [bg_num_frames,~] = size(bg_areas);
 bg_areas_rate = -central_diff_multi(bg_areas_sm,1:bg_num_frames);
 
-xi = linspace(-15,15,201);
-[bg,x] = hist(bg_areas_rate(:),xi);
-[cr,x] = hist(areas_rate(:),xi);
-bg = bg + 1; cr = cr + 1; % pseudocounts
-relative = cr./bg;
-relative_sm = smooth(relative);
 
-significant_cr = nan(num_frames,sum(num_cells));
-for j = 1:num_cells
-    for i = 1:num_frames
-        idx = findnearest(areas_rate(i,j), xi);
-        if relative_sm(idx) > 3
-            significant_cr(i,j) = areas_rate(i,j);
+%%
+
+nbins = 201;
+bins = linspace(-15,15,201);
+[bg] = hist(areas_rate_cellularizing(:),bins);
+[cr] = hist(areas_rate(:),bins);
+bg = bg + 1; cr = cr + 1; % pseudocounts
+bg = bg/sum(bg); cr = cr/sum(cr); % normalize
+lut = cr./bg;
+lut_sm = smooth(relative);
+
+%%
+
+likelihood_ratio = nan(size(corrected_area_rate));
+
+for j = 1:size(corrected_area_rate,2)
+    for i = 1:size(corrected_area_rate,1)
+        
+        datum = corrected_area_rate(i,j);
+        if ~isnan(datum)
+            value = lut(findnearest(datum , bins));
         end
+        
+        if ~isnan(value) && ~isinf(value)
+            likelihood_ratio(i,j) = value;
+        end
+        
     end
 end
 

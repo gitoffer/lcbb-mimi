@@ -100,7 +100,12 @@ classdef Pulse
 			%
 			% USAGE: pulse = Pulse(tracks,mdf_filename,fits,fit_opt,cells);
             
-            if nargin > 0
+            if nargin > 0 % empty case (for object arrays)
+
+				% Make sure that tracks are from the same embryo
+				if any( [tracks.embryoID] ~= tracks(1).embryoID ),
+					error('Error making Pulse object: Tracks need to come from the same embryo');
+				end
                 
                 if strcmp(class(tracks),'Track')
                     pulse.fits = fits;
@@ -115,8 +120,11 @@ classdef Pulse
                 
                 pulse.tracks_mdf_file = filename;
                 pulse.fitsOI_ID = fitsOI_ID;
-                pulse.next_fitID = fits.get_fitID(fitsOI_ID(1)).embryoID*10000;
+                pulse.next_fitID = fits.get_fitID(fitsOI_ID(1)).embryoID*100000;
                 pulse.fit_opt = opts( fits.get_fitID(fitsOI_ID(1)).embryoID );
+
+				% Take only cells from the same embryoID
+                cells = cells( [cells.embryoID] == tracks(1).embryoID );
                 pulse.cells = cells;
                 
                 save([fileparts(pulse.tracks_mdf_file) '/pulse_raw.mat'], 'pulse');
@@ -272,7 +280,7 @@ classdef Pulse
 				ID = 'trackID';
 			end
 			category = this.category;
-			curr_cat = pulse.categories.(category);
+% 			curr_cat = pulse.categories.(category);
 			catID = cellfun(@(x) ismember( pulseID, x ), ...
                 {category.(ID)});
 			catID = find(catID);
@@ -335,8 +343,8 @@ classdef Pulse
                     end
                     % Remove from cell obj
                     stackID = [pulse.fits.get_fitID(pulseID).stackID];
-                    pulse.cells( stackID ) = ...
-                        pulse.cells( stackID ).removeFit(pulseID);
+                    pulse.cells( [pulse.cells.stackID] == stackID ) = ...
+                        pulse.cells( [pulse.cells.stackID] == stackID ).removeFit(pulseID);
                     
                     % Remove from fits stack
                     pulse.fits = pulse.fits.removeFit( pulseID );
@@ -361,7 +369,8 @@ classdef Pulse
                     
                     stackID = [pulse.tracks(indices).stackID];
                     for i = 1:numel(stackID)
-                        pulse.cells(stackID(i)) = pulse.cells(stackID(i)).removeTrack(pulseID);
+                        pulse.cells( [pulse.cells.stackID] == stackID(i)) = ...
+							pulse.cells( [pulse.cells.stackID] == stackID(i)).removeTrack(pulseID);
                     end
                     
                     pulse.tracks( indices ) = [];
@@ -420,8 +429,8 @@ classdef Pulse
             
             pulse = pulse_new;
             
-            pulse.cells(fit.stackID) = ...
-                pulse.cells(fit.stackID).addTrack( pulse.tracks(end).trackID);
+            pulse.cells([pulse.cells.stackID] == fit.stackID) = ...
+                pulse.cells([pulse.cells.stackID] == fit.stackID ).addTrack( pulse.tracks(end).trackID);
             
             % Record changes
             this_change.trackID = pulse.tracks(end).trackID;
@@ -478,7 +487,8 @@ classdef Pulse
             end
             
             % Construct a new FITTED object from parameters
-            new_fit = Fitted( cells(track.stackID), params, pulse.next_fitID, opt);
+            new_fit = Fitted( cells([cells.stackID] == track.stackID), ...
+                params, pulse.next_fitID, opt);
             pulse.next_fitID = pulse.next_fitID + 1; %increment fitIDs
             
             % Add into stack
@@ -494,8 +504,8 @@ classdef Pulse
             pulse = pulse.categorize_mapping;
            
             % Update cell tracklist
-            pulse.cells(track.stackID) = ...
-                pulse.cells(track.stackID).addFit( pulse.fits(end));
+            pulse.cells( [pulse.cells.stackID] == track.stackID ) = ...
+                pulse.cells( [pulse.cells.stackID] == track.stackID).addFit( pulse.fits(end));
             
             % Record changes
             this_change.fitID = pulse.fits(end).fitID;
@@ -564,6 +574,8 @@ classdef Pulse
                     pulse = reassignFit(pulse,changes.fitID,changes.trackID);
                 end
             end
+            
+            save( [fileparts(pulse.tracks_mdf_file), '/', 'pulse_curated.mat'], 'pulse');
 			
 		end % read_changes
         
@@ -648,7 +660,7 @@ classdef Pulse
                 else stackID = fits.get_fitID(fitID(1)).stackID; end
                 
                 % Get time (for graphing
-                dev_time = cells(stackID).dev_time;
+                dev_time = cells.get_stackID(stackID).dev_time;
                 dev_time = dev_time(~isnan(dev_time));
                 
                 % Extract fit/track of interest
