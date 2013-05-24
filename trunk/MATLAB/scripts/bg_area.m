@@ -1,31 +1,29 @@
-%%
 
-input_bg.folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/spiderGFP/Measurements';
-input_bg.zslice = 1; input_bg.tref = 1; input_bg.ignore_list = [];
-msmts2make = {'myosin','membranes--basic_2d--area', ...
-    'Membranes--vertices--Vertex-y','Membranes--vertices--Vertex-x',...
-    'Membranes--basic_2d--Centroid-x','Membranes--basic_2d--Centroid-y',...
-    'Membranes--vertices--Identity of neighbors'};
-EDGEstack_bg = load_edge_data({input_bg.folder2load},msmts2make{:});
-
-%%
-
-bg_areas = extract_msmt_data(EDGEstack_bg,'area','on',input_bg);
-bg_areas_sm = smooth2a(bg_areas,1,0);
-[bg_num_frames,~] = size(bg_areas);
-bg_areas_rate = -central_diff_multi(bg_areas_sm,1:bg_num_frames);
-
-
-%%
+%% Make independent likelihood-ratios for different genotypes?
+% lut - look-up table for likelihood ratio...use findnearest to look up
+%
+% use bins to control data binning
 
 nbins = 201;
 bins = linspace(-15,15,201);
-[bg] = hist(areas_rate_cellularizing(:),bins);
-[cr] = hist(areas_rate(:),bins);
-bg = bg + 1; cr = cr + 1; % pseudocounts
-bg = bg/sum(bg); cr = cr/sum(cr); % normalize
-lut = cr./bg;
-lut_sm = smooth(relative);
+
+%% Wild-type area rates
+
+lut_wt = estimate_likelihood_ratio( ...
+    areas_rate_cellularizing, areas_rate(:,[IDs.which] < 6), bins);
+lut_wt_sm = smooth(lut_wt);
+
+%% twist
+
+lut_twist = estimate_likelihood_ratio( ...
+    areas_rate_cellularizing, areas_rate(:,ismember([IDs.which], [6,7]) ), bins);
+lut_twist_sm = smooth(lut_twist);
+
+%% cta
+
+lut_cta = estimate_likelihood_ratio( ...
+    areas_rate_cellularizing, areas_rate(:,[IDs.which] > 7), bins);
+lut_cta_sm = smooth(lut_cta);
 
 %%
 
@@ -36,7 +34,17 @@ for j = 1:size(corrected_area_rate,2)
         
         datum = corrected_area_rate(i,j);
         if ~isnan(datum)
-            value = lut(findnearest(datum , bins));
+            % Find which genotype -- via histc and generate LUT separately
+            switch find( histc([IDs(fits_all(i).cellID).which],[0,1,6,8,11]) )
+                case 2
+                    value = lut_wt_sm(findnearest(datum , bins));
+                case 3
+                    value = lut_twist_sm(findnearest(datum , bins));
+                case 5
+                    value = lut_cta_sm(findnearest(datum , bins));
+                otherwise
+                    error('EmbryoID not found');
+            end
         end
         
         if ~isnan(value) && ~isinf(value)
@@ -44,16 +52,4 @@ for j = 1:size(corrected_area_rate,2)
         end
         
     end
-end
-
-%%
-areas = [];
-mean_int = [];
-
-for i = 1:num_cells
-    stats{i} = regionprops(logical(significant_cr(1:15,i)), ...
-        significant_cr(1:15,i),{'MeanIntensity','Area'});
-    areas = [areas stats{i}.Area];
-    number(i) = numel(stats{i});
-    mean_int = [mean_int stats{i}.MeanIntensity];
 end
