@@ -6,22 +6,26 @@
 import sys, getopt, os.path, os, re
 
 def main(argv):
-	print '\n\n'
+	print '\n\n' # Display border
 
 	# Parse arguments
 	input_name = ''
 	output_name = ''
+
+	# Construct inputs flags via getopt
 	try:
 		opts, args = getopt.getopt(argv,"hi:o:",["help","input=","output="])
 	except getopt.GetoptError as err:
 		# Unrecognized options
 		usage()
 		sys.exit(2)
+
+	# Examine flags and arguments
 	for o, a in opts:
-		if o in ('-h','--help'):
+		if o in ('-h','--help'): # help flag
 			usage()	
 			sys.exit()
-		elif o in ('-i','--input'):
+		elif o in ('-i','--input'): # input flag
 			input_name = a
 			input_basename = os.path.basename(input_name)
 			input_basename = os.path.splitext(input_basename)[0]
@@ -35,7 +39,7 @@ def main(argv):
 				print 'Invalid input filename. Must be in the format ''method_c??_distance''.'
 			output_dir = ''.join([input_dir,new_basedir])
 			
-			# Make new directory
+			# Make new directory given input
 			try: os.mkdir(output_dir)
 			except OSError as err:
 				# Directory already exists... do nothing
@@ -75,6 +79,8 @@ def main(argv):
 
 	print "Written new file to: ", output_name
 
+
+# Help statement
 def usage():
 	print "Usage: process_gedas_txt.py -i <INPUT>"
 
