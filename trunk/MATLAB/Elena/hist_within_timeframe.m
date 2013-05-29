@@ -1,4 +1,4 @@
-function [freq,edges,tc] = hist_within_timeframe(data, time, ti, tf, nbins)
+function [freq,edges,tc] = hist_within_timeframe(data, time, ti, tf, edges)
 % HISTOGRAMAREA 
 % creates a histogram illustrating the area distribution of embryo 1 within a given
 %   time interval 
@@ -26,13 +26,11 @@ int = length(indices);
 areaInTime = data(indices(1): indices(int),:); % takes the areas across the given inputs of time 
 areaInTime = areaInTime(:); %linearize matrix to form vector
 
-min1= nanmin(areaInTime); % finds the minimum area
-max1 = nanmax(areaInTime); % finds the maximum area
+% min1= nanmin(areaInTime); % finds the minimum area
+% max1 = nanmax(areaInTime); % finds the maximum area
 
-edges = linspace(min1,max1,nbins); % creates a vector of 10 intervals between min1 and max1
+% edges = linspace(min1,max1,nbins); % creates a vector of 10 intervals between min1 and max1
 tc =length(~isnan(areaInTime));
 freq = histc(areaInTime, edges); % counts the number of areas for each time interval within each size interval 
 
 end
-
- 
