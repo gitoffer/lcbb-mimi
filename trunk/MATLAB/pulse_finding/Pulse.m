@@ -765,6 +765,8 @@ classdef Pulse
 			display(['Total number of cells: ' num2str(numel(pulse.cells))])
 			display(['Total tracked cells: ' ...
                 num2str( numel(pulse.cells([pulse.cells.flag_tracked] == 1)) ) ]);
+            display(['Total fitted cells: ' ...
+                num2str( numel(pulse.cells([pulse.cells.flag_fitted] == 1)) ) ]);
             fprintf('\n')
 
             display('------ Matching ---------------- ')
@@ -774,7 +776,7 @@ classdef Pulse
                 bar = find_one2one(pulse.map);
                 bar = [bar.trackID];
                 
-                if any( ~ismember(foo,bar)), keyboard; end
+%                 if any( ~ismember(foo,bar)), keyboard; end
 			else
 				num_one2one = 0;
 			end

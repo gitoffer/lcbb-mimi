@@ -81,7 +81,7 @@ for i = 1:num_tracks
 	% Collect relevant information into track struct
     this_track.embryoID = input.embryoID; this_track.mdfID = i;
     this_track.cellID = order(index);
-    this_track.stackID = num_cell_pad(input.embryoID) + order(index);
+    this_track.stackID = num_cell_pad(embryoID) + order(index);
 
 	% Collect the time/frame of track WRT aligned developmental time
 	this_track.dev_frame = ensure_row(frames);
@@ -90,8 +90,8 @@ for i = 1:num_tracks
 %     this_track.img_frame = img_frame;
     
 	% Construct Track object
-	cells(order(index)).flag_tracked = 1;
-    cells(order(index)).num_tracks = cells(order(index)).num_tracks + 1;
+	cells(this_track.stackID).flag_tracked = 1;
+    cells(this_track.stackID).num_tracks = cells(order(index)).num_tracks + 1;
 	
 	tracks(trackID) = Track(this_track);
 

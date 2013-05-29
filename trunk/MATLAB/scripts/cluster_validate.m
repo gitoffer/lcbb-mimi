@@ -1,7 +1,7 @@
 % cluster_validate,m
 
-dist_mat = D;
-dist_name = 'Pearson distance';
+dist_mat = D8;
+dist_name = 'Euclidean distance';
 folder = '_pearson';
 %% Template matching
 
@@ -9,8 +9,8 @@ folder = '_pearson';
 
 %% Pseudo-color the inter + intra cluster distances
 for i = 5:10
-    cluster_dir = ['~/Desktop/Clustering results/corrected_area_norm_nonan/c' num2str(i) folder '/'];
-    name = [cluster_dir 'kmeans_c' num2str(i) folder '.txt'];
+%     cluster_dir = ['~/Desktop/Clustering results/corrected_area_norm_nonan/c' num2str(i) folder '/'];
+%     name = [cluster_dir 'kmeans_c' num2str(i) folder '.txt'];
     % Load clsuter
     [cluster_order,cluster_labels,cluster_labels_ordered,pulse] = load_gedas_fun(name,pulse);
     [num_clusters,num_members,cluster_names] = get_cluster_numbers(cluster_labels);
@@ -27,7 +27,7 @@ for i = 5:10
     set(gca,'Xtick',unique(cumsum(num_members+1) - floor(num_members/2)), 'Xticklabel', cluster_names);
     set(gca,'Ytick',unique(cumsum(num_members+1) - floor(num_members/2)), 'Yticklabel', cluster_names);
     title('Distances between cluster members');
-    saveas(gcf,[cluster_dir 'cluster_distances'],'fig');
+%     saveas(gcf,[cluster_dir 'cluster_distances'],'fig');
 end
 %% Average distance between cluster members
 for i = 5:10

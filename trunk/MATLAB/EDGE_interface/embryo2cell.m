@@ -10,7 +10,7 @@ num_cells_padded = cumsum([0 num_cells]);
 
 % [cells(1:sum(num_cells)).embryoID] = deal([]);
 measurements = setdiff(fieldnames(embryo_stack), ...
-    {'input','dev_time','dev_frame','num_cell'});
+    {'input','dev_time','dev_frame','num_cell','num_frame'});
 
 for i = 1:sum(num_cells)
     

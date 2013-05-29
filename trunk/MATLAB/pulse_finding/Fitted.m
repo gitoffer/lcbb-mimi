@@ -14,6 +14,7 @@ classdef Fitted
     % --- Array access/set ---
     %   get_stackID - get all FITs with a certain stackID
     %   get_fitID - get the fit with the given fitID
+    %   get_embryoID - get fit with the given embryoID
     %   set_fitID - replace a fit in the array with a given fitID with a
     %       new_fit
     % --- Alignment ---
@@ -22,10 +23,12 @@ classdef Fitted
     %   resample_traces - re-sample all data in a given fit array so as to
     %      have the same framerate (INTERP1)
     %   retrace - re-do the sub-sequence selection
+    %   adjust_centers - adjust Gaussian centers to tref
     % --- Comparator ---
     %   eq - right now will be equal if overlap of width_frame is > 3
     % --- Array operations ---
     %   sort - sort according to amplitude
+    %   weight_sort - sorb by cluster weight (if defined)
     %   bin_fits - bin each embryo by amplitude
 	%	find_near_fits - find fits near a 'central' fit given a time-window
     % --- Visualization ---
@@ -213,16 +216,22 @@ classdef Fitted
         
 % --------------------- Array access/set ----------------------------------
         
-        function objs = get_stackID(obj_array,stackID)
+        function fits = get_stackID(fit_array,stackID)
             % Find the FIT(s) with the given stackID(s)
-			% usage: objs = obj_array.get_stackID(stackID)
-            objs = obj_array( ismember([ obj_array.stackID ], stackID) );
+			% usage: fitsOI = fits.get_stackID(stackID)
+            fits = fit_array( ismember([ fit_array.stackID ], stackID) );
         end %get_stackID
         
-        function objs = get_fitID(obj_array,fitID)
+        function fits = get_embryoID(fit_array,embryoID)
+            % Find the FIT(s) with the given embryoID(s)
+            % USAGE: fitsOI = fits.get_embryoID(embryoID)
+            fits = fit_array( ismember([ fit_array.embryoID ], embryoID) );
+        end %get_embryoID
+        
+        function fits = get_fitID(fit_array,fitID)
             % Find the FIT(s) with the given fitID(s)
-			% USAGE: objs = obj_array.get_fitID(fitID)
-            objs = obj_array( ismember([ obj_array.fitID ], fitID) );
+			% USAGE: fitsOI = fits.get_fitID(fitID)
+            fits = fit_array( ismember([ fit_array.fitID ], fitID) );
         end %get_fitID
         
         function fits = set_fitID(fits,fitID, fit)
@@ -251,7 +260,7 @@ classdef Fitted
                 [max_val,max_idx] = max( fits(i).fit );
                 if numel( fits(i).fit( fits(i).fit == max_val ) ) > 1
                     maxes = find( fits(i).fit == max_val );
-                    theoretical_middle = ceil(max(durations)/2);
+                    theoretical_middle = floor(max(durations)/2);
                     which = findnearest(maxes,theoretical_middle);
                     max_idx = maxes(which);
                 end
@@ -371,8 +380,16 @@ classdef Fitted
             
         end %retrace
         
-%        function fits = recenter
-%        end
+        function fits = adjust_centers(fits, embryoID, old_tref, new_tref)
+            %ADJUST_CENTERS Re-center
+            fits_embryoID = fits.get_embryoID( embryoID );
+            for i = 1:numel(fits_embryoID)
+                fitID = fits_embryoID(i);
+                this_fit = fits.get_fitID( fitID );
+                this_fit.center = old_tref + (new_tref - old_tref);
+                fits = fits.set_fitID(fitID, this_fit);
+            end
+        end
         
 % --------------------- Comparator ----------------------------------------
 
@@ -442,11 +459,16 @@ classdef Fitted
         
         function fits = sort(fits)
             %SORT fitted pulses by their amplitudes (descending order)
-            
             [~,sortID] = sort( [fits.amplitude] , 2,'descend');
             fits = fits(sortID);
-            
         end % sort
+        
+        function fits = weight_sort(fits)
+            %WEIGHT_SORT
+            % sorb by cluster weight (if defined)
+            [~,order] = sort([fits.cluster_weight]);
+            fits = fits(order);
+        end % weight_sort
         
         function fits = find_near_fits(fits,time_windows,neighborID)
             %FIND_NEAR_FITS Find the number (and fitID) of each fitted
