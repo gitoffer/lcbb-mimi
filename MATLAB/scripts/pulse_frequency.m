@@ -12,9 +12,10 @@ freq_wt = cellfun(@(x) diff(sort(x)), fits_center_incell,'UniformOutput',0);
 
 %%
 
-hist([freq_wt{:}], 30)
-xlabel('Period between pulses')
-ylabel('Counts')
+[N_wt,bins] = hist( [freq_wt{:}], 30);
+bar( bins, N_wt/sum(N_wt) );
+xlabel('Time between pulses (sec)')
+ylabel('Probability')
 title('Wild-type')
 
 %% twist
@@ -37,7 +38,7 @@ cta_cells8 = cells( [cells.embryoID] == 8 );
 cta_cells9 = cells( [cells.embryoID] == 9 );
 
 fits_incell8 = cellfun(@fits_all.get_fitID, ...
-    {cells(  c([cta_cells8.cellID]) == 1 ).fitID}, 'UniformOutput', 0);
+    {cells(  c8([cta_cells8.cellID]) == 1 ).fitID}, 'UniformOutput', 0);
 fits_incell9 = cellfun(@fits_all.get_fitID, ...
     {cells(  c9([cta_cells9.cellID]) == 1 ).fitID}, 'UniformOutput', 0);
 fits_incell = [fits_incell8, fits_incell9];
@@ -51,7 +52,7 @@ freq_cta1 = cellfun(@(x) diff(sort(x)), fits_center_incell, 'UniformOutput',0);
 
 
 fits_incell8 = cellfun(@fits_all.get_fitID, ...
-    {cells(  c([cta_cells8.cellID]) == 2 ).fitID}, 'UniformOutput', 0);
+    {cells(  c8([cta_cells8.cellID]) == 2 ).fitID}, 'UniformOutput', 0);
 fits_incell9 = cellfun(@fits_all.get_fitID, ...
     {cells(  c9([cta_cells9.cellID]) == 2 ).fitID}, 'UniformOutput', 0);
 fits_incell = [fits_incell8, fits_incell9];
@@ -81,7 +82,7 @@ bar( bins, ...
 
 set(gca,'XLim',[0 250]);
 
-xlabel('Period between pulses')
+xlabel('Period between pulses (sec)')
 ylabel('Probability')
 legend(['Wild-type, N = ' num2str(sum(N_wt))], ...
     ['cta, N = ' num2str(sum(N_cta))], ...

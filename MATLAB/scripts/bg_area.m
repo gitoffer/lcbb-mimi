@@ -53,3 +53,31 @@ for j = 1:size(corrected_area_rate,2)
         
     end
 end
+
+%%
+
+fits_significant = fits(nanmean(likelihood_ratio,2) > 2);
+fits_not_significant = fits(nanmean(likelihood_ratio,2) <= 2);
+
+fits_sig_wt = fits_significant([fits_significant.embryoID] < 6);
+fits_sig_twist = fits_significant(ismember([fits_significant.embryoID],[6,7]));
+fits_sig_cta = fits_significant([fits_significant.embryoID] > 7);
+
+fits_not_sig_wt = fits_not_significant([fits_not_significant.embryoID] < 6);
+fits_not_sig_twist = fits_not_significant(ismember([fits_not_significant.embryoID],[6,7]));
+fits_not_sig_cta = fits_not_significant([fits_not_significant.embryoID] > 7);
+
+%% CTA cell-clustering
+
+[N_sig,~] = hist( ...
+    cat(1,c8( [fits_significant([fits_significant.embryoID] == 8).cellID] ) ...
+    ),1:2);
+[N_not_sig,bins] = hist( ...
+    cat(1,c8( [fits_not_significant([fits_not_significant.embryoID] == 8).cellID] ) ...
+    ),1:2);
+
+bar(1:2,cat(1,N_sig,N_not_sig)','grouped');
+legend('Significant (likelihood-ratio > 2)','Not significant');
+set(gca,'XTickLabel',{'Constricting cells','Expanding cells'});
+ylabel('Number of pulses');
+

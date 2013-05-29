@@ -22,9 +22,9 @@ for i = 1:numel( embryoID_OI )
     time = embryo_stack(embryoID).dev_time;
     
     data = embryo_stack(embryoID).(name2plot);
-    data = data(:,label == 1);
+%     data = data(:,label == 1);
     
-    H(i) = shadedErrorBar(time, ...
+    H(i) = shadedErrorBar(1:130,...
         nanmean(data,2), nanstd(data,[],2), ...
         {'color',color(i,:)},1);
     
