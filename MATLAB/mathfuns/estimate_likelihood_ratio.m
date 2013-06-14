@@ -20,12 +20,15 @@ bg = hist(background,bins);
 ms = hist(measurement,bins);
 
 % add pseudocount
-bg = bg + 1; ms = ms + 1;
+% bg = bg + 1; ms = ms + 1;
 
 % normalize to probability
 bg = bg/sum(bg); ms = ms / sum(ms);
 
 % get likelihood-ratio
 ratio = bg./ms;
+
+% ratio( ms == 0 ) = NaN;
+% ratio( bg == 0 ) = Inf;
 
 end
