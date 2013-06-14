@@ -1,8 +1,8 @@
 %% cta_clustering Cluster cta embryo by area (constricting v. expanding)
 
-cta_areas8 = areas(:,[IDs.which] == 8);
-cta_areas9 = areas(:,[IDs.which] == 9);
-cta_areas10 = areas(:,[IDs.which] == 10);
+cta_areas8 = areas_sm(:,[IDs.which] == 8);
+cta_areas9 = areas_sm(:,[IDs.which] == 9);
+cta_areas10 = areas_sm(:,[IDs.which] == 10);
 
 %%
 
@@ -16,9 +16,10 @@ c8 = cluster(Z8,'maxclust',2);
 c9 = cluster(Z9,'maxclust',2);
 c10 = cluster(Z10,'maxclust',2);
 
-figure, pcolor( cat(2,cta_areas8(:,c8==1),cta_areas8(:,c8==2))' ), shading flat
-figure, pcolor( cat(2,cta_areas9(:,c9==1),cta_areas9(:,c9==2))' ), shading flat
-figure, pcolor( cat(2,cta_areas10(:,c10==1),cta_areas10(:,c10==2))' ), shading flat
+[X,Y] = meshgrid(dev_time(8,:) + input(8).dt*input(8).tref,1:num_cells(8));
+pcolor(X,Y, cat(2,cta_areas8(:,c8==1),cta_areas8(:,c8==2))' ), shading flat
+% figure, pcolor( cat(2,cta_areas9(:,c9==1),cta_areas9(:,c9==2))' ), shading flat
+% figure, pcolor( cat(2,cta_areas10(:,c10==1),cta_areas10(:,c10==2))' ), shading flat
 
 %%
 

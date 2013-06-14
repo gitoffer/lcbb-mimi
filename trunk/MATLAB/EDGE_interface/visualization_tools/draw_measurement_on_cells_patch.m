@@ -62,8 +62,23 @@ for i = 1:num_frames
             % get color according to measurement range
             if any(j == cells_to_draw) && ...
                     ~isnan(measurement(i,find(cells_to_draw == j)))
-                color = find_color(measurement(i,find(cells_to_draw == j)),min_measurement,max_measurement,...
-                    256,@jet);
+%                 color = find_color(measurement(i,find(cells_to_draw == j)),min_measurement,max_measurement,...
+%                     256,@jet);
+                switch measurement(i,find(cells_to_draw == j))
+                    case 1
+                        color = [0 0 1];
+                    case 2
+                        color = [0 153 255]/255;
+                    case 3
+                        color = [0 102 0]/255;
+                    case 4
+                        color = [1 0 1];
+                    case 5
+                        color = [1 0 0];
+                    otherwise
+                        color = [1 1 1];
+                end
+                        
             else
                 color = [1 1 1];
             end
@@ -81,7 +96,7 @@ for i = 1:num_frames
     end
     title(handle.title)
     caxis([min_measurement max_measurement])
-    colorbar
+%     colorbar
     drawnow;
     F(i) = getframe(gcf);
 end

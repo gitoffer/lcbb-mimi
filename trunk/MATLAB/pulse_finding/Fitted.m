@@ -505,9 +505,9 @@ classdef Fitted
                     % Find all neighboring fits
                     neighbor_fits = same_embryo([same_embryo.cellID] == neighbor_cells(j));
                     
+                    fits(i).nearIDs = cell( 1, numel(time_windows ) );
                     if ~isempty( neighbor_fits )
                         % Collect fits within window
-                        fits(i).nearIDs = zeros( 1, numel(time_windows ) );
                         for k = 1:numel( time_windows )
                         
                             within_window = ...
@@ -516,10 +516,14 @@ classdef Fitted
                             
                             if sum(within_window) > 0
                                 nearby_fits = neighbor_fits(within_window);
-                                fits(i).nearIDs(k) = numel(nearby_fits);
+                                fits(i).nearIDs(k) = {[nearby_fits.fitID]};
+                            else
+                                fits(i).nearIDs(k) = {NaN};
                             end
                         end % loop over time window
                         
+                    else
+                        [fits(i).nearIDs( 1:numel(time_windows) )] = deal({NaN});
                     end
                     
                 end % loop over neighbors
@@ -584,7 +588,7 @@ classdef Fitted
         
         function plot_heatmap(fits)
             
-            fits = sort(fits);
+            fits = weight_sort(fits);
             
             figure
             subplot(1,5,1)
@@ -596,18 +600,18 @@ classdef Fitted
             ylabel('Fitted amplitudes');
             
             subplot(1,5,2:3)
-            [X,Y] = meshgrid( fits(1).corrected_time, numel(fits):-1:1);
+            [X,Y] = meshgrid( fits(1).corrected_time, 1:numel(fits));
             pcolor( X,Y, cat(1,fits.corrected_myosin) );
             shading flat; axis tight; colorbar;
-            title('Aligned myosin')
-            xlabel('Aligned time (sec)');
+            title('Myosin intensity')
+            xlabel('Pulse time (sec)');
             
             subplot(1,5,4:5)
             pcolor( X,Y, cat(1,fits.corrected_area_norm) );
             shading flat; axis tight; colorbar;
             caxis( [-10 10] );
-            title('Aligned area response');
-            xlabel('Aligned time (sec)');
+            title('Area response');
+            xlabel('Pulse time (sec)');
             
         end %plot_heatmap
         

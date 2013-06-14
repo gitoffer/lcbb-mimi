@@ -1,16 +1,16 @@
 %align_embryos
 
-num_embryos = numel(input) - 2;
-name2plot = 'myosin_sm';
+num_embryos = numel(input);
+name2plot = 'area_sm';
 
-figure
-color = hsv(num_embryos);
-embryoID_OI = [8:10];
+figure, clear H
+embryoID_OI = [1:5];
+color = hsv(numel(embryoID_OI));
 for i = 1:numel( embryoID_OI )
     
     switch i
         case 1
-            label = c;
+            label = c8;
         case 2
             label = c9;
         case 3
@@ -18,13 +18,23 @@ for i = 1:numel( embryoID_OI )
     end
     
     embryoID = embryoID_OI(i);
-    
+
     time = embryo_stack(embryoID).dev_time;
-    
     data = embryo_stack(embryoID).(name2plot);
-%     data = data(:,label == 1);
     
-    H(i) = shadedErrorBar(1:130,...
+    switch i
+        case 1
+            data(55:60,:) = NaN;
+        case 2
+            data(60:70,:) = NaN;
+        case 4
+            data(70:75,:) = NaN;
+        case 5
+            data(125:130,:) = NaN;
+            time = time + 60;
+    end
+    
+    H(i) = shadedErrorBar(time,...
         nanmean(data,2), nanstd(data,[],2), ...
         {'color',color(i,:)},1);
     
@@ -35,5 +45,6 @@ for i = 1:numel( embryoID_OI )
 end
 
 hold off
-xlabel('Time (sec)')
-legend([H.mainLine],entries)
+ylabel('Average tissue area (\mum^2)')
+xlabel('Developmental time')
+% legend([H.mainLine],entries)

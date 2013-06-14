@@ -127,12 +127,12 @@ function handles = update_plotter(handles)
 % get current fit
 this_fit = handles.this_fit;
 
-frames = this_fit.aligned_time_padded;
+frames = this_fit.corrected_time;
 
 % plot myosin + area
 ax = plotyy(handles.plot_axes, ...
-   frames, this_fit.area, ...
-   frames, this_fit.myosin);
+   frames, this_fit.corrected_area, ...
+   frames, this_fit.corrected_myosin);
 % draw vertical bar at movie frame selected
 hold( handles.plot_axes,'on' );
 vline( handles.this_time ,'k--');
