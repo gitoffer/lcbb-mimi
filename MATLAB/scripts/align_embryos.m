@@ -1,4 +1,36 @@
-%align_embryos
+% align_embryos
+
+%% Fit Piecewise Continuous constant-linear model
+
+embryoID = 10;
+field2fit = 'area';
+
+[data2fit,startI,endI] = ...
+    interp_and_truncate_nan( ...
+    nanmean( embryo_stack(embryoID).(field2fit), 2)');
+xdata = dev_time( embryoID, startI:endI );
+results = zeros(numel(xdata) - 2, numel(xdata) );
+resnorm = zeros(numel(xdata) - 2,1);
+
+for i = 1:numel(xdata) - 2
+    split_time = i + 1;
+    guess = [nanmean(data2fit), nanmax(data2fit) - nanmin(data2fit)];
+
+    % Perform LSQ fitting
+    opts = optimset('Display','off');
+    [p,resnorm(i)] = lsqcurvefit( @(p,x) lsq_PCCL(p,x,split_time), ...
+        guess,xdata,data2fit, ...
+        [],[],opts);
+    results(i,:) = lsq_PCCL(p,xdata,split_time);
+    
+end
+
+plotyy(xdata, data2fit,xdata(2:end-1), resnorm);
+hold on
+[~,I] = min(resnorm);
+vline( xdata(I) + 1);
+
+%% Visualizing mean properties
 
 num_embryos = numel(input);
 name2plot = 'area_sm';
