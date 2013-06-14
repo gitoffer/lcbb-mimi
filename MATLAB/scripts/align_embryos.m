@@ -2,33 +2,45 @@
 
 %% Fit Piecewise Continuous constant-linear model
 
-embryoID = 10;
-field2fit = 'area';
-
-[data2fit,startI,endI] = ...
-    interp_and_truncate_nan( ...
-    nanmean( embryo_stack(embryoID).(field2fit), 2)');
-xdata = dev_time( embryoID, startI:endI );
-results = zeros(numel(xdata) - 2, numel(xdata) );
-resnorm = zeros(numel(xdata) - 2,1);
-
-for i = 1:numel(xdata) - 2
-    split_time = i + 1;
-    guess = [nanmean(data2fit), nanmax(data2fit) - nanmin(data2fit)];
-
-    % Perform LSQ fitting
-    opts = optimset('Display','off');
-    [p,resnorm(i)] = lsqcurvefit( @(p,x) lsq_PCCL(p,x,split_time), ...
-        guess,xdata,data2fit, ...
-        [],[],opts);
-    results(i,:) = lsq_PCCL(p,xdata,split_time);
+ref_frames = zeros(1,num_embryos);
+for embryoID = 1:10
     
+    field2fit = 'area';
+    
+    frames = 1:input(embryoID).last_segmented - input(embryoID).t0;
+    
+    data2fit = nanmean( embryo_stack(embryoID).(field2fit), 2)';
+    data2fit = data2fit( frames );
+    
+    xdata = dev_time( embryoID, frames );
+    results = zeros(numel(xdata) - 2, numel(xdata) );
+    resnorm = zeros(numel(xdata) - 2,1);
+    
+    for i = 1:numel(xdata) - 2
+        split_time = i + 1;
+        guess = [nanmean(data2fit), nanmax(data2fit) - nanmin(data2fit)];
+        
+        % Perform LSQ fitting
+        opts = optimset('Display','off');
+        [p,resnorm(i)] = lsqcurvefit( @(p,x) lsq_PCCL(p,x,split_time), ...
+            guess,xdata,data2fit, ...
+            [],[],opts);
+        results(i,:) = lsq_PCCL(p,xdata,split_time);
+        
+    end
+    
+    figure
+    ax = plotyy( xdata, data2fit, xdata(2:end-1), resnorm);
+    xlabel('Developmental time (sec)')
+    ylabel(ax(1),'Average apical area (\mum^2)');
+    ylabel(ax(2),'Squared residuals');
+    hold on
+    [~,ref_frames(embryoID)] = min(resnorm);
+    vline( xdata(ref_frames(embryoID)) + 1,'r--');
+    title(['Embryo #' num2str( embryoID )]);
+    drawnow
+    hold off
 end
-
-plotyy(xdata, data2fit,xdata(2:end-1), resnorm);
-hold on
-[~,I] = min(resnorm);
-vline( xdata(I) + 1);
 
 %% Visualizing mean properties
 
@@ -50,7 +62,7 @@ for i = 1:numel( embryoID_OI )
     end
     
     embryoID = embryoID_OI(i);
-
+    
     time = embryo_stack(embryoID).dev_time;
     data = embryo_stack(embryoID).(name2plot);
     
