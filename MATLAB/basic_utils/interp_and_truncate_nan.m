@@ -22,7 +22,7 @@ I = find(isnan(signal_int_pad),1);
 signal_int(I:end) = [];
 signal_int(1:start-1) = [];
 
-endI = I;
+endI = I - 1;
 if isempty(endI), endI = numel(signal); end
 
 end
