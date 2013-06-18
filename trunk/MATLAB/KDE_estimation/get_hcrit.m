@@ -1,17 +1,16 @@
-function h_crit = get_hcrit(data,kde_bins,k_modes,h_scan,deriv_fun)
+function h_crit = get_hcrit(data,kde_bins,k_modes,h_scan,sliceID)
 %GET_HCRIT Find h_critical, the smallest kernel size at which a given
-% estimating kernel-derivative (default = Guassian derivative) has at most
-% k-modes (default = 1).
+% estimating kernel-derivative has at most k-modes (default = 1). Will do
+% temporal slicing if sliceID is given.
 %
-% USAGE: h_crit = get_hcrit(data, kde_bins, k_modes, h_scan)
-%        h_crit = get_hcrit(data, kde_bins, k_modes, h_scan, deriv_fun)
+% USAGE: h_crit = get_hcrit(embryo_stack,kde_bins,sliceID,k_modes,h_scan)
 %
 % INPUT: data - data to be estimated
 %        kde_bins - evaluation bins for KDE
 %        k_modes - (default = 1) the modality we want to test for
 %        h_scan - a vector of values of h to scan
-%        deriv_fun - (default = Gaussian derivative). function handle to
-%                    kernel derivative.
+%        sliceID - (optional) bin data into different slices
+% OUTPUT: h_crit - the smallest h at which there are at most k modes.
 %
 % Silverman, Bernard W. "Using kernel density estimates to investigate
 % multimodality." Journal of the Royal Statistical Society. Series B
@@ -19,16 +18,30 @@ function h_crit = get_hcrit(data,kde_bins,k_modes,h_scan,deriv_fun)
 %
 % xies@mit.edu
 
-Nscan = numel(h_scan);
-size(data);
+% Parse sliceID or construct a dummy
+if nargin > 4
+    Nslice = numel(unique(sliceID)) - 1;
+else
+    Nslice = 1;
+    sliceID = ones(size(data));
+end
 
-for i = 1:Nscan
+h_crit = zeros(1,Nslice);
+Nscan = numel(h_scan);
+Nmodes = zeros(Nslice,Nscan);
+for t = 1:Nslice
     
-    h = h_scan(i);
+    data_within_slice = nonans(data( sliceID == t ));
+    for i = 1:Nscan
+        h = h_scan(i);
+        % Find the number of modes from zero-crossings
+        ind = crossing( gaussian_derivative(h,data_within_slice,kde_bins) );
+        Nmodes(t,i) = numel(ind);
+    end
     
-    ind = corssing( gaussian_derivative(h,data_within_slice,kde_bins) );
-    Nmodes = numel(ind);
+    % Grab smallest h, use fact that Nmodes is monotonically decreasing.
+    h_crit(t) = h_scan(find(Nmodes(t,:) == 1,1,'first'));
     
 end
 
-keyboard
+end
