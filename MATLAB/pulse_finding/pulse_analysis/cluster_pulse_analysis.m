@@ -72,7 +72,7 @@ for i = 1:num_clusters
 %     shading flat, caxis([-10 10]),colorbar
     
 end
-order = [1 5 4 2 3];
+order = [5 3 1 4 2];
 revorder = reverse_index(order);
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 

@@ -588,7 +588,7 @@ classdef Fitted
         
         function plot_heatmap(fits)
             
-            fits = weight_sort(fits);
+            fits = sort(fits);
             
             figure
             subplot(1,5,1)
