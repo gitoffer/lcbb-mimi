@@ -25,6 +25,7 @@ function [kde_est,kde_bins,Nzeros,hout] = kde_gauss(embryo_stack,kde_bins,sliceI
 
 if nargin < 5, dataname = 'area'; end
 data = cat(2,embryo_stack.(dataname) );
+% data = embryo_stack;
 
 % -- Generate KDE bins --
 if isscalar(kde_bins)
@@ -41,7 +42,6 @@ end
 ntbins = numel(unique(sliceID)) - 1;
 kde_est = zeros(ntbins, numel(kde_bins));
 Nzeros = zeros( 1, ntbins);
-Ninslice = zeros( 1, ntbins);
 for i = 1:ntbins
     
     data_within_slice = nonans( data( sliceID == i ) );
@@ -57,11 +57,10 @@ for i = 1:ntbins
             % OR run KDE if h not given
             [h,kde_est(i,:),kde_bins] = kde(data_within_slice, ...
                 numel(kde_bins), min(kde_bins), max(kde_bins) );
-            if nargout == 6
+            if nargout == 4
                 hout(i) = h;
             end
         end
-        Ninslice(i) = numel(sliceID(sliceID == i));
         Nzeros(i) = count_modes_gaussian(h,data_within_slice,kde_bins);
         
     end
