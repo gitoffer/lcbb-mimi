@@ -1,4 +1,4 @@
-function h_crit = get_hcrit(data,kde_bins,k_modes,h_scan,sliceID)
+function [h_crit,Nmodes] = get_hcrit(data,kde_bins,k_modes,h_scan,sliceID)
 %GET_HCRIT Find h_critical, the smallest kernel size at which a given
 % estimating kernel-derivative has at most k-modes (default = 1). Will do
 % temporal slicing if sliceID is given.
@@ -40,7 +40,9 @@ for t = 1:Nslice
     end
     
     % Grab smallest h, use fact that Nmodes is monotonically decreasing.
-    h_crit(t) = h_scan(find(Nmodes(t,:) == 1,1,'first'));
+    ind = find(Nmodes(t,:) == 1,1,'first');
+    if isempty(ind), ind = numel(h_crit); end
+    h_crit(t) = h_scan(ind);
     
 end
 
