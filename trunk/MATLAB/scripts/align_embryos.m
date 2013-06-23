@@ -2,59 +2,44 @@
 
 %% Fit Piecewise Continuous constant-linear model
 
-types = {'area','myosin_sm'};
-ref_frames = zeros(2,num_embryos);
-
+split_img_frame = zeros(num_embryos,2); % raw image index
+split_dev_frame = zeros(num_embryos,2); % EDGE index
 
 for embryoID = 1:10
-    for j = 1:2
-        field2fit = types{j};
-        
-        frames = 1:input(embryoID).last_segmented - input(embryoID).t0;
-        
-        data2fit = nanmean( embryo_stack(embryoID).(field2fit), 2)';
-        data2fit = data2fit( frames );
-        
-        xdata = dev_time( embryoID, frames );
-        results = zeros(numel(xdata) - 2, numel(xdata) );
-        resnorm = zeros(numel(xdata) - 2,1);
-        
-        for i = 1:numel(xdata) - 2
-            split_time = i + 1;
-            guess = [nanmean(data2fit), nanmax(data2fit) - nanmin(data2fit)];
-            
-            % Perform LSQ fitting
-            opts = optimset('Display','off');
-            [p,resnorm(j,i)] = lsqcurvefit( @(p,x) lsq_PCCL(p,x,split_time), ...
-                guess,xdata,data2fit, ...
-                [],[],opts);
-            results(i,:) = lsq_PCCL(p,xdata,split_time);
-            
-        end
-        [~,ref_frames(j,embryoID)] = min(resnorm(j,:));
-    end
+
+    % Fit PCCL
+    [split_dev_frame(embryoID,:),split_img_frame(embryoID,:),xdata,models,p] = ...
+        fit_PCCL(embryo_stack(embryoID));
     
-    figure
-    ax = plotyy( dev_time(embryoID,:), nanmean(embryo_stack(embryoID).area,2), ...
-        dev_time(embryoID,:), nanmean(embryo_stack(embryoID).myosin_sm,2) );
+    figure % Plots both area, myosin, as well as respective PCCL models
+    ax = plotyy( ...
+        dev_time(embryoID,:),...
+        nanmean(embryo_stack(embryoID).area,2), ...
+        dev_time(embryoID,:),...
+        nanmean(embryo_stack(embryoID).myosin_intensity_fuzzy,2) ...
+        );
+    % hold both axes
+    set(ax,'NextPlot','add')
+    plot( ax(1), xdata, models(:,1),'m-');
+    plot( ax(2), xdata, models(:,2),'r-');
     xlabel('Developmental time (sec)')
-    ylabel(ax(1),'Average apical area (\mum^2)');
+    ylabel('Average apical area (\mum^2)');
     ylabel(ax(2),'Myosin intensity');
-    hold on
     
-%     keyboard
-    vline( xdata(ref_frames(1,embryoID)) + 1,'r--');
-    vline( xdata(ref_frames(2,embryoID)) + 1,'g--');
+    vline( dev_time(embryoID,split_dev_frame(embryoID,1)) + 1,'m--');
+    vline( dev_time(embryoID,split_dev_frame(embryoID,2)) + 1,'r--');
     title(['Embryo #' num2str( embryoID )]);
     drawnow
     hold off
+    
+    display(['Slope = ' num2str(p(2)) ' (um^2/sec)']);
     
 end
 
 %% Visualizing mean properties
 
 num_embryos = numel(input);
-name2plot = 'myosin_sm';
+name2plot = 'area_sm';
 
 figure, clear H
 embryoID_OI = 1:5;

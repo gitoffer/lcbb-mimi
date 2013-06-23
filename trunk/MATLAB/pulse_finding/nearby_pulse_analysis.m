@@ -38,18 +38,26 @@ num_member = zeros(1,num_clusters);
 
 for i = 1:num_clusters
    
-   foo = nearIDs( [fits.cluster_label] == order(i) & [fits.embryoID] < 6,:);   
+   foo = nearIDs( [fits.cluster_label] == order(i) & [fits.embryoID] == 1,:);   
    N(i,:) = hist(revorder([fits_wt.get_fitID([foo{:,3}]).cluster_label]),1:num_clusters);
    num_member(i) = numel( fits_wt( [fits_wt.cluster_label] == order(i) ));
 
 end
 
+% for i = 1:5
+%     
+%     foo = [nearIDs{ [fits.embryoID] == i } ];
+%     
+%     N_emb(i) = numel(foo(~isnan(foo)));
+%     
+% end
+
 num_neighbors = sum(N,1);
 
 subplot(2,1,1)
-bar(1:5,cat(1,num_member,num_neighbors)');
+bar(1:5,(num_neighbors./num_member)');
 ylabel('Count');
-legend('Numbero of pulses','Number of neighbors');
+title('Number of neighbors per pulse');
 set(gca,'XTickLabel',entries);
 
 subplot(2,1,2)
