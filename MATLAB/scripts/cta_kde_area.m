@@ -1,7 +1,7 @@
 %% cta KDE area
 % KDE estimates of cta area distribution
 
-embryoID = 8;
+embryoID = 1:5;
 kernel_size = 3; % um^2
 kde_bins = linspace(0,80,1024);
 slice_window = input(8).dt*5; % seconds

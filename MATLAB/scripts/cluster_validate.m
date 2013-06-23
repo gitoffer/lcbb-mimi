@@ -4,8 +4,7 @@ standardized_area_norm = standardize_matrix(cat(1,fits.corrected_area_norm),2);
 data2cluster = standardized_area_norm;
 data2cluster( isnan(data2cluster ) ) = 0;
 
-distmat = squareform( pdist( standardized_area_norm, @nan_eucdist ));
-
+% distmat_pear = squareform( pdist( standardized_area_norm, @nan_eucdist ));
 num_clusters = 1:20;
 opts = [2, 1000, 1e-5, 0];
 

@@ -65,7 +65,7 @@ for i = 1:num_clusters
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(order(i)) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(order(i)) ');']);
     
-    eval([ 'cluster' num2str(i) '.plot_heatmap']);
+    eval([ 'cluster' num2str(i) '_wt.plot_heatmap']);
 %     figure
 %     eval(['pcolor(cat(1, cluster' num2str(i) '.weight_sort.corrected_area_norm ));']);
 %     title(['Cluster ' num2str(i) ])
@@ -110,22 +110,33 @@ figure
 colors = {'b','c','g','r','m'};
 for i = 1:num_clusters
     
-    eval(['this_cluster = cluster' num2str(i) '_wt.weight_sort;']);
+    eval(['this_cluster = cluster' num2str(i) '_cta.weight_sort;']);
     cluster_area = cat(1,this_cluster.corrected_area_norm);
     
     subplot(2,num_clusters,i);
     [X,Y] = meshgrid( fits(1).corrected_time,1:numel(this_cluster) );
     pcolor( X,Y, cluster_area );
     shading flat, caxis([-10 10]),colorbar;
-        title(['Cluster ' num2str(order(i)) ]);
+        title(['Cluster ' num2str(i) ]);
     xlabel('Pulse time (sec)')
     
     subplot(2,num_clusters,i+num_clusters);
     weights = cat(1, this_cluster.cluster_weight);
     shadedErrorBar( fits(1).corrected_time, ...
         nanwmean(cluster_area,weights), nanstd(cluster_area) , colors{i});
+    xlabel('Pulse time (sec)')
     set(gca,'XTick',[-40 0 40]);
     
 end
 
 
+%%
+
+clear N
+for i = 1:num_clusters
+    N(i,:) = hist( [fits([fits.cluster_label] == i).embryoID],1:10);
+end
+
+bar(1:10, bsxfun(@rdivide, N, sum(N))' );
+xlim([0 11])
+legend(entries{:});

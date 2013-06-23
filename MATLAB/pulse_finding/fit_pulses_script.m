@@ -28,9 +28,9 @@ save('~/Desktop/fits_raw.mat','fits_raw','cells_raw')
 
 fits = fits.retrace(cells,fit_opts);
 
-fits_wt = fits([fits.embryoID] < 6);
-fits_twist = fits([fits.embryoID] > 5 & [fits.embryoID] < 8);
-fits_cta = fits([fits.embryoID] > 7);
+fits_wt = fits.get_embryoID(1:5);
+fits_twist = fits.get_embryoID(6:7);
+fits_cta = fits.get_embryoID(8:10);
 
 %% Align all pulses
 

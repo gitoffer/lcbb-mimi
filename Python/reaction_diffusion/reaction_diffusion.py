@@ -6,7 +6,7 @@ import pylab as pl
 
 import matplotlib.pyplot as plt
 
-import time
+# import time
 
 # --- Model paramters ---
 #		Initial conditions
