@@ -38,11 +38,10 @@ end
 
 %% Visualizing mean properties
 
-num_embryos = numel(input);
-name2plot = 'area_sm';
+name2plot = 'anisotropy_xy';
 
 figure, clear H
-embryoID_OI = 1:5;
+embryoID_OI = 6:7;
 color = hsv(numel(embryoID_OI));
 for i = 1:numel( embryoID_OI )
     

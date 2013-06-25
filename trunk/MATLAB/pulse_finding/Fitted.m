@@ -512,6 +512,7 @@ classdef Fitted
                         
                             within_window = ...
                                 abs([neighbor_fits.center] - this_fit.center) < time_windows(k) ...
+                                & [neighbor_fits.center] - this_fit.center > 0 ...
                                 & ~( neighbor_fits == this_fit );
                             
                             if sum(within_window) > 0
@@ -588,7 +589,7 @@ classdef Fitted
         
         function plot_heatmap(fits)
             
-            fits = weight_sort(fits);
+            fits = sort(fits);
             
             figure
             subplot(1,5,1)
