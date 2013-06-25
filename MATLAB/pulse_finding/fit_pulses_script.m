@@ -35,7 +35,7 @@ fits_cta = fits.get_embryoID(8:10);
 %% Align all pulses
 
 fits = fits.align_fits(myosins_sm,'myosin',fit_opts);
-fits = fits.align_fits(areas_sm,'area',fit_opts);
+fits = fits.align_fits(anisotropies,'area',fit_opts);
 fits = fits.align_fits(areas_rate,'area_rate',fit_opts);
 fits = fits.align_fits(myosins_rate,'myosin_rate',fit_opts);
 
@@ -58,7 +58,7 @@ fits = assign_datafield(fits,aligned_area_norm,'area_norm');
 % correlate for framerate differences
 fits = resample_traces(fits,'area_norm',[input.dt],fit_opts);
 fits = resample_traces(fits,'area',[input.dt],fit_opts);
- fits = resample_traces(fits,'myosin',[input.dt],fit_opts);
+fits = resample_traces(fits,'myosin',[input.dt],fit_opts);
 fits = resample_traces(fits,'area_rate',[input.dt],fit_opts);
 
 corrected_area = cat(1, fits.corrected_area);
