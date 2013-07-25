@@ -38,26 +38,26 @@ end
 
 %% Visualizing mean properties
 
-name2plot = 'anisotropy_xy';
+name2plot = 'number_cells_connected_by_myosin';
 
 figure, clear H
-embryoID_OI = 6:7;
+embryoID_OI = 1:5;
 color = hsv(numel(embryoID_OI));
 for i = 1:numel( embryoID_OI )
     
-    switch i
-        case 1
-            label = c8;
-        case 2
-            label = c9;
-        case 3
-            label = c10;
-    end
+%     switch i
+%         case 1
+%             label = c8;
+%         case 2
+%             label = c9;
+%         case 3
+%             label = c10;
+%     end
     
     embryoID = embryoID_OI(i);
     
     time = embryo_stack(embryoID).dev_time;
-    data = embryo_stack(embryoID).(name2plot);
+    data = embryo_stack(embryoID).(name2plot)/num_cells(i);
     
     %     data = data(:,label == 1);
     %     switch i
@@ -83,6 +83,6 @@ for i = 1:numel( embryoID_OI )
 end
 
 hold off
-ylabel('Average tissue area (\mum^2)')
+ylabel('Number of cells connected by myosin')
 xlabel('Developmental time')
-% legend([H.mainLine],entries)
+legend([H.mainLine],entries)

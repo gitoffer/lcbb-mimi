@@ -33,7 +33,7 @@ handles.params = [handles.amplitude handles.center handles.std handles.offset];
 % set(handles.center_slider,'Value',max(nanmin(this_cell.myosin_sm),handles.params(1)));
 
 % do the plotting
-plot( handles.axes1, this_cell.dev_time, this_cell.myosin_intensity_fuzzy);
+plot( handles.axes1, this_cell.dev_time, this_cell.myosin_intensity);
 set( handles.axes1, 'Xlim', [nanmin(this_cell.fit_time) nanmax(this_cell.fit_time)] );
 
 hold(handles.axes1,'on');

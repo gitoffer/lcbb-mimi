@@ -1,68 +1,73 @@
 %% Nearby pulse analysis
 
-%%
-
-time_windows = 10:10:100; %seconds
-
-fits = fits.find_near_fits(time_windows,neighborID);
 
 %%
 
-nearIDs = cat(1,fits.nearIDs);
+time_windows = 10:10:100; % seconds
+
+fits_wt = fits_wt.find_near_fits(time_windows,neighborID);
+
+
+%%
+
+nearIDs = cat(1,fits_wt.nearIDs);
 
 % Convert to number of pulses
 num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
 
 %%
 
-wt_num_near = num_near( [fits.embryoID] < 6,:);
-
-twist_num_near = num_near( ismember([fits.embryoID], 6:7),:);
-
-cta_num_near = num_near( [fits.embryoID] > 7,:);
-
-%%
-
-clear H
-H(1) = shadedErrorBar( time_windows, mean(wt_num_near), std(wt_num_near), 'k-', 1);
-hold on
-H(2) = shadedErrorBar( time_windows, mean(twist_num_near), std(twist_num_near), 'b-', 1);
-H(3) = shadedErrorBar( time_windows, mean(cta_num_near), std(cta_num_near), 'r-', 1);
-legend([H.mainLine],'WT','twist','cta')
-
-%%
-
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
-N = zeros(num_clusters);
+% N = zeros(num_clusters,num_clusters,3);
+% neighb_bin = zeros(num_clusters,4);
 num_member = zeros(1,num_clusters);
 
-for i = 1:num_clusters
-   
-   foo = nearIDs( [fits.cluster_label] == order(i) & [fits.embryoID] == 1,:);   
-   N(i,:) = hist(revorder([fits_wt.get_fitID([foo{:,6}]).cluster_label]),1:num_clusters);
-   num_member(i) = numel( fits_wt( [fits_wt.cluster_label] == order(i) ));
+left = -Inf; right = Inf;
+Nboot = 1000;
 
+clear num_bs
+for j = 1:Nboot
+    
+    % permutations
+    fits_bs = fits_wt;
+    
+    
+    filtered = fits( ...
+        [fits.center] > left & [fits.center] < right);
+    filtered_bs = filtered;
+    labels = cat(1,filtered.cluster_label);
+    labels = labels( randperm(numel(filtered)) );
+    for i = 1:numel(filtered)
+        filtered_bs(i).cluster_label = labels(i);
+    end
+    
+    for i = 1:num_clusters
+        
+%         eval(['cluster' num2str(i) '_bs = fits_bs([fits_bs.cluster_label] == ' num2str(order(i)) ');']);
+        
+        this_cluster = filtered([filtered.cluster_label] == order(i));
+        this_cluster_bs = filtered_bs([filtered_bs.cluster_label] == order(i));
+        
+        
+        this_cluster = this_cluster( ...
+            [this_cluster.center] > left & [this_cluster.center] < right);
+        this_cluster_bs = this_cluster_bs( ...
+            [this_cluster_bs.center] > left & [this_cluster_bs.center] < right);
+        
+        foo = cat(1,this_cluster.nearIDs);
+        num_neighbors(i) = numel( fits_wt.get_fitID( [foo{:,6}] ) );
+        num_member(i) = numel(this_cluster);
+        
+        foo = cat(1,this_cluster_bs.nearIDs);
+        num_bs(j,i) = numel( fits_wt.get_fitID( [foo{:,6}] ) );
+        
+    end
 end
 
-% for i = 1:5
-%     
-%     foo = [nearIDs{ [fits.embryoID] == i } ];
-%     
-%     N_emb(i) = numel(foo(~isnan(foo)));
-%     
-% end
-
-num_neighbors = sum(N,1);
-
-subplot(2,1,1)
-bar(1:5,(num_neighbors./num_member)');
-title('Neighboring pulses 60 sec after');
-ylabel('Number of neighbors per pulse');
+% num_neighbors = sum(N,3);
+bar(1:5,num_neighbors); hold on;
+errorbar(1:5,nanmean(num_bs),nanstd(num_bs),'r-')
+xlabel('Center cluster label')
+ylabel('Pulse count')
 set(gca,'XTickLabel',entries);
-
-subplot(2,1,2)
-bar(1:5,bsxfun(@rdivide,N,sum(N,1))');
-legend(entries{:});
-set(gca,'XTickLabel',entries);
-ylabel('Neighbor probability');
-xlabel('Center cluster labels');
+title('Number of neighbors 30s after, 0 < center < 60')

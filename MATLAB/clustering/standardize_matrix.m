@@ -10,6 +10,6 @@ function Dn = standardize_matrix(D,dim)
 if dim == 1, D = D'; end
 
 Dn = bsxfun(@minus,D,nanmean(D,2));
-Dn = bsxfun(@rdivide,Dn,nanstd(D,[],2));
+Dn = bsxfun(@rdivide,Dn,nanstd(Dn,[],2));
 
-if dim == 1, D = D'; end
+if dim == 1, Dn = Dn'; end

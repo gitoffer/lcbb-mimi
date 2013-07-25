@@ -51,6 +51,7 @@ for i = 1:numel(labels)
     
 end
 
+
 %%
 
 fits_wt = fits.get_embryoID( 1:5 );
@@ -59,18 +60,17 @@ fits_cta = fits.get_embryoID( 8:10 );
 
 clear cluster*
 
-order = [3 4 2 5 1];
+order = [4 5 2 1 3];
 
 for i = 1:num_clusters
     
-    eval(['cluster' num2str(i) ' = fits([fits.cluster_label] == ' num2str(order(i)) ');']);
     eval(['cluster' num2str(i) ' = fits([fits.cluster_label] == ' num2str(order(i)) ');']);
     
     eval(['cluster' num2str(i) '_wt = fits_wt([fits_wt.cluster_label] == ' num2str(order(i)) ');']);
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(order(i)) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(order(i)) ');']);
     
-    eval([ 'cluster' num2str(i) '.plot_heatmap']);
+%     eval([ 'cluster' num2str(i) '_wt.plot_heatmap']);
 %     figure
 %     eval(['pcolor(cat(1, cluster' num2str(i) '.weight_sort.corrected_area_norm ));']);
 %     title(['Cluster ' num2str(i) ])
@@ -115,7 +115,7 @@ figure
 colors = {'b','c','g','r','m'};
 for i = 1:num_clusters
     
-    eval(['this_cluster = cluster' num2str(i) '.weight_sort;']);
+    eval(['this_cluster = cluster' num2str(i) '.sort(''cluster_weight'');']);
     cluster_area = cat(1,this_cluster.corrected_area_norm);
     
     subplot(2,num_clusters,i);

@@ -48,8 +48,12 @@ for i = 1:num_embryos
     end
     
     % Special case for neighborID -- need to re-index the cellIDs
-    if strcmpi(name_to_extract,'identity of neighbors')
+    if strcmpi(name_to_extract,'identity of neighbors-all')
         data = cellfun(@(x) x+sum(num_cells), data,'UniformOutput',false);
+    end
+    % Special case for centroid-y -- subtract yref
+    if strcmpi(name_to_extract,'centroid-y')
+        data = data - input(i).yref;
     end
     
     num_cells(i) = size(data,3);

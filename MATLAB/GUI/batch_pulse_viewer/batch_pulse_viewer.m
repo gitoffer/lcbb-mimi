@@ -25,7 +25,7 @@ function varargout = batch_pulse_viewer(varargin)
 % Last Modified by GUIDE v2.5 23-Apr-2013 14:08:31
 
 % Begin initialization code - DO NOT EDIT
-gui_Singleton = 1;
+gui_Singleton = 0;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
                    'gui_OpeningFcn', @batch_pulse_viewer_OpeningFcn, ...
@@ -56,9 +56,13 @@ switch numel(varargin)
     case 2
         fits = varargin{1};
         embryo_stack = varargin{2};
-        
+    case 3
+        fits = varargin{1};
+        embryo_stack = varargin{2};
+        title = varargin{3};
+        set(handles.figure1,'name',title);
     otherwise
-        error('3 inputs: fits, embryo_stack');
+        error('2 or 3 inputs: fits, embryo_stack, title (opt)');
 end
 %Input
 handles.fits = fits;
@@ -100,6 +104,13 @@ hold off;
 xlabel( 'Aligned time (sec)' )
 ylabel( '\Delta area (\mum^2)');
 
+
+% Keypress event -- redefine all keypress
+keypress_fcn_handles = findobj('KeyPressFcn', '');
+for i = 1:length(keypress_fcn_handles)
+    set(keypress_fcn_handles(i), 'KeyPressFcn', @keyboardNav);
+end
+
 % Choose default command line output for batch_pulse_viewer
 handles.output = hObject;
 
@@ -131,23 +142,29 @@ frames = this_fit.corrected_time;
 
 % plot myosin + area
 ax = plotyy(handles.plot_axes, ...
-   frames, this_fit.corrected_area, ...
-   frames, this_fit.corrected_myosin);
+   frames, this_fit.corrected_area_norm, ...
+   frames, this_fit.corrected_measurement);
+hold(ax(2),'on')
 % draw vertical bar at movie frame selected
 hold( handles.plot_axes,'on' );
 vline( handles.this_time ,'k--');
 hold( handles.plot_axes,'off' );
 
 % legends + labels
-legend('Area','Myosin');
+legend('Fraction','Myosin');
 ylabel(ax(2), 'Myosin intensity (a.u.)');
 ylabel(ax(1), 'Apical area (\mum^2)');
 xlabel(ax(1), 'Aligned time (sec)');
 title(['Embryo #' num2str(this_fit.embryoID) ', EDGE #' num2str(this_fit.cellID)...
     ', center = ' num2str(this_fit.center) ' sec']);
 
+% set color order for batch preview
+C = varycolor( ceil(numel(handles.fits)*1.5 ));
+set(handles.all_axes,'ColorOrder',C);
+set(handles.all_axes,'NextPlot','replacechildren')
 plot(handles.all_axes, ...
-    handles.fits(1).corrected_time, cat(1,handles.fits.corrected_area_norm)');
+    handles.fits(1).corrected_time, cat(1,handles.fits.corrected_area_norm)', ...
+    'LineWidth',2);
 hold(handles.all_axes,'on');
 plot(handles.all_axes, this_fit.corrected_time, this_fit.corrected_area_norm, 'k-');
 hold(handles.all_axes,'off');
@@ -181,7 +198,7 @@ set( handles.current_frame,'String',num2str( selected_frame ) );
 set( handles.time_display, 'String', ...
     num2str( handles.this_time ) );
 set( handles.weight_display,'String', ...
-    num2str(this_fit.cluster_weight) );
+    num2str(this_fit.cluster_label) );
 
 make_cell_img(h);
 
@@ -262,3 +279,71 @@ function frame_selecter_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+function keyboardNav(hObject, eventdata)
+%keyboardNav moves the movie slider or the fit selecter based on keypress
+% using callback functions
+
+    handles = guidata(hObject);
+    key = eventdata.Key;
+    
+    switch key
+        % -- frame navigation ---
+        case 'leftarrow' % go to prev frame
+            
+            currFrame = get(handles.frame_selecter,'Value');
+            % check for range
+            if currFrame - 1 >= get(handles.frame_selecter, 'Min')
+                % if within range, update to new value and update movie
+                set(handles.frame_selecter, 'Value', currFrame - 1);
+                handles = update_movie( handles);
+            end
+        case 'rightarrow' % go to next frame
+            
+            currFrame = get(handles.frame_selecter,'Value');
+            if currFrame + 1 <= get(handles.frame_selecter, 'Max')
+                % if within range, update to new value and update movie
+                set(handles.frame_selecter, 'Value', currFrame + 1);
+                frame_selecter_Callback( handles.frame_selecter, [], handles);
+            end
+        case 'home' % go to first frame
+            
+            set(handles.frame_selecter,'Value', get(handles.frame_selecter, 'Min') );
+            frame_selecter_Callback( handles.frame_selecter, [], handles);
+        case 'end' % go to end frame
+            
+            set(handles.frame_selecter,'Value', get(handles.frame_selecter, 'Max') );
+            frame_selecter_Callback( handles.frame_selecter, [], handles);
+            
+        % --- fit navigation
+        case 'uparrow' % go to prev fit
+            
+            fitID = get(handles.fit_selecter,'Value');
+            if fitID > 1
+                % update fit_selecter position
+                set(handles.fit_selecter,'Value', fitID - 1);
+                % update via callback Fcn
+                fit_selecter_Callback(hObject, [], handles);
+            end
+            
+        case 'downarrow' % goto next fit
+            fitID = get(handles.fit_selecter,'Value');
+            num_fit = numel(get(handles.fit_selecter,'String'));
+            if fitID < num_fit
+                % update fit_selecter position
+                set(handles.fit_selecter,'Value', fitID + 1);
+                % update via callback Fcn
+                fit_selecter_Callback(hObject, [], handles);
+                
+            end
+        case 'pageup' % go to first fit
+            set(handles.fit_selecter,'Value',1);
+            fit_selecter_Callback(hObject, [], handles);
+        case 'pagedown' % goto last fit
+            num_fit = numel(get(handles.fit_selecter,'String'));
+            set(handles.fit_selecter,'Value',num_fit);
+            fit_selecter_Callback( hObject, [], handles);
+            
+    end
+    
+

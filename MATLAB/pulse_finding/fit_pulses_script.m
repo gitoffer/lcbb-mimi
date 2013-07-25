@@ -1,7 +1,7 @@
 
 %%
 clear fit_opts
-[fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity_fuzzy');
+[fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity');
 [fit_opts(1:num_embryos).bg] = deal('on');
 
 [fit_opts(1:num_embryos).left_margin] = deal(8);
@@ -18,7 +18,7 @@ clear fit_opts
 % [fit_opts(8:9).sigma_lb] = deal(5);
 % [fit_opts(8:9).sigma_ub] = deal(45);
 
-%%
+%% Perform fitting
 
 cells = embryo2cell(embryo_stack);
 [cells_raw,fits_raw] = fit_gaussians(cells,fit_opts);
@@ -34,19 +34,26 @@ fits_cta = fits.get_embryoID(8:10);
 
 %% Align all pulses
 
-fits = fits.align_fits(myosins_sm,'myosin',fit_opts);
-fits = fits.align_fits(anisotropies,'area',fit_opts);
+fits = fits.align_fits(myosins,'myosin',fit_opts);
+fits = fits.align_fits(areas_sm,'area',fit_opts);
 fits = fits.align_fits(areas_rate,'area_rate',fit_opts);
 fits = fits.align_fits(myosins_rate,'myosin_rate',fit_opts);
+fits = fits.align_fits(anisotropies,'anisotropy',fit_opts);
+fits = fits.align_fits(myosin_ring1+myosin_ring2,'measurement',fit_opts);
 
 aligned_area = cat(1,fits.area);
 aligned_myosin = cat(1,fits.myosin);
 aligned_area_rate = cat(1,fits.area_rate);
 aligned_myosin_rate = cat(1,fits.myosin_rate);
+aligned_measurement = cat(1,fits.measurement);
 
 % Mean-center pulses responses
 aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
+% aligned_myosin = bsxfun(@minus,aligned_myosin,nanmean(aligned_myosin,2));
+% aligned_measurement = bsxfun(@minus,aligned_measurement,nanmean(aligned_measurement,2));
 fits = assign_datafield(fits,aligned_area_norm,'area_norm');
+fits = assign_datafield(fits,aligned_myosin,'myosin');
+fits = assign_datafield(fits,aligned_measurement,'measurement');
 
 % [aligned_area_norm,cols_left] = delete_nan_rows(aligned_area_norm,2);
 % aligned_myosin = aligned_myosin(:,cols_left);
@@ -60,6 +67,7 @@ fits = resample_traces(fits,'area_norm',[input.dt],fit_opts);
 fits = resample_traces(fits,'area',[input.dt],fit_opts);
 fits = resample_traces(fits,'myosin',[input.dt],fit_opts);
 fits = resample_traces(fits,'area_rate',[input.dt],fit_opts);
+fits = resample_traces(fits,'measurement',[input.dt],fit_opts);
 
 corrected_area = cat(1, fits.corrected_area);
 corrected_area_norm = cat(1, fits.corrected_area_norm);
