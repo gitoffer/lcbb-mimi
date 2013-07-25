@@ -9,11 +9,13 @@ corona_measurement = nan(num_frames,num_cells);
 
 for t = 1:num_frames
     for i = 1:num_cells
-        if ~isnan(neighborID{tref,i})
+        IDs = neighborID{tref,i};
+        if ~isnan(IDs)
+            IDs = IDs(IDs > 0);
             if nanflag
-                corona_measurement(t,i) = nansum(measurement(t,neighborID{tref,i}));
+                corona_measurement(t,i) = nansum(measurement(t,IDs));
             else
-                corona_measurement(t,i) = sum(measurement(t,neighborID{tref,i}));
+                corona_measurement(t,i) = sum(measurement(t,IDs));
             end
         end
     end

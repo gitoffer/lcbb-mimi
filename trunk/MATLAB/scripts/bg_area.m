@@ -33,7 +33,7 @@ lut_cta_sm( ~isnan(lut_cta) & ~isinf(lut_cta) ) = smooth( ...
 
 %%
 
-corrected_area_rate = cat(1, fits_all.corrected_area_rate);
+corrected_area_rate = cat(1, fits.corrected_area_rate);
 likelihood_ratio = nan(size(corrected_area_rate));
 
 for j = 1:size(corrected_area_rate,2)
@@ -55,7 +55,7 @@ for j = 1:size(corrected_area_rate,2)
         end
 %         if fits_all(i).fitID == 7103, keyboard; end
         
-        if ~isnan(value)
+        if ~isnan(value) && ~isinf(value)
             likelihood_ratio(i,j) = value;
         end
         
@@ -64,7 +64,7 @@ end
 
 %% LR threshold
 
-LR_thresh = 2;
+LR_thresh = 1;
 
 fits_significant = fits_all(nanmean(likelihood_ratio,2) > LR_thresh);
 fits_not_significant = fits_all(nanmean(likelihood_ratio,2) <= LR_thresh);

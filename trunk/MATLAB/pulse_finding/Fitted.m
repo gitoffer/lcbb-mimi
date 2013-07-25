@@ -27,8 +27,7 @@ classdef Fitted
     % --- Comparator ---
     %   eq - right now will be equal if overlap of width_frame is > 3
     % --- Array operations ---
-    %   sort - sort according to amplitude
-    %   weight_sort - sorb by cluster weight (if defined)
+    %   sort - sort according to field (default: amplitude)
     %   bin_fits - bin each embryo by amplitude
 	%	find_near_fits - find fits near a 'central' fit given a time-window
     % --- Visualization ---
@@ -57,6 +56,7 @@ classdef Fitted
         dev_time
         raw
         fit
+        residual
         aligned_time
         aligned_time_padded
         fit_padded
@@ -67,12 +67,16 @@ classdef Fitted
         area
         area_rate
         area_norm
+        anisotropy
         corrected_time
         corrected_myosin
         corrected_myosin_rate
         corrected_area
         corrected_area_rate
         corrected_area_norm
+        % placeholder
+        measurement
+        corrected_measurement
         
     end
     properties (SetAccess = public)
@@ -139,23 +143,26 @@ classdef Fitted
                 % Collect the pulse-centric fitted curves
                 x = dev_time( left_margin : right_margin );
                 fitted_y = lsq_gauss1d( params , x );
-                this_fit.raw = ...
-                    cell.(opt.to_fit)( left_margin : right_margin );
                 this_fit.fit = fitted_y;
+                this_fit.raw = ...
+                    ensure_row(cell.(opt.to_fit)( left_margin : right_margin ));
+                res = fitted_y - this_fit.raw;
                 this_fit.aligned_time = x - this_fit.center;
-                
                 
                 % PAD the margin-time frame for plotting purposes
                 if pad_l > 1
                     fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
                     x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
+                    res = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), res];
                 end
                 if pad_r > 1
                     fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames)];
                     x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
+                    res = [res, nan(1, (center_frame + opt.right_margin) - num_frames)];
                 end
                 this_fit.aligned_time_padded = x;
                 this_fit.fit_padded = fitted_y;
+                this_fit.residual = res;
                         
 %                 names = fieldnames(this_fit);
 %                 for i = 1:numel(names)
@@ -257,9 +264,10 @@ classdef Fitted
             for i = 1:num_fits
                 
                 frames = fits(i).margin_frames;
-                [max_val,max_idx] = max( fits(i).fit );
-                if numel( fits(i).fit( fits(i).fit == max_val ) ) > 1
-                    maxes = find( fits(i).fit == max_val );
+                fitted_y = fits(i).fit;
+                [max_val,max_idx] = max( fitted_y );
+                if numel( fitted_y( fitted_y == max_val ) ) > 1
+                    maxes = find( fitted_y == max_val );
                     theoretical_middle = floor(max(durations)/2);
                     which = findnearest(maxes,theoretical_middle);
                     max_idx = maxes(which);
@@ -270,6 +278,7 @@ classdef Fitted
                 m = nan(1, l + r + 1); % Make the padded vector
                 lb = center_idx - left_len;
                 ub = min(center_idx - left_len + durations(i) - 1, max(durations) );
+
                 m( lb: ub) = ...
                     measurement( fits(i).margin_frames, fits(i).stackID );
 
@@ -324,10 +333,16 @@ classdef Fitted
                 x = (-l:r)*dt( embryoIDs(i) );
                 x = x( ~isnan(trace) );
                 
-                fits(i).(['corrected_' name]) = ...
-                    interp1( x, trace, (-(l-2):r-2)*aligned_dt );
+                if numel(x) > 2
+                    fits(i).(['corrected_' name]) = ...
+                        interp1( x, trace, (-(l-2):r-2)*aligned_dt );
+                else
+                    fits(i).(['corrected_' name]) = ...
+                        nan(1, l+r-3 );
+                end
                 
                 fits(i).corrected_time = aligned_t(3:end-2);
+                
             end
             
         end % resample_traces
@@ -457,18 +472,13 @@ classdef Fitted
 			
         end %bin_fits
         
-        function fits = sort(fits)
-            %SORT fitted pulses by their amplitudes (descending order)
-            [~,sortID] = sort( [fits.amplitude] , 2,'descend');
-            fits = fits(sortID);
-        end % sort
-        
-        function fits = weight_sort(fits)
-            %WEIGHT_SORT
-            % sorb by cluster weight (if defined)
-            [~,order] = sort([fits.cluster_weight]);
+        function fits = sort(fits,field)
+            %SORT pulses by a given field, Default = amplitude (ascending)
+            if nargin < 2, field = 'amplitude'; end
+            [~,order] = sort( nanmean( cat(1,fits.(field)), 2) );
             fits = fits(order);
-        end % weight_sort
+            
+        end % sort
         
         function fits = find_near_fits(fits,time_windows,neighborID)
             %FIND_NEAR_FITS Find the number (and fitID) of each fitted
@@ -503,16 +513,16 @@ classdef Fitted
                 for j = 1:numel(neighbor_cells) % j - neighbor cell's stackID
                     
                     % Find all neighboring fits
-                    neighbor_fits = same_embryo([same_embryo.cellID] == neighbor_cells(j));
+                    neighbor_fits = same_embryo([same_embryo.stackID] == neighbor_cells(j));
                     
                     fits(i).nearIDs = cell( 1, numel(time_windows ) );
                     if ~isempty( neighbor_fits )
                         % Collect fits within window
                         for k = 1:numel( time_windows )
-                        
+                            % neighbor succeeds center pulse
                             within_window = ...
                                 abs([neighbor_fits.center] - this_fit.center) < time_windows(k) ...
-                                & [neighbor_fits.center] - this_fit.center > 0 ...
+                                & ([neighbor_fits.center] - this_fit.center) > 0 ...
                                 & ~( neighbor_fits == this_fit );
                             
                             if sum(within_window) > 0
@@ -541,55 +551,43 @@ classdef Fitted
             
             if isempty(fits(1).bin), fits = fits.bin_fits; end
             
-            % Extract the bins
-            top = fits( [fits.bin] == 1);
-            top_middle = fits( [fits.bin] == 2 );
-            bottom_middle = fits( [fits.bin] == 3 );
-            bottom = fits( [fits.bin] == 4 );
-            
             % Get time vector
             x = fits(1).corrected_time;
             
-            % Plot the myosins
-            figure, hold on,
-            shadedErrorBar( x, ...
-                nanmean( cat(1, top.corrected_myosin ) ), ...
-                nanstd( cat(1, top.corrected_myosin ) ), 'r-', 1);
-            shadedErrorBar( x, ...
-                nanmean( cat(1, top_middle.corrected_myosin) ), ...
-                nanstd( cat(1, top_middle.corrected_myosin) ), 'b-', 1);
-            shadedErrorBar( x, ...
-                nanmean( cat(1, bottom_middle.corrected_myosin) ), ...
-                nanstd( cat(1, bottom_middle.corrected_myosin) ), 'k-', 1);
-            shadedErrorBar( x, ...
-                nanmean( cat(1, bottom.corrected_myosin) ), ...
-                nanstd( cat(1, bottom.corrected_myosin) ), 'g-', 1);
-            hold off
+            num_bins = numel(unique(nonans([fits.bin])));
+            C = varycolor( num_bins );
+            
+            figure; clf; hold on; h = gcf;
+            figure; clf; hold on; g = gcf;
+            for i = 1:num_bins
+                
+                fits2bin = fits( [fits.bin] == i);
+                figure(h)
+                shadedErrorBar( x, ...
+                    nanmean( cat(1, fits2bin.corrected_myosin ) ), ...
+                    nanstd( cat(1, fits2bin.corrected_myosin ) ), ...
+                    {'Color',C(i,:)}, 1);
+                
+                figure(g)
+                shadedErrorBar( x, ...
+                    nanmean( cat(1, fits2bin.corrected_area_norm ) ), ...
+                    nanstd( cat(1, fits2bin.corrected_area_norm ) ), ...
+                    {'Color',C(i,:)}, 1);
+                
+            end
+            
+            figure(h)
             xlabel('Aligned time (sec)')
             ylabel('Myosin intensity (a.u.)')
-            
-            figure, hold on,
-            shadedErrorBar( x, ...
-                nanmean( cat(1, top.corrected_area_norm) ), ...
-                nanstd( cat(1, top.corrected_area_norm) ), 'r-', 1);
-            shadedErrorBar( x, ...
-                nanmean( cat(1, top_middle.corrected_area_norm) ), ...
-                nanstd( cat(1, top_middle.corrected_area_norm) ), 'b-', 1);
-            shadedErrorBar( x, ...
-                nanmean( cat(1, bottom_middle.corrected_area_norm) ), ...
-                nanstd( cat(1, bottom_middle.corrected_area_norm) ), 'k-', 1);
-            shadedErrorBar( x, ...
-                nanmean( cat(1, bottom.corrected_area_norm) ), ...
-                nanstd( cat(1, bottom.corrected_area_norm) ), 'g-', 1);
-            hold off
+            figure(g)
             xlabel('Aligned time (sec)')
             ylabel('\Delta area (\mum^2)')
-            
+
         end % plot_binned_fits
         
         function plot_heatmap(fits)
             
-            fits = sort(fits);
+            fits = sort(fits,'cluster_weight');
             
             figure
             subplot(1,5,1)

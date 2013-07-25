@@ -17,6 +17,8 @@ classdef CellObj
     %   identity_of_neighbors_all
     %   vertex_x
     %   vertex_y
+    %   anisotropy_xy
+    %   anisotropy
     %
     %   dev_frame
     %   dev_time
@@ -67,10 +69,13 @@ classdef CellObj
         centroid_x	% x-centroid of cell
         centroid_y	% y-centroid of cell
         identity_of_neighbors_all	% cell arrays of neighboring stackIDs
+        myosin_intensity % unfuzzy
         myosin_intensity_fuzzy		% myosin intensity (fuzzy border)
         myosin_sm					% smoothed fuzzy myosin intensity
         vertex_x	% vertices, x-coordinates
         vertex_y	% vertices, y-coordinates
+        anisotropy  % anisotropy (shape)
+        anisotropy_xy % anisotropy (projection)
         
         % Time
         dev_time	% multiple-embryo-aligned, developmental time
@@ -270,7 +275,7 @@ classdef CellObj
         
         function obj = get_embryoID_cellID(obj_array,embryoID,cellID)
             obj = obj_array( ...
-                [obj_array.embryoID] == embryoID | ...
+                [obj_array.embryoID] == embryoID & ...
                 [obj_array.cellID] == cellID ...
                 );
         end
