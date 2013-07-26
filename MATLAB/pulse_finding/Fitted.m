@@ -21,15 +21,21 @@ classdef Fitted
     %   aling_fits - align the measurement according to the maxima of fits
     %   assign_datafield - given a matrix, assign each vector to a fit
     %   resample_traces - re-sample all data in a given fit array so as to
-    %      have the same framerate (INTERP1)
+    %      have the same framerate (See also: INTERP1)
     %   retrace - re-do the sub-sequence selection
     %   adjust_centers - adjust Gaussian centers to tref
+    %   get_corrected_measurement - temporarily puts given measurement and
+    %      returns the aligned, interpolated .corrected_measurement
     % --- Comparator ---
     %   eq - right now will be equal if overlap of width_frame is > 3
     % --- Array operations ---
     %   sort - sort according to field (default: amplitude)
     %   bin_fits - bin each embryo by amplitude
 	%	find_near_fits - find fits near a 'central' fit given a time-window
+    %   bootstrap_cluster_label - intra-embryo exchange of all cluster
+    %      labels
+    %   bootstrap_stackID - intra-embryo exchange of all stackID (includes
+    %      non-pulsing cells)
     % --- Visualization ---
     %   plot_binned_fits
     %   plot_heatmap (sorted)
@@ -60,6 +66,7 @@ classdef Fitted
         aligned_time
         aligned_time_padded
         fit_padded
+        opt
         
         % Added later
         myosin
@@ -169,6 +176,7 @@ classdef Fitted
 %                     [fit.(names{i})] = deal(this_fit.(names{i}));
 %                 end
                 this_fit.manually_added = 0;
+                this_fit.opt = opt;
                 
             end
         end % constructor
@@ -247,7 +255,7 @@ classdef Fitted
         
 % --------------------- Alignment functions -------------------------------
         
-        function [fits] = align_fits(fits,measurement,name,opt)
+        function [fits] = align_fits(fits,measurement,name)
             %ALIGN_PEAKS Aligns the global maxima of a given array of
             %FITTED objects
             % Will return also a given measurement aligned according to the
@@ -257,13 +265,16 @@ classdef Fitted
             
             num_fits = numel(fits);
             durations = cellfun(@numel, {fits.margin_frames} );
-            l = opt.left_margin; r = opt.right_margin;
+
 
             center_idx = l + 1;
             
             for i = 1:num_fits
                 
                 frames = fits(i).margin_frames;
+                opt = fits(i).opt;
+                l = opt.left_margin; r = opt.right_margin;
+                
                 fitted_y = fits(i).fit;
                 [max_val,max_idx] = max( fitted_y );
                 if numel( fitted_y( fitted_y == max_val ) ) > 1
@@ -299,7 +310,7 @@ classdef Fitted
             end
         end % assign_datafield
         
-        function fits = resample_traces(fits,name,dt,opt)
+        function fits = resample_traces(fits,name,dt)
             %RESAMPLE_TRACES Uses INTERP1 to resample short traces
             %
             % [aligned_traces,aligned_time] = resample_traces(traces,embryoID,dt);
@@ -319,7 +330,6 @@ classdef Fitted
             
             % find the aligned DT
             aligned_dt = round(mean(dt)*100)/100;
-            l = opt.left_margin; r = opt.right_margin;
             % w = floor(T/2);
             
             % aligned_traces = zeros([num_traces, l + r - 3]);
@@ -328,6 +338,8 @@ classdef Fitted
             % Resample using the SIGNAL_PROCESSING TOOLBOX
             for i = 1:num_traces
                 
+                l = fits(i).opt.left_margin;
+                r = fits(i).opt.right_margin;
                 trace = traces(i,:);
                 trace = trace( ~isnan(trace) );
                 x = (-l:r)*dt( embryoIDs(i) );
@@ -357,7 +369,7 @@ classdef Fitted
                 
                 this_cell = cells.get_stackID(this_fit.stackID);
                 num_frames = numel(nonans(this_cell.dev_time));
-                opt = opts(this_fit.embryoID);
+                newOpt = opts(this_fit.embryoID);
                 center_frame = findnearest( this_fit.center, this_cell.dev_time );
                 % check for double-nearest
                 if numel(center_frame) > 1
@@ -366,29 +378,30 @@ classdef Fitted
                 
                 % Get margin frame
                 [left_margin,pad_l] = max( ...
-                    [center_frame - opt.left_margin, 1] );
+                    [center_frame - newOpt.left_margin, 1] );
                 [right_margin,pad_r] = min( ...
-                    [center_frame + opt.right_margin, num_frames] );
+                    [center_frame + newOpt.right_margin, num_frames] );
                 this_fit.margin_frames = left_margin:right_margin;
                 
                 % Collect the fit curve
                 x = this_cell.dev_time( left_margin:right_margin );
                 fitted_y = lsq_gauss1d( ...
                     [this_fit.amplitude, this_fit.center, this_fit.width], x);
-                this_fit.raw = this_cell.(opt.to_fit)( left_margin: right_margin );
+                this_fit.raw = this_cell.(newOpt.to_fit)( left_margin: right_margin );
                 this_fit.fit = fitted_y;
                 this_fit.aligned_time = x - this_fit.center;
                 
                 % PAD
                 if pad_l > 1
-                    fitted_y = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), fitted_y];
-                    x = [ensure_row(nan(1 - (center_frame - opt.left_margin), 1)), x];
+                    fitted_y = [ensure_row(nan(1 - (center_frame - newOpt.left_margin), 1)), fitted_y];
+                    x = [ensure_row(nan(1 - (center_frame - newOpt.left_margin), 1)), x];
                 end
                 if pad_r > 1
-                    fitted_y = [fitted_y, nan(1, (center_frame + opt.right_margin) - num_frames + 1)];
-                    x = [x, nan(1, (center_frame + opt.right_margin) - num_frames)];
+                    fitted_y = [fitted_y, nan(1, (center_frame + newOpt.right_margin) - num_frames + 1)];
+                    x = [x, nan(1, (center_frame + newOpt.right_margin) - num_frames)];
                 end
                 this_fit.aligned_time_padded = x - this_fit.center;
+                this_fit.opt = newOpt;
                 fits = fits.set_fitID(this_fit.fitID, this_fit);
 
             end
@@ -404,6 +417,12 @@ classdef Fitted
                 this_fit.center = old_tref + (new_tref - old_tref);
                 fits = fits.set_fitID(fitID, this_fit);
             end
+        end
+        
+        function M = get_corrected_measurement(fits,meas,input)
+            fits = fits.align_fits(meas,'measurement');
+            fits = fits.resample_traces('measurement',[input.dt]);
+            M = cat(1,fits.corrected_measurement);
         end
         
 % --------------------- Comparator ----------------------------------------
@@ -542,6 +561,44 @@ classdef Fitted
             end % loop over all fits
             
         end %find_near_fits
+        
+        function fits = bootstrap_cluster_label(fits)
+            % Perform intra-embryo bootstrapping of cluster labels
+            embryoIDs = unique([fits.embryoID]);
+            labels = zeros(1,numel(fits));
+            
+            for i = embryoIDs
+                
+                this = fits.get_embryoID(i);
+                l = cat(1,fits.cluster_label);
+                labels( [fits.embryoID] == i ) = ...
+                    l( randperm(numel(this)) );
+            end
+            for i = 1:numel(fits)
+                fits(i).cluster_label = labels(i);
+            end
+            
+        end
+        
+        function fits = bootstrap_stackID(fits,cells)
+            % Perform intra-embryo bootstrapping of stackID (private)
+            embryoIDs = unique([fits.embryoID]);
+            stackIDs = zeros(1,numel(fits));
+            
+            for i = embryoIDs
+                c = cells.get_embryoID(c);
+                c = c([c.flag_fitted] > 0);
+                
+                this = fits.get_embryoID(i);
+                sID = cat(1,c.stackID);
+                stackIDs( [fits.embryoID] == i ) = ...
+                    sID( randperm(numel(this)) );
+            end
+            for i = 1:numel(fits)
+                fits(i).stackID = stackIDs(i);
+            end
+            
+        end
 
 % --------------------- Visualization -------------------------------------
         
