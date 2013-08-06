@@ -366,13 +366,13 @@ classdef Pulse
                         display('Cannot remove TRACK: given trackID does not exist.');
                         return
                     end
-                    
+                    % Remove from CellObj
                     stackID = [pulse.tracks(indices).stackID];
                     for i = 1:numel(stackID)
                         pulse.cells( [pulse.cells.stackID] == stackID(i)) = ...
 							pulse.cells( [pulse.cells.stackID] == stackID(i)).removeTrack(pulseID);
                     end
-                    
+                    % Remove from track stack
                     pulse.tracks( indices ) = [];
                     if isfield(pulse.changes,'trackIDRemoved')
                         pulse.changes.trackIDRemoved = ...
