@@ -70,7 +70,7 @@ for i = 1:num_clusters
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(order(i)) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(order(i)) ');']);
     
-%     eval([ 'cluster' num2str(i) '_wt.plot_heatmap']);
+    eval([ 'cluster' num2str(i) '_wt.plot_heatmap']);
 %     figure
 %     eval(['pcolor(cat(1, cluster' num2str(i) '.weight_sort.corrected_area_norm ));']);
 %     title(['Cluster ' num2str(i) ])
@@ -80,6 +80,7 @@ end
 
 revorder = reverse_index(order);
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
+colors = {'b','c','g','r','m'};
 
 %%
 
@@ -112,7 +113,6 @@ legend(entries{:});
 
 figure
 
-colors = {'b','c','g','r','m'};
 for i = 1:num_clusters
     
     eval(['this_cluster = cluster' num2str(i) '.sort(''cluster_weight'');']);

@@ -265,15 +265,13 @@ classdef Fitted
             
             num_fits = numel(fits);
             durations = cellfun(@numel, {fits.margin_frames} );
-
-
-            center_idx = l + 1;
             
             for i = 1:num_fits
                 
                 frames = fits(i).margin_frames;
                 opt = fits(i).opt;
                 l = opt.left_margin; r = opt.right_margin;
+                center_idx = l + 1;
                 
                 fitted_y = fits(i).fit;
                 [max_val,max_idx] = max( fitted_y );
@@ -332,14 +330,14 @@ classdef Fitted
             aligned_dt = round(mean(dt)*100)/100;
             % w = floor(T/2);
             
-            % aligned_traces = zeros([num_traces, l + r - 3]);
-            aligned_t = (- l : r )*aligned_dt;
-            
             % Resample using the SIGNAL_PROCESSING TOOLBOX
             for i = 1:num_traces
                 
                 l = fits(i).opt.left_margin;
                 r = fits(i).opt.right_margin;
+                
+                % aligned_traces = zeros([num_traces, l + r - 3]);
+                aligned_t = (- l : r )*aligned_dt;
                 trace = traces(i,:);
                 trace = trace( ~isnan(trace) );
                 x = (-l:r)*dt( embryoIDs(i) );
@@ -541,8 +539,9 @@ classdef Fitted
                             % neighbor succeeds center pulse
                             within_window = ...
                                 abs([neighbor_fits.center] - this_fit.center) < time_windows(k) ...
-                                & ([neighbor_fits.center] - this_fit.center) > 0 ...
-                                & ~( neighbor_fits == this_fit );
+                                & ~( neighbor_fits == this_fit ) ...
+                                & ([neighbor_fits.center] - this_fit.center) > 0 ;...
+                                
                             
                             if sum(within_window) > 0
                                 nearby_fits = neighbor_fits(within_window);
@@ -578,27 +577,93 @@ classdef Fitted
                 fits(i).cluster_label = labels(i);
             end
             
-        end
+        end % bootstrap_cluster_label
         
-        function fits = bootstrap_stackID(fits,cells)
+        function [fits,cells] = bootstrap_stackID(fits,cells,preserve_cell)
             % Perform intra-embryo bootstrapping of stackID (private)
+            % INPUT: fits
+            %        cells
+            %        preserve_cell - flag to preserve the pulse-dynamics 
+            %               within a cell (i.e. only randomize cell spatial
+            %               position, but not which pulse belongs to it).
+            %               Default = 0;
+            % 
+            % OUTPUT: fits_bs
+            %         cells_bs
+            %
+            % xies@mit
+            
+            % By default don't preserve cell-level dynamics
+            if nargin < 3, preserve_cell = 0; end
+            
             embryoIDs = unique([fits.embryoID]);
-            stackIDs = zeros(1,numel(fits));
+            stackID_range = cell(1,max(embryoIDs));
+            cell_by_embryo = cell(1,max(embryoIDs));
             
-            for i = embryoIDs
-                c = cells.get_embryoID(c);
-                c = c([c.flag_fitted] > 0);
+            if preserve_cell
+                % just permute all cell stackIDs - but only amongst cells
+                % which have cell neighbor
                 
-                this = fits.get_embryoID(i);
-                sID = cat(1,c.stackID);
-                stackIDs( [fits.embryoID] == i ) = ...
-                    sID( randperm(numel(this)) );
-            end
-            for i = 1:numel(fits)
-                fits(i).stackID = stackIDs(i);
+                for i = embryoIDs
+                    
+                    c = cells.get_embryoID(i);
+                    sID 
+                    
+                end
+                
+            else
+                % need to some extra work to permute within frame all
+                % pulses without regard for cell-identity
+                
+                for i = embryoIDs
+                    % Get stackID within an embryo
+                    c = cells.get_embryoID(i);
+                    % filter by flag_tracked & flag_fitted
+                    sID = cat(1,c.stackID);
+                    sID( ...
+                        [c.flag_fitted] > 0 & ...
+                        [c.flag_tracked] > 0) = NaN;
+                    % collect into cellarrays
+                    stackID_range{i} = sID;
+                    cell_by_embryo{i} = c;
+                    
+                end
+                
+                for i = 1:numel(fits)
+                    
+                    this_fit = fits(i);
+                    range = stackID_range{ this_fit(i).embryoID };
+                    c = cell_by_embryo{i};
+                    center_frame = findnearest(c(1).dev_time,this_fit.center);
+                    
+                    % filter available stackID range by NaN in EDGE data
+                    % (cells not tracked in current frame);
+                    A = cat(2,c.area);
+                    range( isnan(A(center_frame,:)) ) = NaN;
+                    range = nonans(range);
+                    
+                    this_fit.stackID = range(randi( numel(range) ));
+                    
+                    % write into fits_array
+                    fits(i) = this_fit;
+                    
+                    % store MC stackID
+                    this_fitID = fits(i).fitID;
+                    
+                    % delete fit from old cell
+                    old_fitID = [cells.get_stackID( this_fit.stackID ).fitID];
+                    cells( [cells.stackID] == this_fit.stackID).fitID = ...
+                        old_fitID( old_fitID ~= this_fitID );
+                    
+                    % put fit into new cell
+                    fits(i).stackID = stackIDs(i);
+                    cells( [cells.stackID] == stackIDs(i) ).fitID = ...
+                        [cells.get_stackID( stackIDs(i) ).fitID this_fitID];
+                    
+                end
             end
             
-        end
+        end % bootstrap_stackID
 
 % --------------------- Visualization -------------------------------------
         
@@ -642,9 +707,11 @@ classdef Fitted
 
         end % plot_binned_fits
         
-        function plot_heatmap(fits)
+        function plot_heatmap(fits,sortname)
             
-            fits = sort(fits,'cluster_weight');
+            if nargin < 2, sortname = 'amplitude'; end
+            
+            fits = sort(fits,sortname);
             
             figure
             subplot(1,5,1)
