@@ -181,6 +181,13 @@ classdef Fitted
             end
         end % constructor
         
+        % single set
+        
+        function fits = set_stackID(fits,fitIDs,stackID,cellID)
+            [fits(ismember([fits.fitID],fitIDs)).stackID] = deal(stackID);
+            [fits(ismember([fits.fitID],fitIDs)).cellID] = deal(cellID);
+        end
+        
 % --------------------- Edit fit array -----------------------------------
         
         function [obj_array,errorflag] = add_fit(obj_array,new_fit)
@@ -579,88 +586,66 @@ classdef Fitted
             
         end % bootstrap_cluster_label
         
-        function [fits,cells] = bootstrap_stackID(fits,cells,preserve_cell)
+        function [fits,cells] = bootstrap_stackID(fits,cells)
             % Perform intra-embryo bootstrapping of stackID (private)
             % INPUT: fits
             %        cells
-            %        preserve_cell - flag to preserve the pulse-dynamics 
-            %               within a cell (i.e. only randomize cell spatial
-            %               position, but not which pulse belongs to it).
-            %               Default = 0;
             % 
             % OUTPUT: fits_bs
             %         cells_bs
             %
             % xies@mit
             
-            % By default don't preserve cell-level dynamics
-            if nargin < 3, preserve_cell = 0; end
-            
             embryoIDs = unique([fits.embryoID]);
             stackID_range = cell(1,max(embryoIDs));
             cell_by_embryo = cell(1,max(embryoIDs));
             
-            if preserve_cell
-                % just permute all cell stackIDs - but only amongst cells
-                % which have cell neighbor
+            for i = embryoIDs
+                % Get stackID within an embryo
+                c = cells.get_embryoID(i);
+                % filter by flag_tracked & flag_fitted
+                sID = cat(1,c.stackID);
+                sID( ...
+                    [c.flag_fitted] > 0 & ...
+                    [c.flag_tracked] > 0) = NaN;
+                % collect into cellarrays
+                stackID_range{i} = sID;
+                cell_by_embryo{i} = c;
                 
-                for i = embryoIDs
-                    
-                    c = cells.get_embryoID(i);
-                    sID 
-                    
-                end
+            end
+            
+            for i = 1:numel(fits)
                 
-            else
-                % need to some extra work to permute within frame all
-                % pulses without regard for cell-identity
+                this_fit = fits(i);
+                range = stackID_range{ this_fit.embryoID };
+                c = cell_by_embryo{ this_fit.embryoID };
+                center_frame = findnearest(c(1).dev_time,this_fit.center);
+                if numel(center_frame) > 1, center_frame = center_frame(1); end
                 
-                for i = embryoIDs
-                    % Get stackID within an embryo
-                    c = cells.get_embryoID(i);
-                    % filter by flag_tracked & flag_fitted
-                    sID = cat(1,c.stackID);
-                    sID( ...
-                        [c.flag_fitted] > 0 & ...
-                        [c.flag_tracked] > 0) = NaN;
-                    % collect into cellarrays
-                    stackID_range{i} = sID;
-                    cell_by_embryo{i} = c;
-                    
-                end
+                % filter available stackID range by NaN in EDGE data
+                % (cells not tracked in current frame);
+                A = cat(2,c.area);
+                range( isnan(A(center_frame,:)) ) = NaN;
+                range = nonans(range);
                 
-                for i = 1:numel(fits)
-                    
-                    this_fit = fits(i);
-                    range = stackID_range{ this_fit(i).embryoID };
-                    c = cell_by_embryo{i};
-                    center_frame = findnearest(c(1).dev_time,this_fit.center);
-                    
-                    % filter available stackID range by NaN in EDGE data
-                    % (cells not tracked in current frame);
-                    A = cat(2,c.area);
-                    range( isnan(A(center_frame,:)) ) = NaN;
-                    range = nonans(range);
-                    
-                    this_fit.stackID = range(randi( numel(range) ));
-                    
-                    % write into fits_array
-                    fits(i) = this_fit;
-                    
-                    % store MC stackID
-                    this_fitID = fits(i).fitID;
-                    
-                    % delete fit from old cell
-                    old_fitID = [cells.get_stackID( this_fit.stackID ).fitID];
-                    cells( [cells.stackID] == this_fit.stackID).fitID = ...
-                        old_fitID( old_fitID ~= this_fitID );
-                    
-                    % put fit into new cell
-                    fits(i).stackID = stackIDs(i);
-                    cells( [cells.stackID] == stackIDs(i) ).fitID = ...
-                        [cells.get_stackID( stackIDs(i) ).fitID this_fitID];
-                    
-                end
+                this_fit.stackID = range(randi( numel(range) ));
+                
+                % write into fits_array
+                fits(i) = this_fit;
+                
+                % store MC stackID
+                this_fitID = fits(i).fitID;
+                
+                % delete fit from old cell
+                old_fitID = [cells.get_stackID( this_fit.stackID ).fitID];
+                cells( [cells.stackID] == this_fit.stackID).fitID = ...
+                    old_fitID( old_fitID ~= this_fitID );
+                
+                % put fit into new cell
+                fits(i).stackID = this_fit.stackID;
+                cells( [cells.stackID] == this_fit.stackID ).fitID = ...
+                    [cells.get_stackID( this_fit.stackID ).fitID this_fitID];
+                
             end
             
         end % bootstrap_stackID
