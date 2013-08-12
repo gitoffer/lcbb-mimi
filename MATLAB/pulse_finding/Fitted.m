@@ -534,35 +534,36 @@ classdef Fitted
                 
                 fits(i).time_windows = time_windows;
                 
-                for j = 1:numel(neighbor_cells) % j - neighbor cell's stackID
+                % Find all neighboring fits
+                neighbor_fits = fits.get_fitID(...
+                    [ same_embryo( ...
+                        ismember([same_embryo.stackID], neighbor_cells) ...
+                        ).fitID ]);
+                
+                fits(i).nearIDs = cell( 1, numel(time_windows ) );
+                if ~isempty( neighbor_fits )
                     
-                    % Find all neighboring fits
-                    neighbor_fits = same_embryo([same_embryo.stackID] == neighbor_cells(j));
-                    
-                    fits(i).nearIDs = cell( 1, numel(time_windows ) );
-                    if ~isempty( neighbor_fits )
-                        % Collect fits within window
-                        for k = 1:numel( time_windows )
-                            % neighbor succeeds center pulse
-                            within_window = ...
-                                abs([neighbor_fits.center] - this_fit.center) < time_windows(k) ...
-                                & ~( neighbor_fits == this_fit ) ...
-                                & ([neighbor_fits.center] - this_fit.center) > 0 ;...
-                                
+                    % Collect fits within window
+                    for k = 1:numel( time_windows )
+                        % neighbor succeeds center pulse
+                        within_window = ...
+                            abs([neighbor_fits.center] - this_fit.center) < time_windows(k) ...
+                            & ~( neighbor_fits == this_fit ) ...
+                            & ([neighbor_fits.center] - this_fit.center) > 0 ;...
                             
-                            if sum(within_window) > 0
-                                nearby_fits = neighbor_fits(within_window);
-                                fits(i).nearIDs(k) = {[nearby_fits.fitID]};
-                            else
-                                fits(i).nearIDs(k) = {NaN};
-                            end
-                        end % loop over time window
+                        if sum(within_window) > 0
+                            nearby_fits = neighbor_fits(within_window);
+                            fits(i).nearIDs(k) = {[nearby_fits.fitID]};
+                        else
+                            fits(i).nearIDs(k) = {NaN};
+                        end
                         
-                    else
-                        [fits(i).nearIDs( 1:numel(time_windows) )] = deal({NaN});
-                    end
+                    end % loop over time window
                     
-                end % loop over neighbors
+                else
+                    [fits(i).nearIDs( 1:numel(time_windows) )] = deal({NaN});
+                end
+                
                 
             end % loop over all fits
             
@@ -604,12 +605,12 @@ classdef Fitted
                 % Get stackID within an embryo
                 c = cells.get_embryoID(i);
                 % filter by flag_tracked & flag_fitted
-                sID = cat(1,c.stackID);
+                sID = cat(2,c.stackID);
                 sID( ...
-                    [c.flag_fitted] > 0 & ...
-                    [c.flag_tracked] > 0) = NaN;
+                    [c.flag_fitted] == 0 | ...
+                    [c.flag_tracked] == 0) = NaN;
                 % collect into cellarrays
-                stackID_range{i} = sID;
+                stackID_range{i} = sID(ones(1,numel(cells(1).dev_time)),:);
                 cell_by_embryo{i} = c;
                 
             end
@@ -617,39 +618,79 @@ classdef Fitted
             for i = 1:numel(fits)
                 
                 this_fit = fits(i);
-                range = stackID_range{ this_fit.embryoID };
+                % get old stackID
+                old_stackID = this_fit.stackID;
+                
+                % generate range of available cellID/stackID
+                rangeS = stackID_range{ this_fit.embryoID };
                 c = cell_by_embryo{ this_fit.embryoID };
                 center_frame = findnearest(c(1).dev_time,this_fit.center);
                 if numel(center_frame) > 1, center_frame = center_frame(1); end
+                rangeS = rangeS(center_frame,:);
                 
                 % filter available stackID range by NaN in EDGE data
                 % (cells not tracked in current frame);
                 A = cat(2,c.area);
-                range( isnan(A(center_frame,:)) ) = NaN;
-                range = nonans(range);
+                rangeS( isnan(A(center_frame,:)) ) = NaN;
+                range = nonans(rangeS);
                 
-                this_fit.stackID = range(randi( numel(range) ));
+                if any( [cells.get_stackID(range).flag_tracked] == 0),
+                    keyboard;
+                end
                 
-                % write into fits_array
-                fits(i) = this_fit;
+                % generate a random cell label
+                randIdx = randi( numel(range) );
+                % delete selected index from range within this frame
+                rangeS(randIdx) = NaN;
+                stackID_range{ this_fit.embryoID }( ...
+                    center_frame,:) = rangeS;
                 
-                % store MC stackID
+                % store random label into this_fit
+                this_fit.stackID = range(randIdx);
+                this_fit.cellID = cells.get_stackID(this_fit.stackID).cellID;
+                
+                % store fitID
                 this_fitID = fits(i).fitID;
                 
+                % consistency check for stackID/fitID correspondence
+                if old_stackID ~= cells.get_fitID(this_fitID).stackID
+                    keyboard
+                end
+                
+                old_total = sum(cellfun(@(x) numel(nonans(x)), {cells.fitID}));
                 % delete fit from old cell
-                old_fitID = [cells.get_stackID( this_fit.stackID ).fitID];
-                cells( [cells.stackID] == this_fit.stackID).fitID = ...
-                    old_fitID( old_fitID ~= this_fitID );
+                old_fitID = [cells.get_stackID( old_stackID ).fitID];
+                cells( [cells.stackID] == old_stackID).fitID = ...
+                    nonans(old_fitID( old_fitID ~= this_fitID ));
                 
-                % put fit into new cell
+                cells( [cells.stackID] == old_stackID).num_fits = ...
+                    cells( [cells.stackID] == old_stackID).num_fits - 1;
+                
+                % sanity check -- number of total fitID within cells must
+                % be the same (pm 1)
+                if sum(cellfun(@(x) numel(nonans(x)), {cells.fitID})) ~= old_total - 1
+                    sum(cellfun(@(x) numel(nonans(x)), {cells.fitID}))
+                    keyboard
+                end
+                
+                % put fit into new cell and fit array
                 fits(i).stackID = this_fit.stackID;
+                fits(i).cellID = this_fit.cellID;
                 cells( [cells.stackID] == this_fit.stackID ).fitID = ...
-                    [cells.get_stackID( this_fit.stackID ).fitID this_fitID];
+                    nonans([cells.get_stackID( this_fit.stackID ).fitID this_fitID]);
+                cells( [cells.stackID] == this_fit.stackID).num_fits = ...
+                    cells( [cells.stackID] == this_fit.stackID).num_fits + 1;
                 
-            end
+                % sanity check -- number of total fitID within cells must
+                % be the same (pm 1)
+                if sum(cellfun(@(x) numel(nonans(x)),{cells.fitID})) ~= old_total
+                    keyboard
+                end
+                
+             end
             
         end % bootstrap_stackID
-
+        
 % --------------------- Visualization -------------------------------------
         
         function plot_binned_fits(fits)

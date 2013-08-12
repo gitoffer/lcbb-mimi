@@ -50,6 +50,9 @@ classdef CellObj
 	%	--- Visualization/display ---
 	%		visualize - plots myosin + area v. time
 	%		movie - makes movie of cell
+    %   --- Misc analysis ---
+    %       get_pulsing_trajectories
+    %       bootstrap_stackID
 	%
 	% See also: PULSE, FITTED, TRACK, EMBRYO2CELL
 	%
@@ -260,7 +263,8 @@ classdef CellObj
         function obj = get_fitID(obj_array, fitID)
             %@Cell.get_fitID Returns the obj from an array with the given
             % fitID
-            obj = obj_array([obj_array.fitID] == fitID);
+            obj = obj_array(...
+                cellfun(@(x) (any(x == fitID)),{obj_array.fitID}) );
         end % get_fitID
         
         function obj = get_trackID(obj_array, trackID)
@@ -417,5 +421,43 @@ classdef CellObj
             nodes = [ x y ];
             
         end % get_pulsing_trajectories
+        
+        function [fits,cells] = bootstrap_stackID(cells,fits)
+            %BOOTSTRAP_STACKID Randomly exchanges CellObj stackID with each
+            % other (only fitted + tracked cells). Will also do same for
+            % FITTED array.
+            
+            embryoIDs = unique([fits.embryoID]);
+            for j = embryoIDs
+                
+                % extract cells belonging to this embryo (which has a
+                % Fitted object)
+                c = cells.get_stackID([fits.get_embryoID(j).stackID]);
+                % filter by fitted & tracked cells
+%                 c = c([c.flag_fitted] & [c.flag_tracked]);
+                
+                % retain original index - for editing
+                idx = find(ismember([cells.stackID],[c.stackID]));
+                sIDs = cat(1,c.stackID);
+                cIDs = cat(1,c.cellID);
+                % randpermute
+                randIdx = randperm( numel(sIDs) );
+                sIDs = sIDs( randIdx );
+                cIDs = cIDs( randIdx );
+                % rewrite cells and fits
+                for k = 1:numel(c)
+                    cells( idx(k) ).stackID = sIDs(k);
+                    cells( idx(k) ).cellID = cIDs(k);
+                    
+                    % 
+                    fIDs = [fits(ismember([fits.fitID], cells(idx(k)).fitID)).fitID];
+                    if any(fIDs)
+                        fits = fits.set_stackID( fIDs, cIDs(k), sIDs(k) );
+                    end
+                end
+            end
+            
+        end % bootstrap_stackID
+        
    end % End methods 
 end
