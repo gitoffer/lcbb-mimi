@@ -31,7 +31,8 @@ end
 
 %% FCM
 
-X = cat(1,fits.corrected_area_norm);
+foo = fits(cellfun(@(x) numel(x(isnan(x))),{fits.corrected_area_norm}) < 3);
+X = cat(1,foo.corrected_area_norm);
 X = bsxfun(@rdivide, X, nanstd(X,[],2) );
 
 X( isnan(X) ) = 0;
@@ -43,14 +44,13 @@ num_clusters = 5;
 % labels = labels_all(1,:);
 
 for i = 1:numel(labels)
-    
-    this_fit = fits.get_fitID( fits(i).fitID );
-    this_fit.cluster_label = labels(i);
-    this_fit.cluster_weight = max_prob(i);
-    fits = fits.set_fitID( fits(i).fitID, this_fit );
-    
+    fits([fits.fitID] == foo(i).fitID).cluster_label = labels(i);
+    fits([fits.fitID] == foo(i).fitID).cluster_weight = max_prob(i);
 end
 
+% unassigned = 0
+[fits(cellfun(@isempty,{fits.cluster_label})).cluster_label] ...
+    = deal(0);
 
 %%
 
@@ -60,7 +60,7 @@ fits_cta = fits.get_embryoID( 8:10 );
 
 clear cluster*
 
-order = [4 5 2 1 3];
+order = [4 3 1 2 5];
 
 for i = 1:num_clusters
     
@@ -70,7 +70,7 @@ for i = 1:num_clusters
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(order(i)) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(order(i)) ');']);
     
-    eval([ 'cluster' num2str(i) '_wt.plot_heatmap']);
+    eval(['cluster' num2str(i) '_wt.plot_heatmap']);
 %     figure
 %     eval(['pcolor(cat(1, cluster' num2str(i) '.weight_sort.corrected_area_norm ));']);
 %     title(['Cluster ' num2str(i) ])

@@ -1,9 +1,9 @@
-function F = make_pulse_movie(pulse,input,vx,vy,master_time)
+function F = make_pulse_movie(pulse,input,vx,vy)
 %MAKE_PULSE_MOVIE Wrapper function for MAKE_CELL_IMG to make a movie of a
 % single detected pulse, using the PULSE structure as returned by
 % FIT_GAUSSIAN_PEAKS.
 %
-% USAGE: F = make_pulse_movie(pulse,input,vx,vy,master_time);
+% USAGE: F = make_pulse_movie(pulse,input,vx,vy);
 %
 % SEE ALSO: MAKE_CELL_IMG
 %
