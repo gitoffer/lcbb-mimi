@@ -320,8 +320,8 @@ classdef CellObj
                 for t = 1:num_frames
                     x = vx{t}/um_per_px; y = vy{t}/um_per_px;
                     if all(~isnan(x))
-                        mask(:,:,i) = mask(:,:,i) + ...
-                            poly2mask(x,y,X,Y);
+                        mask(:,:,t) = mask(:,:,t) + ...
+                            poly2mask(x,y,Y,X);
                     end
                 end
             end
