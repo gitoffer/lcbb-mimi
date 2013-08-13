@@ -91,7 +91,7 @@ end
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
 window = 3;
-Nboot = 5;
+Nboot = 100;
 
 left = [-Inf -Inf 0 60 120 180]; right = [Inf 0 60 120 180 Inf];
 
