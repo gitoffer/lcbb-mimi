@@ -1,6 +1,11 @@
-function moment = image_moments(img)
+function moment = image_inertia(img)
+%IMAGE_INERTIA Find the inertial moment around the center of mass for a 2D image.
+
+[N,M] = size(img);
+[X,Y] = meshgrid(1:N,1:M);
+
 % find center of mass
-cell_area = sum(rol(rok > 0));
+cell_area = sum(img(img > 0));
 
 
 
