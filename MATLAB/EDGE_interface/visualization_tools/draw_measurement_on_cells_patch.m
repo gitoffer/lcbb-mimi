@@ -11,6 +11,8 @@ function F = draw_measurement_on_cells_patch(handle)
 % (optional)    todraw - specify cell indices to color, and leave other
 %                        cells white/blank
 %
+% See also: DRAW_MEASUREMENT_ON_CELLS
+% 
 % xies@mit.edu. March 2012.
 
 % get relevant data

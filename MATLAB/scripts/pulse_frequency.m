@@ -1,7 +1,7 @@
 %% Pulse frequency
 % Wildtype
 
-fits_incell = cellfun(@fits_all.get_fitID,{cells([cells.embryoID] < 6).fitID},'UniformOutput',0);
+fits_incell = cellfun(@fits_bs.get_fitID,{cells_bs.get_embryoID(1:5).fitID},'UniformOutput',0);
 
 fits_center_incell = cell(1,numel(fits_incell));
 for i = 1:numel(fits_incell)
