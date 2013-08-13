@@ -48,6 +48,7 @@ classdef CellObj
 	%		get_embryoID_cellID - search using embryoID + cellID (useful
     %           coming from EDGE)
 	%	--- Visualization/display ---
+	%		make_mask - returns a binary BW image of the cell
 	%		visualize - plots myosin + area v. time
 	%		movie - makes movie of cell
     %   --- Misc analysis ---
@@ -271,19 +272,62 @@ classdef CellObj
             %@Cell.get_fitID Returns the obj from an array with the given
             % trackID
             obj = obj_array([obj_array.trackID] == trackID);
-        end
+        end % get_trackID
         
         function obj = get_embryoID(obj_array,embryoID)
             obj = obj_array(ismember([obj_array.embryoID],embryoID));
-        end
+        end % get_embryoID
         
         function obj = get_embryoID_cellID(obj_array,embryoID,cellID)
             obj = obj_array( ...
                 [obj_array.embryoID] == embryoID & ...
                 [obj_array.cellID] == cellID ...
                 );
-        end
+        end % get_embryoID_cellID
 %---------------------- Visualization/display -----------------------------
+
+		function mask = make_mask(obj_array, frames, input)
+			%@CellObj.MAKE_MASK Make a BW mask of CellObjs using poly2mask.
+			% 
+			% SYNOPSIS: mask = cells.make_mask(frames,input)
+			%
+			% INPUT:	cellobj - a array of cellobjs
+			%			frames - frames of interest
+			% 			input - input information (see LOAD_EDGE_SCRIPT)
+			% OUTPUT: 	mask - binary mask of size [X,Y,numel(frames)]
+			%
+			% See also: draw_measurement_on_cells, draw_measurement_on_cells_patch
+			%
+			% xies@mit August 2013
+
+            num_cells = numel(obj_array);
+            num_frames = numel(frames);
+            
+            % if input.um_per_px not supplied, use 1
+            if ~isfield('input','um_per_px')
+                um_per_px = 1;
+            else
+                um_per_px = input.um_per_px;
+            end
+            
+            X = input.X; Y = input.Y;
+            mask = zeros(Y,X,num_frames);
+            
+            for i = 1:num_cells
+                vx = obj_array(i).vertex_x; vy = obj_array(i).vertex_y;
+                % etract frames of interest
+                vx = vx(frames,:); vy = vy(frames,:);
+                for t = 1:num_frames
+                    x = vx{t}/um_per_px; y = vy{t}/um_per_px;
+                    if all(~isnan(x))
+                        mask(:,:,i) = mask(:,:,i) + ...
+                            poly2mask(x,y,X,Y);
+                    end
+                end
+            end
+            mask = logical(mask);
+        end % make_mask
+
         function visualize(cells,ID,handle)
             %VISUALIZE_CELL Plots the raw area and myosin data for a given cell as well
             % as its fitted pulses, if applicable.
@@ -430,11 +474,9 @@ classdef CellObj
             embryoIDs = unique([fits.embryoID]);
             for j = embryoIDs
                 
-                % extract cells belonging to this embryo (which has a
+                % extract cells belonging to this embryo (and also has a
                 % Fitted object)
                 c = cells.get_stackID([fits.get_embryoID(j).stackID]);
-                % filter by fitted & tracked cells
-%                 c = c([c.flag_fitted] & [c.flag_tracked]);
                 
                 % retain original index - for editing
                 idx = find(ismember([cells.stackID],[c.stackID]));
