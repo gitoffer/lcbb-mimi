@@ -30,11 +30,15 @@ frames = h.frames2load;
 channels = h.channels;
 sliceID = h.input.actual_z;
 cellID = h.cellID;
-% dev_frame = h.dev_frame;
 
 path = fileparts(input.folder2load);
-vx = h.vx(:,cellID);
-vy = h.vy(:,cellID);
+if input.fixed % fixe dimage
+    vx = h.vx(cellID);
+    vy = h.vy(cellID);
+else % live image
+    vx = h.vx(:,cellID);
+    vy = h.vy(:,cellID);
+end
 
 % Check for number of channels. If > 3, then cannot use RGB.
 if numel(channels) > 3, error('Cannot display more than 3 channels');
@@ -60,10 +64,13 @@ if ~isfield(h, 'axes'), h.axes = gca; end
 
 % ---- Construct image -----
 
-% Correct for EDGE lag
-movie_frames = frames + input.t0;
-% frames = frames;
-
+if input.fixed
+    movie_frames = input.t0;
+else
+    % Correct for EDGE lag
+    movie_frames = frames + input.t0;
+end
+% find bounding box
 box = find_bounding_box(vx,vy);
 
 % If all NaN

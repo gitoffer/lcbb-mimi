@@ -1,7 +1,9 @@
 %% Pulse frequency
 % Wildtype
 
-fits_incell = cellfun(@fits_bs.get_fitID,{cells_bs.get_embryoID(1:5).fitID},'UniformOutput',0);
+fits_incell = cellfun(@fits.get_fitID, ...
+    {cells([cells.flag_tracked] == 1 & [cells.embryoID] < 6).fitID}, ...
+    'UniformOutput',0);
 
 fits_center_incell = cell(1,numel(fits_incell));
 for i = 1:numel(fits_incell)
@@ -9,6 +11,8 @@ for i = 1:numel(fits_incell)
 end
 
 freq_wt = cellfun(@(x) diff(sort(x)), fits_center_incell,'UniformOutput',0);
+% "center" of a pulse pair
+center = cellfun(@sort_pair_mean, fits_center_incell,'UniformOutput',0);
 
 [N_wt,bins] = hist( [freq_wt{:}], 30);
 bar( bins, N_wt/sum(N_wt) );

@@ -31,8 +31,15 @@ for i = 1:sum(num_cells)
     
     % Put the relevant measurements into the cell structure
     for j = 1:numel(measurements)
-        % Extract single measurement for this cell
-        meas_this_cell = embryo_stack( embryo_index ).(measurements{j})(:,cellID);
+        
+        if embryo_stack(embryo_index).input.fixed
+            meas_this_cell = ...
+                embryo_stack( embryo_index ).(measurements{j})(cellID);
+        else
+            % Extract single measurement for this cell
+            meas_this_cell = ...
+                embryo_stack( embryo_index ).(measurements{j})(:,cellID);
+        end
         
         % Try to make into numeric array
         try cell2mat(meas_this_cell);
