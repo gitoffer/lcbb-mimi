@@ -394,7 +394,12 @@ classdef CellObj
             h.border = 'on';
             h.frames2load = find(~isnan(this_cell.dev_time));
             
-            h.channels = {'Membranes','Myosin'};
+            % check that there are the measurements you're looking for...
+            if ~isempty(this_cell.myosin_sm)
+                h.channels = {'Membranes','Myosin'};
+            else
+                h.channels = {'Membranes','Rho Kinase thresholded'};
+            end
             
             if this_cell.flag_fitted
                 h.measurement = nan(numel(h.frames2load),3);
@@ -494,7 +499,7 @@ classdef CellObj
                     % 
                     fIDs = [fits(ismember([fits.fitID], cells(idx(k)).fitID)).fitID];
                     if any(fIDs)
-                        fits = fits.set_stackID( fIDs, cIDs(k), sIDs(k) );
+                        fits = fits.set_stackID( fIDs, sIDs(k), cIDs(k) );
                     end
                 end
             end

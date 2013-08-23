@@ -253,7 +253,15 @@ classdef Fitted
         function fits = get_fitID(fit_array,fitID)
             % Find the FIT(s) with the given fitID(s)
 			% USAGE: fitsOI = fits.get_fitID(fitID)
-            fits = fit_array( ismember([ fit_array.fitID ], fitID) );
+            %             fits = fit_array( ismember([ fit_array.fitID ], fitID) );
+            fitID = nonans(fitID);
+            fits = Fitted;
+            if numel(fitID) > 0
+                fits(numel(fitID)) = Fitted;
+                for i = 1:numel(fitID)
+                    fits(i) = fit_array([fit_array.fitID] == fitID(i));
+                end
+            end
         end %get_fitID
         
         function fits = set_fitID(fits,fitID, fit)

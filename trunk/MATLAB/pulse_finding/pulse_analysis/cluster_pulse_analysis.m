@@ -50,7 +50,7 @@ end
 
 % unassigned = 0
 [fits(cellfun(@isempty,{fits.cluster_label})).cluster_label] ...
-    = deal(0);
+    = deal(6);
 
 %%
 
@@ -60,9 +60,9 @@ fits_cta = fits.get_embryoID( 8:10 );
 
 clear cluster*
 
-order = [1 5 2 4 3];
+order = [3 5 4 1 2 6];
 
-for i = 1:num_clusters
+for i = 1:num_clusters+1
     
     eval(['cluster' num2str(i) ' = fits([fits.cluster_label] == ' num2str(order(i)) ');']);
     
@@ -70,12 +70,8 @@ for i = 1:num_clusters
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(order(i)) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(order(i)) ');']);
     
-%     eval(['cluster' num2str(i) '_wt.plot_heatmap']);
-%     figure
-%     eval(['pcolor(cat(1, cluster' num2str(i) '.weight_sort.corrected_area_norm ));']);
-%     title(['Cluster ' num2str(i) ])
-%     shading flat, caxis([-10 10]),colorbar
-    
+    eval(['cluster' num2str(i) '_wt.plot_heatmap']);
+
 end
 
 revorder = reverse_index(order);

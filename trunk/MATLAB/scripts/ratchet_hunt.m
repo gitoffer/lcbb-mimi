@@ -7,7 +7,7 @@ N = 2; colors = {'b','r'};
 measurements = {myosin_ring1+myosin_ring2,myosin_inside,myosin_fraction,myosin_connection};
 names = {'Junctional myosin','Medial myosin','Fraction of cell occupied by myosin','# cells connected'};
 ytitles = {'Intensity (a.u.)','Intensity (a.u.)','Fraction','Number of cells'};
-ylimits = {[0 1.5e4],[0 .8e4],[0 1],[0 90]};
+ylimits = {[0 1e4],[0 .8e4],[0.2 1],[0 90]};
 which = 1;
 % rearrange order so that [which] comes first
 measurements = [measurements(which) measurements(setdiff(1:4,which))];
@@ -16,7 +16,7 @@ ytitles = [ytitles(which) ytitles(setdiff(1:4,which))];
 ylimits = [ylimits(which) ylimits(setdiff(1:4,which))];
 
 % construct anon function for filtering pulses
-condition = @(x) ([x.center] > 0 & [x.center] < 60);
+condition = @(x) ([x.center] > 60 & [x.center] < 120);
 
 %% bootstrap ratcheted
 figure
@@ -39,7 +39,7 @@ for N = 1:Nsample
     for i = 1:4
         % collect
         bootstats(i,N,:) = nanwmean( ...
-            get_corrected_pulse_measurement(sampled,measurements{i},input,fit_opts), ...
+            sampled.get_corrected_measurement(measurements{i},input), ...
             weights);
     end
     
@@ -71,16 +71,16 @@ x = fits(1).corrected_time;
 weights = cat(1,toplot.cluster_weight);
 
 % pseudo-color is special
-M = get_corrected_pulse_measurement(toplot,measurements{1},input,fit_opts);
+M = toplot.get_corrected_measurement(measurements{1},input);
 subplot(4,2,[2 4]);
-imagesc(x,1:numel(toplot), cat(1,toplot.corrected_area_norm)); colorbar
+imagesc(x,1:numel(toplot), cat(1,toplot.corrected_myosin)); colorbar
 title(names{1});
 
 for i = 1:4
     
     h(i) = subplot(4,2, 4+i);
     hold on
-    M = get_corrected_pulse_measurement(toplot,measurements{i},input,fit_opts);
+    M = get_corrected_measurement(toplot,measurements{i},input);
 	shadedErrorBar(x, nanwmean(M,weights),nanstd(M),colors{2},1);
 %     for j = 1:size(M,1) % workaround to get transparent lines
 %         y = M(j,:);
@@ -89,6 +89,7 @@ for i = 1:4
 %         patch(xflip, yflip, 'r', 'EdgeColor', colors{2}, 'LineWidth', 5, 'EdgeAlpha', 0.1, 'Facealpha', 0);
 %         hold on
 %     end
+    xlim([-80 80]);
     title(names{i});
     xlabel('Pulse time (sec)');set(gca,'XLim',[-50 60]);
     ylabel(ytitles{i});set(gca,'YLim',ylimits{i});
@@ -99,22 +100,23 @@ linkaxes(h,'x');
 
 %% plot ratcheted portion
 
+
 % gather data
 toplot = ratcheted(condition( ratcheted )).sort('cluster_weight');
 x = fits(1).corrected_time;
 weights = cat(1,toplot.cluster_weight);
 
 % pseudo-color is special
-M = get_corrected_pulse_measurement(toplot,measurements{1},input,fit_opts);
+M = toplot.get_corrected_measurement(measurements{1},input);
 subplot(4,2,[1 3]);
-imagesc(x,1:numel(toplot), cat(1,toplot.corrected_area_norm)); colorbar
+imagesc(x,1:numel(toplot), cat(1,toplot.corrected_myosin)); colorbar
 title(names{1});
 
 for i = 1:4
     
     h(i) = subplot(4,2, 4+i);
     hold on
-    M = get_corrected_pulse_measurement(toplot,measurements{i},input,fit_opts);
+    M = get_corrected_measurement(toplot,measurements{i},input);
 	shadedErrorBar(x, nanwmean(M,weights),nanstd(M),colors{1},1);
 %     for j = 1:size(M,1) % workaround to get transparent lines
 %         y = M(j,:);
@@ -124,6 +126,7 @@ for i = 1:4
 %         hold on
 %     end
     title(names{i});
+    xlim([-80 80]);
     xlabel('Pulse time (sec)');set(gca,'XLim',[-50 60]);
     ylabel(ytitles{i});set(gca,'YLim',ylimits{i});
 end

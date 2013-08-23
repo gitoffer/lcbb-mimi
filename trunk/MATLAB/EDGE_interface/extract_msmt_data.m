@@ -22,6 +22,12 @@ num_cells = zeros(num_embryos,1);
 
 x = cell(1,num_embryos);
 
+% check that required stack is either all fixed or all live (cannot mix due
+% to dimension issues)
+if any([input.fixed]) && any(~[input.fixed])
+    error('Stiched embryo must be either all fixed or all live');
+end
+
 % Go through each embryo and extract only the relevant measurement,
 % z-slice, and do some processing like squeezing out singletons
 % and (if applicable) converting into numerical array.
@@ -42,9 +48,7 @@ for i = 1:num_embryos
             data = m.data;
         end
     else
-        warning('edge:msmt_not_found',['Found no measurement called ' name_to_extract])
-        data = [];
-        varargout{1} = 0;
+        error('edge:msmt_not_found',['Found no measurement called ' name_to_extract])
     end
     
     % Special case for neighborID -- need to re-index the cellIDs

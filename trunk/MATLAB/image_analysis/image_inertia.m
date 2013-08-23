@@ -1,64 +1,48 @@
-function moment = image_inertia(img)
+function rho = image_inertia(img,mask,debug)
 %IMAGE_INERTIA Find the inertial moment around the center of mass for a 2D image.
+%
+% SYNOPSIS: rho = image_inertia(img,mask)
+%
+% INPUT: img - binary or grayscale image
+%        mask - maximum mask (for normalization)
+%
+% OUTPUT: rho - moment of inertia
+%
+% xies@mit Aug 2013
 
-[N,M] = size(img);
+if nargin < 2, mask = ones(size(img)); debug = 0; end
+if nargin < 3, debug = 0; end
+
+% set up coordinate system (MATLAB IJ default)
+[M,N] = size(img);
 [X,Y] = meshgrid(1:N,1:M);
 
 % find center of mass
-cell_area = sum(img(img > 0));
+cell_mass = sum(img(img > 0));
+meanx = sum(sum( img.*X ))/cell_mass;
+meany = sum(sum( img.*Y ))/cell_mass;
 
+if debug
+    figure,imshow(img,[]),hold on,plot(meanx,meany,'r*');hold off;
+end
 
+% reset coordinates wrt CoM
+X = X - meanx;
+Y = Y - meany;
+% get radii at each pixel
+R2 = X.^2 + Y.^2;
 
-function [centroid, thetamin, roundness] = moments(im)
- 
-    [rows,cols] = size(im);
-    x = ones(rows,1)*[1:cols];    % Matrix with each pixel set to its x coordinate
-    y = [1:rows]'*ones(1,cols);   % Matrix with each pixel set to its y coordinate
+% get max R2
+% edge = bwmorph(mask,'remove');
+% maxR2 = mean(mean(edge.*R2));
 
-    area = sum(sum(im));
-    meanx = sum(sum(double(im).*x))/area;
-    meany = sum(sum(double(im).*y))/area;
-    centroid = [meanx, meany];
-    
-    % coordinates changed with respect to centre of mass
-    x = x - meanx;
-    y = y - meany;
-    
-    a = sum(sum(double(im).*x.^2));
-    b = sum(sum(double(im).*x.*y))*2;
-    c = sum(sum(double(im).*y.^2));
-    
-    denom = b^2 + (a-c)^2;
-    
-    if denom == 0
-        % let thetas equal arbitrary angles
-        thetamin = 2*pi*rand;
-        thetamax = 2*pi*rand;
-        roundness = 1;
-    else
-        sin2thetamin = b/sqrt(denom);       %positive solution
-        sin2thetamax = -sin2thetamin;
-        cos2thetamin = (a-c)/sqrt(denom);   %positive solution
-        cos2thetamax = -cos2thetamin;
-    
-        thetamin = atan2(sin2thetamin, cos2thetamin)/2;
-        thetamax = atan2(sin2thetamax, cos2thetamax)/2;
-        Imin = 0.5*(c+a) - 0.5*(a-c)*cos2thetamin - 0.5*b*sin2thetamin;
-        Imax = 0.5*(c+a) - 0.5*(a-c)*cos2thetamax - 0.5*b*sin2thetamax;
-        roundness = Imin/Imax;
-    end
-    
-    % draw an axis proportional to object size
-    % 0.5 takes into acount lines with roundness = 0
-    % 5   takes into acount small objects, so axis is still visible.
-    rho = sqrt(area)/(roundness + 0.5) + 5 ; 
-    [X1,Y1] = pol2cart(thetamin,      rho);
-    [X2,Y2] = pol2cart(thetamin + pi, rho);
+% calculate rotation moment (rho)
+rho = sum(sum( R2 .* (img)));
+% normalize by max MR^2
+rho = rho / sum(sum(img));
+rho = rho / numel(mask(mask > 0));
+% rho = rho / maxR2;
 
-    imshow(im);
-    hold;
-    line([X1 + meanx, X2 + meanx],[Y1 + meany, Y2 + meany])
-    plot(meanx, meany,'r+')
-    hold;
+% rho = 1 - rho;
 
 end

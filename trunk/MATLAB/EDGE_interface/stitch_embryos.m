@@ -26,8 +26,11 @@ function [out_data,t] = stitch_embryos(data,input)
 % xies@mit.
 
 num_embryos = numel(data);
-
-num_frames = cellfun(@(x) size(x,1), data);
+if all([input.fixed])
+    num_frames = 1;
+else
+    num_frames = cellfun(@(x) size(x,1), data);
+end
 max_num_frames = max(num_frames);
 
 
