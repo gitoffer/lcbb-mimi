@@ -1,9 +1,9 @@
 %BG_SUBTRACT_MYOSIN script to remove background level of myosin
 
 % Path to the raw myosin stack (TIF)
-path = '/Users/Imagestation/Desktop/Mimi/Data/Frank/RokGFP aRho568 aECad 647/rok_max_z14.tif';
-num_frames = 1;
-num_slices = 1;
+path = '/Users/Imagestation/Desktop/Mimi/Data/11-07-2012/SqhGap/1/myosin_stack.tif';
+num_frames = 145;
+num_slices = 8;
 
 %% Load images
 
@@ -14,11 +14,11 @@ raw_myo = permute(raw_myo,[1 2 4 5 3]);
 
 %% Crop images
 
-reference_z = 1;
+reference_z = 5;
 reference_t = 1;
 
-end_z = 1;
-end_t = 1;
+end_z = 8;
+end_t = 10;
 
 [~,bg_box] = imcrop(raw_myo(:,:,reference_z,reference_t),[]);
 x0 = round(bg_box(1)); y0 = round(bg_box(2));
@@ -47,8 +47,8 @@ threshold = mean(flat(bg)) + nstd*std(flat(bg))
 
 %% Get and display thresholded myosin image
 
-display_time = 1;
-beg_z = 1; end_z = 1;
+display_time = 100;
+beg_z = 1; end_z = 5;
 myosin_max = max(raw_myo(:,:,beg_z:end_z,:),[],3);
 myosin_max = permute(myosin_max,[1 2 4 3]);
 
@@ -66,7 +66,7 @@ showsub_vertlink( ...
 
 output_path = ...
     [fileparts(path) ...
-    '/rok_th_' num2str(beg_z) '_' num2str(end_z) '_' num2str(nstd) '.tif'];
+    '/myosin_th_' num2str(beg_z) '_' num2str(end_z) '_' num2str(nstd) '.tif'];
 
 write_tiff_stack(myosin_th,output_path);
 

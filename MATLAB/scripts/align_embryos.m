@@ -38,7 +38,7 @@ end
 
 %% Visualizing mean properties
 
-name2plot = 'myosin_sm';
+name2plot = 'number_cells_connected_by_myosin';
 
 figure, clear H
 embryoID_OI = 1:5;

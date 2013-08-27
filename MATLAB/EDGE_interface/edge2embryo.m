@@ -34,9 +34,9 @@ for j = 1:numel(meas_fieldnames)
         m = EDGEstack(i,strcmpi({EDGEstack(i,:).name},meas_names{j})).data;
         m = squeeze(m(:,input(i).zslice,:));
         % If possible convert to mat array
-%         try m = cell2mat(m);
-%         catch err
-%         end
+        try m = cell2mat(m);
+        catch err
+        end
         
         % Construct embryoID/cellID/stackID
         x{i,j} = m;

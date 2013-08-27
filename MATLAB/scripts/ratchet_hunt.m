@@ -7,8 +7,8 @@ N = 2; colors = {'b','r'};
 measurements = {myosin_ring1+myosin_ring2,myosin_inside,myosin_fraction,myosin_connection};
 names = {'Junctional myosin','Medial myosin','Fraction of cell occupied by myosin','# cells connected'};
 ytitles = {'Intensity (a.u.)','Intensity (a.u.)','Fraction','Number of cells'};
-ylimits = {[0 1e4],[0 .8e4],[0.2 1],[0 90]};
-which = 1;
+ylimits = {[0 .8e4],[0 .8e4],[0 .3],[0 10]};
+which = 3;
 % rearrange order so that [which] comes first
 measurements = [measurements(which) measurements(setdiff(1:4,which))];
 names = [names(which) names(setdiff(1:4,which))];
@@ -16,7 +16,7 @@ ytitles = [ytitles(which) ytitles(setdiff(1:4,which))];
 ylimits = [ylimits(which) ylimits(setdiff(1:4,which))];
 
 % construct anon function for filtering pulses
-condition = @(x) ([x.center] > 60 & [x.center] < 120);
+condition = @(x) ([x.center] > -Inf & [x.center] < 0);
 
 %% bootstrap ratcheted
 figure
@@ -73,7 +73,7 @@ weights = cat(1,toplot.cluster_weight);
 % pseudo-color is special
 M = toplot.get_corrected_measurement(measurements{1},input);
 subplot(4,2,[2 4]);
-imagesc(x,1:numel(toplot), cat(1,toplot.corrected_myosin)); colorbar
+imagesc(x,1:numel(toplot), M); colorbar
 title(names{1});
 
 for i = 1:4
@@ -97,9 +97,7 @@ end
 
 linkaxes(h,'x');
 
-
-%% plot ratcheted portion
-
+% plot ratcheted portion
 
 % gather data
 toplot = ratcheted(condition( ratcheted )).sort('cluster_weight');
@@ -109,7 +107,7 @@ weights = cat(1,toplot.cluster_weight);
 % pseudo-color is special
 M = toplot.get_corrected_measurement(measurements{1},input);
 subplot(4,2,[1 3]);
-imagesc(x,1:numel(toplot), cat(1,toplot.corrected_myosin)); colorbar
+imagesc(x,1:numel(toplot), M); colorbar
 title(names{1});
 
 for i = 1:4
