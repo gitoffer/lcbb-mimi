@@ -1,6 +1,6 @@
 %% Nearby pulse analysis
 
-fitsOI = fits_twist;
+fitsOI = fits_wt;
 
 %%
 
@@ -91,9 +91,12 @@ end
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
 window = 6;
-Nboot = 10;
+Nboot = 100;
 
-left = [-Inf]; right = Inf;
+left = [-Inf -Inf 0 60 120 180]; right = [Inf 0 60 120 180 Inf];
+
+%%
+
 
 num_member = zeros(numel(left),num_clusters);
 num_neighbors = zeros(numel(left),num_clusters,num_clusters+1);
