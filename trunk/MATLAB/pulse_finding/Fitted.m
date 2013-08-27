@@ -262,6 +262,7 @@ classdef Fitted
                     fits(i) = fit_array([fit_array.fitID] == fitID(i));
                 end
             end
+            if isempty([fits.fitID]), fits = []; end
         end %get_fitID
         
         function fits = set_fitID(fits,fitID, fit)
@@ -849,10 +850,13 @@ classdef Fitted
 			for i = 1:numel(cells)
 
 				this_cell_fits = fits.get_fitID( cells(i).fitID );
-				for j = 1:numel( this_cell_fits )
-					binary( this_cell_fits(j).width_frames, cells(i).cellID ) = ...
-						binary( this_cell_fits(j).width_frames, cells(i).cellID ) + j;
-				end
+%                 if ~isempty([this_cell_fits.fitID])
+                    for j = 1:numel( this_cell_fits )
+                        binary( this_cell_fits(j).width_frames, cells(i).cellID ) = ...
+                            binary( this_cell_fits(j).width_frames, cells(i).cellID ) + ...
+                            this_cell_fits(j).cluster_label;
+                    end
+%                 end
 
 			end
             

@@ -38,7 +38,7 @@ fits = fits.align_fits(myosins,'myosin');
 fits = fits.align_fits(areas_sm,'area');
 fits = fits.align_fits(areas_rate,'area_rate');
 fits = fits.align_fits(myosins_rate,'myosin_rate');
-fits = fits.align_fits(anisotropies,'anisotropy');
+% fits = fits.align_fits(anisotropies,'anisotropy');
 fits = fits.align_fits(myosin_ring1+myosin_ring2,'measurement');
 
 aligned_area = cat(1,fits.area);

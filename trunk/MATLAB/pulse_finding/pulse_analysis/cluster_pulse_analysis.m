@@ -60,7 +60,7 @@ fits_cta = fits.get_embryoID( 8:10 );
 
 clear cluster*
 
-order = [3 5 4 1 2 6];
+order = [4 5 2 3 1 6];
 
 for i = 1:num_clusters+1
     

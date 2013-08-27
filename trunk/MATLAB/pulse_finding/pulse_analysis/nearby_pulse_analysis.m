@@ -1,6 +1,6 @@
 %% Nearby pulse analysis
 
-fitsOI = fits_wt;
+fitsOI = fits_twist;
 
 %%
 
@@ -91,17 +91,14 @@ end
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
 window = 6;
-Nboot = 100;
+Nboot = 10;
 
-left = [-Inf -Inf 0 60 120 180]; right = [Inf 0 60 120 180 Inf];
+left = [-Inf]; right = Inf;
 
 num_member = zeros(numel(left),num_clusters);
 num_neighbors = zeros(numel(left),num_clusters,num_clusters+1);
 num_bs_cell = zeros(Nboot,numel(left),num_clusters,num_clusters+1);
 num_bs_fit = zeros(Nboot,numel(left),num_clusters,num_clusters+1);
-
-random_cell = cell(2,Nboot);
-random_pulse = cell(2,Nboot);
 
 for j = 1:Nboot
     
@@ -114,11 +111,6 @@ for j = 1:Nboot
     % randomize pulses
     [fits_bs_fit,cells_bs_fit] = fitsOI.bootstrap_stackID(cells);
     fits_bs_fit = fits_bs_fit.find_near_fits(time_windows,neighborID);
-    
-    random_cell{1,j} = fits_bs_cell;
-    random_cell{2,j} = cells_bs_cell;
-    random_pulse{1,j} = fits_bs_fit;
-    random_pulse{2,j} = cells_bs_fit;
     
     for k = 1:numel(left) % iterating through time-bins
         
@@ -172,16 +164,17 @@ N = zeros( numel(left), num_clusters );
 for k = 1:numel(left)
     
     figure,
+    
+    foo = ( sum(num_neighbors(k,:,:),3) ...
+        - nanmean(squeeze( sum(num_bs_cell(:,k,:,:),4) )) ) ...
+        ./ nanstd(squeeze( sum(num_bs_cell(:,k,:,:),4) ));
+    foo2 = ( sum(num_neighbors(k,:,:),3) ...
+        - nanmean(squeeze( sum(num_bs_fit(:,k,:,:),4) )) ) ...
+        ./ nanstd(squeeze( sum(num_bs_fit(:,k,:,:),4) ));
+    
     % Z-score bargraph
     bar(1:5, ...
-        cat(1, ...
-        (sum(num_neighbors(k,:,:),3) ...
-        - nanmean(squeeze( sum(num_bs_cell(:,k,:,:),4) )) ) ...
-        ./nanstd(squeeze( sum(num_bs_cell(:,k,:,:),4) )), ...
-        (sum(num_neighbors(k,:,:),3) ...
-        - nanmean(squeeze( sum(num_bs_fit(:,k,:,:),4) )) ) ...
-        ./nanstd(squeeze( sum(num_bs_fit(:,k,:,:),4) )) ...
-        )');
+        cat(1, foo,foo2)' );
 
     xlabel('Center cluster label')
     ylabel('Difference from MC neighbor count (random-pulse), normalized by standard deviation')
@@ -194,7 +187,7 @@ end
 %% Break down neighbor identity
 
 for k = 1
-    
+        
     figure,
     
     foo = ( squeeze(num_neighbors(k,:,:)) ...
@@ -202,16 +195,8 @@ for k = 1
         ./squeeze(nanstd(num_bs_fit(:,k,:,:)));
     % iterate through all center labels
     bar(1:5,foo);
-%     [X,Y] = meshgrid(1:7,1:6);
-%     pcolor(X,Y, cat(2,cat(1,foo,nan(1,6)),nan(6,1)) )
-%     axis ij
-%     caxis([-3 3]),colorbar
     
-%     set(gca,'YTick',1.5:1:6);
-%     set(gca,'XTick',1.5:1:7);
-%     set(gca,'YTickLabel',entries);
     set(gca,'XTickLabel',[entries,'N/A']);
-%     legend(entries{:});
     
     title(['Number of neighbors ' ...
         num2str(window) '0s after, ' num2str(left(k)) ' < center < ' num2str(right(k))]);
