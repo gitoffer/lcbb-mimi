@@ -60,7 +60,7 @@ fits_cta = fits.get_embryoID( 8:10 );
 
 clear cluster*
 
-order = [4 5 2 3 1 6];
+order = [5 3 2 1 4 6];
 
 for i = 1:num_clusters+1
     
@@ -70,7 +70,7 @@ for i = 1:num_clusters+1
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(order(i)) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(order(i)) ');']);
     
-    eval(['cluster' num2str(i) '_wt.plot_heatmap']);
+%     eval(['cluster' num2str(i) '_wt.plot_heatmap']);
 
 end
 
@@ -111,7 +111,7 @@ figure
 
 for i = 1:num_clusters
     
-    eval(['this_cluster = cluster' num2str(i) '.sort(''cluster_weight'');']);
+    eval(['this_cluster = cluster' num2str(i) '_wt.sort(''cluster_weight'');']);
     cluster_area = cat(1,this_cluster.corrected_area_norm);
     
     subplot(2,num_clusters,i);
