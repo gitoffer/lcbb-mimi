@@ -1,5 +1,5 @@
 function cells = embryo2cell(embryo_stack)
-%EDGE2CELL
+%EDGE2CELL Converts an EMBRYO_STACK( See EDGE2EMBRYO) into a CellObj.
 %
 % USAGE: cells = edge2cell(embryo_stack);
 %
@@ -55,6 +55,12 @@ for i = 1:sum(num_cells)
     this_cell.folder_name = embryo_stack( embryo_index ).input.folder2load;
     
     cells(i) = CellObj(this_cell);
+    
+    % Manually set initial values for Pulses
+    cells(i).flag_fitted = 0;
+    cells(i).flag_tracked = 0;
+    cells(i).num_fits = 0;
+    cells(i).num_tracks = 0;
     
 end
 
