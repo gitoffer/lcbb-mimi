@@ -29,28 +29,28 @@ for k = 3:7
 
 end
 
-%% FCM
-
-foo = fits(cellfun(@(x) numel(x(isnan(x))),{fits.corrected_area_norm}) < 3);
-X = cat(1,foo.corrected_area_norm);
-X = bsxfun(@rdivide, X, nanstd(X,[],2) );
-
-X( isnan(X) ) = 0;
-
-num_clusters = 5;
-
-[center,U,obj] = fcm(X,num_clusters); [max_prob,labels] = max(U);
-
-% labels = labels_all(1,:);
-
-for i = 1:numel(labels)
-    fits([fits.fitID] == foo(i).fitID).cluster_label = labels(i);
-    fits([fits.fitID] == foo(i).fitID).cluster_weight = max_prob(i);
-end
-
-% unassigned = 0
-[fits(cellfun(@isempty,{fits.cluster_label})).cluster_label] ...
-    = deal(6);
+% %% FCM
+% 
+% foo = fits(cellfun(@(x) numel(x(isnan(x))),{fits.corrected_area_norm}) < 3);
+% X = cat(1,foo.corrected_area_norm);
+% X = bsxfun(@rdivide, X, nanstd(X,[],2) );
+% 
+% X( isnan(X) ) = 0;
+% 
+% num_clusters = 5;
+% 
+% [center,U,obj] = fcm(X,num_clusters); [max_prob,labels] = max(U);
+% 
+% % labels = labels_all(1,:);
+% 
+% for i = 1:numel(labels)
+%     fits([fits.fitID] == foo(i).fitID).cluster_label = labels(i);
+%     fits([fits.fitID] == foo(i).fitID).cluster_weight = max_prob(i);
+% end
+% 
+% % unassigned = 0
+% [fits(cellfun(@isempty,{fits.cluster_label})).cluster_label] ...
+%     = deal(6);
 
 %%
 
@@ -60,21 +60,18 @@ fits_cta = fits.get_embryoID( 8:10 );
 
 clear cluster*
 
-order = [5 3 2 1 4 6];
-
-for i = 1:num_clusters+1
+for i = 1:5+1
     
-    eval(['cluster' num2str(i) ' = fits([fits.cluster_label] == ' num2str(order(i)) ');']);
+    eval(['cluster' num2str(i) ' = fits([fits.cluster_label] == ' num2str(i) ');']);
     
-    eval(['cluster' num2str(i) '_wt = fits_wt([fits_wt.cluster_label] == ' num2str(order(i)) ');']);
-    eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(order(i)) ');']);
-    eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(order(i)) ');']);
+    eval(['cluster' num2str(i) '_wt = fits_wt([fits_wt.cluster_label] == ' num2str(i) ');']);
+    eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(i) ');']);
+    eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(i) ');']);
     
-%     eval(['cluster' num2str(i) '_wt.plot_heatmap']);
+    eval(['cluster' num2str(i) '_wt.plot_heatmap']);
 
 end
 
-revorder = reverse_index(order);
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 colors = {'b','c','g','r','m'};
 
@@ -105,7 +102,7 @@ ylabel('Probability')
 legend(entries{:});
 
 
-%%
+%% summary of clusters
 
 figure
 
@@ -131,13 +128,14 @@ for i = 1:num_clusters
 end
 
 
-%%
+%% Breakdown behavior by embryoID
 
 clear N
 for i = 1:num_clusters
-    N(i,:) = hist( [fits( revorder([fits.cluster_label]) == i).embryoID] ,1:10);
+    N(i,:) = hist( [fits( [fits.cluster_label] == i).embryoID] ,1:10);
 end
 
 bar(1:10, bsxfun(@rdivide, N, sum(N))' ,'stacked' );
 xlim([0 11])
+xlabel('EmbryoID')
 legend(entries{:});

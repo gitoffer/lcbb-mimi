@@ -11,6 +11,8 @@ classdef Fitted
 	%   	the same pulse already exists in the array
 	%	removeFit - given a fitID, remove it from the object stack
     %   cat - concatenate two Fitted arrays
+    % --- Comparator ---
+    %   eq - right now will be equal if overlap of width_frame is > 3
     % --- Array access/set ---
     %   get_stackID - get all FITs with a certain stackID
     %   get_fitID - get the fit with the given fitID
@@ -26,11 +28,11 @@ classdef Fitted
     %   adjust_centers - adjust Gaussian centers to tref
     %   get_corrected_measurement - temporarily puts given measurement and
     %      returns the aligned, interpolated .corrected_measurement
-    % --- Comparator ---
-    %   eq - right now will be equal if overlap of width_frame is > 3
     % --- Array operations ---
     %   sort - sort according to field (default: amplitude)
     %   bin_fits - bin each embryo by amplitude
+    % --- Analysis ---
+    %   fcm_cluster - cluster the array by a datafield, using Fuzzy c-means
 	%	find_near_fits - find fits near a 'central' fit given a time-window
     %   bootstrap_cluster_label - intra-embryo exchange of all cluster
     %      labels
@@ -41,7 +43,7 @@ classdef Fitted
     %   plot_heatmap (sorted)
     %   movie
 	% --- Export ---
-	%   export (export given measurement to csv file)
+	%   export_field2csv (export given measurement to csv file)
     %
     % See also: PULSE, TRACK, CELLOBJ
     %
@@ -50,10 +52,12 @@ classdef Fitted
     properties (SetAccess = private)
         
         % Initialized with
+        % Identifying information
         embryoID
         cellID
         stackID
         fitID
+        % Pulse-specific data
         amplitude
         center
         width
@@ -66,22 +70,22 @@ classdef Fitted
         aligned_time
         aligned_time_padded
         fit_padded
-        opt
+        opt % fitting options used
         
         % Added later
+        corrected_time
         myosin
         myosin_rate
         area
         area_rate
         area_norm
         anisotropy
-        corrected_time
         corrected_myosin
         corrected_myosin_rate
         corrected_area
         corrected_area_rate
         corrected_area_norm
-        % placeholder
+        % placeholder for further measurements
         measurement
         corrected_measurement
         
@@ -89,8 +93,10 @@ classdef Fitted
     properties (SetAccess = public)
         
         category % one2one, added, missed, so forth
-        manually_added
         bin % intra-embryo pulse strength bin
+        % Flags to keep track during analysis
+        manually_added % whether it's manually added
+        bootstrapped % whether its randomly shuffled
 
         time_windows % 
         nearIDs % fitIDs of 'nearby' fits, ordered w.r.t. time_windows
@@ -176,6 +182,7 @@ classdef Fitted
 %                     [fit.(names{i})] = deal(this_fit.(names{i}));
 %                 end
                 this_fit.manually_added = 0;
+                this_fit.bootstrapped = 0;
                 this_fit.opt = opt;
                 
             end
@@ -235,6 +242,30 @@ classdef Fitted
                 + (new_embryoID - old_embryoID)*100000;
             
         end % reindex_fitID
+                
+% --------------------- Comparator ----------------------------------------
+
+        function equality = eq(fit1,fit2)
+            % Equality comparator for FITTED
+            % right now slow, expecting array in first argument and single object
+			% in the second (fit2). Will return equal if the width_frame of two
+			% fits have overlap > 3.
+            if numel(fit1) > 1 && numel(fit2) > 1
+                error('Cannot handle TWO array inputs.');
+            end
+%             names = setdiff(fieldnames(fit2),{'fitID','category'});
+            equality = false(1,numel(fit1));
+            for j = 1:numel(fit1)
+                if fit1(j).stackID == fit2.stackID
+                % can't use bsxfun because of un-uniform output
+                    if numel(fit1(j).width_frames( ...
+                            ismember(fit1(j).width_frames, fit2.width_frames))) > 3
+                        equality(j) = 1;
+                    end
+                end
+            end
+
+        end %eq
         
 % --------------------- Array access/set ----------------------------------
         
@@ -259,14 +290,31 @@ classdef Fitted
             if numel(fitID) > 0
                 fits(numel(fitID)) = Fitted;
                 for i = 1:numel(fitID)
-                    fits(i) = fit_array([fit_array.fitID] == fitID(i));
+                    hit = [fit_array.fitID] == fitID(i);
+                    if any( hit )
+                        fits(i) = fit_array([fit_array.fitID] == fitID(i));
+                    end
                 end
             end
-            if isempty([fits.fitID]), fits = []; end
+            % ger rid of empty ones
+            fits( cellfun(@isempty,{fits.fitID}) ) = [];
         end %get_fitID
         
-        function fits = set_fitID(fits,fitID, fit)
-            fits( [fits.fitID] == fitID ) = fit;
+        function fits = set_field(fits,fitIDs, fieldname, fieldvalue)
+            % find fits in an array with the given fitIDs and set the given
+            % fieldnames to that fieldvalue
+            
+            fitIDs = nonans(fitIDs);
+            for i = 1:numel(fitIDs)
+                hit = [fits.fitID] == fitIDs(i);
+                if any(hit)
+                    fits(hit).(fieldname) = fieldvalue(i);
+                else
+                    warning(['FitID ' num2str(fitIDs(i)) ' not found']);
+                    keyboard
+                end
+            end
+            
         end %set_fitID
         
 % --------------------- Alignment functions -------------------------------
@@ -439,30 +487,6 @@ classdef Fitted
             M = cat(1,fits.corrected_measurement);
         end
         
-% --------------------- Comparator ----------------------------------------
-
-        function equality = eq(fit1,fit2)
-            % Equality comparator for FITTED
-            % right now slow, expecting array in first argument and single object
-			% in the second (fit2). Will return equal if the width_frame of two
-			% fits have overlap > 3.
-            if numel(fit1) > 1 && numel(fit2) > 1
-                error('Cannot handle TWO array inputs.');
-            end
-%             names = setdiff(fieldnames(fit2),{'fitID','category'});
-            equality = false(1,numel(fit1));
-            for j = 1:numel(fit1)
-                if fit1(j).stackID == fit2.stackID
-                % can't use bsxfun because of un-uniform output
-                    if numel(fit1(j).width_frames( ...
-                            ismember(fit1(j).width_frames, fit2.width_frames))) > 3
-                        equality(j) = 1;
-                    end
-                end
-            end
-
-        end %eq
-        
 % --------------------- Array operations ----------------------------------
         
 		function fits = bin_fits(fits)
@@ -512,7 +536,74 @@ classdef Fitted
             fits = fits(order);
             
         end % sort
+
+% --------------------- Analsysis -----------------------------------------
         
+        function fits = fcm_cluster(fits,k,datafield,max_nan)
+            %FCM_CLUSTER Uses fuzzy c-means to cluster a given datafield in
+            % the fit_array. In order to standardize the cluster naming
+            % schematic, 
+            %
+            % USAGE: fits = fits.fcm_cluster(5,'corrected_area_norm')
+            %        fits = fits.fcm_cluster(5,'corrected_area_norm',3)
+            %
+            % INPUT: fits - array of pulses to be clustered
+            %        k - the number of seeding clusters
+            %        datafield - the data you want to cluster. Procedure
+            %           will normalize by taking the Z score within each
+            %           pulse
+            %        max_nan - maximum number of tolerated NaN
+            % 
+            % OUTPUT: fits - with cluster_label updated
+            % xies@mit.edu
+            
+            filtered = fits(...
+                cellfun(@(x) numel(x(isnan(x))),{fits.(datafield)}) < max_nan );
+            
+            X = cat(1,filtered.(datafield));
+            X = bsxfun(@minus,X,nanmean(X));
+            X = bsxfun(@rdivide,X,nanstd(X,[],2));
+            
+            X(isnan(X)) = 0;
+            
+            [~,U] = fcm(X,k); [max_prob, labels] = max(U);
+            
+            % store labels
+            
+            fits = set_field(fits,[filtered.fitID], 'cluster_label', labels);
+            fits = set_field(fits,[filtered.fitID], 'cluster_weight', max_prob);
+%             for i = 1:numel(labels)
+%                 fits([fits.fitID] == filtered(i).fitID).cluster_label = ...
+%                     labels(i);
+%                 fits([fits.fitID] == filtered(i).fitID).cluster_weight = ...
+%                     max_prob(i);
+%             end
+
+            % deal with non-clustered fits (label = 6, weight = NaN)
+            [fits(cellfun(@isempty, {fits.cluster_label} )).cluster_label] = ...
+                deal(6);
+            [fits(cellfun(@isempty, {fits.cluster_weight} )).cluster_weight] = ...
+                deal(NaN);
+            
+            % User input for label shuffling
+            for i = 1:k
+                subplot(5,1,i)
+                pcolor(cat(1,fits([fits.cluster_label] == i).(datafield)));
+                caxis([-10 10]),colorbar
+                shading flat
+            end
+            display('Enter the label order: 1-Stereotyped, 2-Early, 3-Delayed, 4-Unratcheted, 5-Stretched 6-Not clustered')
+            order = input(':');
+            revorder = reverse_index(order);
+            for i = 1:k
+                [fits([fits.cluster_label] == i).cluster_label] = deal(revorder(i)*10);
+            end
+            for i = 10:10:k*10
+                [fits([fits.cluster_label] == i).cluster_label] = deal(i/10);
+            end
+            
+        end % cluster
+
         function fits = find_near_fits(fits,time_windows,neighborID)
             %FIND_NEAR_FITS Find the number (and fitID) of each fitted
             % pulse within an range of time-windows and the first-order
@@ -592,6 +683,7 @@ classdef Fitted
             end
             for i = 1:numel(fits)
                 fits(i).cluster_label = labels(i);
+                fits(i).bootstrapped = 1;
             end
             
         end % bootstrap_cluster_label
@@ -689,6 +781,9 @@ classdef Fitted
                     nonans([cells.get_stackID( this_fit.stackID ).fitID this_fitID]);
                 cells( [cells.stackID] == this_fit.stackID).num_fits = ...
                     cells( [cells.stackID] == this_fit.stackID).num_fits + 1;
+                
+                % flag the fact that this is a bootstrapped pulse
+                fits(i).bootstrapped = 1;
                 
                 % sanity check -- number of total fitID within cells must
                 % be the same (pm 1)
@@ -815,11 +910,11 @@ classdef Fitted
         
 % ------------------------- Export ----------------------------------------
 
-        function export_fits(fits,filepath,fieldname)
+        function export_field2csv(fits,filepath,fieldname)
             %Exports the given FIELDNAME of a FIT array to CSV file
             %
-            % USAGE: export_fits(fits,filepath,fieldname);
-                        
+            % USAGE: export_field2csv(fits,filepath,fieldname);
+            
             fitIDs = [fits.fitID]';
             manual_flag = [fits.manually_added]';
             
@@ -835,32 +930,15 @@ classdef Fitted
             
             csvwrite([filepath '/fits_' fieldname,'.csv'] , mat2write);
             
-        end %export_fits
+        end %export_field2csv
         
-        function binary = make_binary_sequence(fits,cells)
-            %MAKE_BINARY_SEQUENCE Uses width_frames to generate a binary
-            % sequence of pulses
-			% USAGE: binary_seq = fits.make_binary_sequence(cells);
-			
-            % Preallocate
-			binary = zeros( numel(cells(1).dev_time), max( [cells.cellID] ));
-			% Filter relevant fits
-			fits = fits.get_fitID( [cells.fitID] );
-
-			for i = 1:numel(cells)
-
-				this_cell_fits = fits.get_fitID( cells(i).fitID );
-%                 if ~isempty([this_cell_fits.fitID])
-                    for j = 1:numel( this_cell_fits )
-                        binary( this_cell_fits(j).width_frames, cells(i).cellID ) = ...
-                            binary( this_cell_fits(j).width_frames, cells(i).cellID ) + ...
-                            this_cell_fits(j).cluster_label;
-                    end
-%                 end
-
-			end
-            
-        end
+%         function export_array(fits,foldername)
+%             %EXPORT_ARRAY Exports the entire array
+%             
+%             prop_list = properties('Fitted');
+%             mat2write
+%             
+%         end
         
     end % Dynamic methods
  

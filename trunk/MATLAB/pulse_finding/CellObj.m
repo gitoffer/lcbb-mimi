@@ -10,8 +10,6 @@ classdef CellObj
     %   
     %   area
     %   area_sm
-    %   myosin_intensity_fuzzy
-    %   myosin_sm
     %   centroid_x
     %   centroid_y
     %   identity_of_neighbors_all
@@ -19,6 +17,8 @@ classdef CellObj
     %   vertex_y
     %   anisotropy_xy
     %   anisotropy
+    %   myosin_intensity_fuzzy
+    %   myosin_sm
     %
     %   dev_frame
     %   dev_time
@@ -51,9 +51,10 @@ classdef CellObj
 	%		make_mask - returns a binary BW image of the cell
 	%		visualize - plots myosin + area v. time
 	%		movie - makes movie of cell
-    %   --- Misc analysis ---
+    %   --- Analysis ---
     %       get_pulsing_trajectories
     %       bootstrap_stackID
+    %       make_binary_sequence
 	%
 	% See also: PULSE, FITTED, TRACK, EMBRYO2CELL
 	%
@@ -87,6 +88,7 @@ classdef CellObj
     end % Private properties (can't be changed)
     
     properties
+        
         % Fitting
         flag_fitted	% Flagged if not skipped in fitting
         fit_colorized % RGB colorization of multiple peaks, for colored movie display (see MAKE_PULSE_MOVIE)
@@ -101,6 +103,7 @@ classdef CellObj
 		flag_tracked % Flagged if tracked
         num_tracks  % number of tracks found in this cell
         trackID     % trackID of tracks found in cell
+        
     end % Public properties - to do with track/fit
     methods
         
@@ -201,7 +204,7 @@ classdef CellObj
                     end
                     
                 this_cell.fit_gausses = fit_gausses;    
-                else
+                else % This cell will NOT be fitted
                     this_cell.fit_colorized = NaN;
                     this_cell.fit_bg = NaN;
                     this_cell.fit_gausses = NaN;
@@ -346,7 +349,7 @@ classdef CellObj
             if nargin < 3, handle = gca; end
 
             % Plot raw data: myosin + area
-            h = plotyy(handle, time, this_cell.myosin_sm(nonan_frame), ...
+            h = plotyy(handle, time, this_cell.myosin_intensity(nonan_frame), ...
                 time, this_cell.area_sm(nonan_frame) );
 
 %             set(fig1,'Color','g'); set(fig2,'Color','k')
@@ -354,7 +357,7 @@ classdef CellObj
             % set x-axis limits
             set(h(2) , 'Xlim', [min(time) max(time)] );
 
-            if this_cell.flag_fitted && this_cell.num_fits > 0
+            if this_cell.flag_fitted > 0 && this_cell.num_fits > 0
 
                 hold(handle,'on');
                 
@@ -412,7 +415,7 @@ classdef CellObj
         end % movie
 
 
-% ------------------------- Misc analysis ---------------------------------
+% ------------------------- Analysis --------------------------------------
 
         function [adj,nodes] = get_pulsing_trajectories(cells,fits,revorder)
             % GET_PULSING_TRAJECTORIES Construct a graph showing the
@@ -505,6 +508,31 @@ classdef CellObj
             end
             
         end % bootstrap_stackID
+        
+        function binary = make_binary_sequence(cells,fits)
+            %MAKE_BINARY_SEQUENCE Uses width_frames to generate a binary
+            % sequence of pulses
+			% USAGE: binary_seq = cells.make_binary_sequence(fits);
+			
+            % Preallocate
+			binary = zeros( numel(cells(1).dev_time), max( [cells.cellID] ));
+			% Filter relevant fits
+			fits = fits.get_fitID( [cells.fitID] );
+
+			for i = 1:numel(cells)
+
+				this_cell_fits = fits.get_fitID( cells(i).fitID );
+                if ~isempty(this_cell_fits)
+                    for j = 1:numel( this_cell_fits )
+                        binary( this_cell_fits(j).width_frames, cells(i).cellID ) = ...
+                            binary( this_cell_fits(j).width_frames, cells(i).cellID ) + ...
+                            this_cell_fits(j).cluster_label;
+                    end
+                end
+
+			end
+            
+        end % make_binary_sequence
         
    end % End methods 
 end
