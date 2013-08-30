@@ -349,10 +349,11 @@ classdef CellObj
             if nargin < 3, handle = gca; end
 
             % Plot raw data: myosin + area
-            h = plotyy(handle, time, this_cell.myosin_intensity(nonan_frame), ...
+            [h,fig1,fig2] = plotyy(handle, time, this_cell.myosin_intensity(nonan_frame), ...
                 time, this_cell.area_sm(nonan_frame) );
 
-%             set(fig1,'Color','g'); set(fig2,'Color','k')
+            set(fig1,'Color','g'); set(fig2,'Color','r');
+            set(h(1),'YColor','g'); set(h(2),'YColor','r');
 
             % set x-axis limits
             set(h(2) , 'Xlim', [min(time) max(time)] );
