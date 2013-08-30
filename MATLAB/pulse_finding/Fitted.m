@@ -557,6 +557,10 @@ classdef Fitted
             % OUTPUT: fits - with cluster_label updated
             % xies@mit.edu
             
+            % clear previous labels & weights
+            [fits.cluster_label] = deal([]);
+            [fits.cluster_weight] = deal([]);
+            
             filtered = fits(...
                 cellfun(@(x) numel(x(isnan(x))),{fits.(datafield)}) < max_nan );
             
@@ -807,7 +811,7 @@ classdef Fitted
             x = fits(1).corrected_time;
             
             num_bins = numel(unique(nonans([fits.bin])));
-            C = varycolor( num_bins );
+            C = [[1 0 0];[0 0 1];[0 0 0];[0 1 0]];
             
             figure; clf; hold on; h = gcf;
             figure; clf; hold on; g = gcf;
