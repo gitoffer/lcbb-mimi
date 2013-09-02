@@ -418,13 +418,13 @@ classdef CellObj
 
 % ------------------------- Analysis --------------------------------------
 
-        function [adj,nodes] = get_pulsing_trajectories(cells,fits,revorder)
+        function [adj,nodes] = get_pulsing_trajectories(cells,fits)
             % GET_PULSING_TRAJECTORIES Construct a graph showing the
             % trajectory of a cell through pulse cluster-identity space
             % USAGE: [adj,nodes] =
             %        cells.get_pulsing_trajectories(fits,revorder);
             max_fits = nanmax( [cells.num_fits] );
-            num_clusters = numel(revorder);
+            num_clusters = numel(unique([fits.cluster_label]));
             adj = zeros(num_clusters*max_fits + 2);
             
             for j = 1:numel(cells)
@@ -434,7 +434,7 @@ classdef CellObj
                 this_fits = fits.get_fitID(this_cell.fitID);
                 % sort fits by timing
                 [~,I] = sort([this_fits.center]);
-                states = revorder( [this_fits(I).cluster_label] );
+                states = [this_fits(I).cluster_label];
                 
                 if ~isempty(states)
                     % Origin to first state
@@ -449,14 +449,15 @@ classdef CellObj
                         
                     end
                     
-                    % Last state to end
-%                     adj( end_index, num_clusters*max_fits + 2) = ...
-%                         adj( end_index, num_clusters*max_fits + 2) + 1;
+                    Last state to end
+                    adj( end_index, num_clusters*max_fits + 2) = ...
+                        adj( end_index, num_clusters*max_fits + 2) + 1;
                 end
             end
             
             x = zeros(num_clusters*max_fits + 2,1);
             y = zeros(num_clusters*max_fits + 2,1);
+            
             % Construct the nodes
             % origin
             x(1) = 0; y(1) = (num_clusters + 1)/2;

@@ -464,7 +464,7 @@ classdef Fitted
                 end
                 this_fit.aligned_time_padded = x - this_fit.center;
                 this_fit.opt = newOpt;
-                fits = fits.set_fitID(this_fit.fitID, this_fit);
+                fits(i) = this_fit;
 
             end
             
