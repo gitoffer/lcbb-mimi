@@ -601,12 +601,11 @@ classdef Pulse
             fitID = this_change.fitID;
 
             this_fit = pulse.fits.get_fitID(fitID);
-
-            params = [this_fit.amplitude this_fit.center this_fit.width];
-
-            mat2write(i,1) = trackID;
-            mat2write(i,2:4) = params;
-
+            if ~isempty(this_fit)
+                params = [this_fit.amplitude this_fit.center this_fit.width];
+                mat2write(i,1) = trackID;
+                mat2write(i,2:4) = params;
+            end
         end
 
         if isfield(changes,'fitsMadeFromTrack')

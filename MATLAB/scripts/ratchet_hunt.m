@@ -1,14 +1,14 @@
-ratcheted = [cluster1_wt cluster2_wt cluster3_wt];
+ratcheted = [cluster1_wt cluster2_wt];
 unratcheted = cluster4_wt;
 
 N = 2; colors = {'b','r'};
 
 % measurements to plot (up to four)
-measurements = {myosin_ring1+myosin_ring2,myosin_inside,myosin_fraction,myosin_connection};
-names = {'Junctional myosin','Medial myosin','Fraction of cell occupied by myosin','# cells connected'};
+measurements = {myosin_ring1+myosin_ring2,myosin_inside+myosin_ring3,myosin_deviation,myosin_inertia};
+names = {'Junctional myosin','Medial myosin','Fraction of cell occupied by myosin','Myosin'};
 ytitles = {'Intensity (a.u.)','Intensity (a.u.)','Fraction','Number of cells'};
-ylimits = {[0 .8e4],[0 .8e4],[0 .3],[0 10]};
-which = 3;
+ylimits = {[0 .8e4],[0 .8e4],[0 10],[0.05 .3]};
+which = 1;
 % rearrange order so that [which] comes first
 measurements = [measurements(which) measurements(setdiff(1:4,which))];
 names = [names(which) names(setdiff(1:4,which))];
@@ -19,7 +19,7 @@ ylimits = [ylimits(which) ylimits(setdiff(1:4,which))];
 condition = @(x) ([x.center] > -Inf & [x.center] < 0);
 
 %% bootstrap ratcheted
-figure
+% figure
 
 % gather data
 toplot = ratcheted( condition( ratcheted )).sort('cluster_weight');
@@ -47,7 +47,7 @@ end
 
 % pseudo-color is special
 subplot(4,2,[1 3]);
-imagesc(x,1:numel(toplot), cat(1,toplot.corrected_area_norm)); colorbar
+imagesc(x,1:numel(toplot), cat(1,toplot.corrected_myosin)); colorbar
 title(['BS average: ' names{1}]);
 
 for i = 1:4
@@ -55,7 +55,7 @@ for i = 1:4
     subplot(4,2, 4+i);
     
     M = squeeze( bootstats(i,:,:) );
-    plot( x, M, colors{1});
+    shadedErrorBar( x, nanmean(M),nanstd(M)/sqrt(Nsample), colors{1},1);
     hold on
     title(['BS: ' names{i}]);
     xlabel('Pulse time (sec)');set(gca,'XLim',[-50 60]);
@@ -66,7 +66,7 @@ end
 %% plot unratcheted portion
 
 % gather data
-toplot = unratcheted(condition( unratcheted )).sort('cluster_weight');
+toplot = unratcheted(condition( unratcheted )).sort('amplitude');
 x = fits(1).corrected_time;
 weights = cat(1,toplot.cluster_weight);
 
@@ -81,7 +81,8 @@ for i = 1:4
     h(i) = subplot(4,2, 4+i);
     hold on
     M = get_corrected_measurement(toplot,measurements{i},input);
-	shadedErrorBar(x, nanwmean(M,weights),nanstd(M),colors{2},1);
+	shadedErrorBar(x, nanwmean(M,weights),nanstd(M)/sqrt(size(M,1)), ...
+    colors{2},1);
 %     for j = 1:size(M,1) % workaround to get transparent lines
 %         y = M(j,:);
 %         xflip = [x(1 : end - 1) fliplr(x)];
@@ -100,7 +101,7 @@ linkaxes(h,'x');
 % plot ratcheted portion
 
 % gather data
-toplot = ratcheted(condition( ratcheted )).sort('cluster_weight');
+toplot = ratcheted(condition( ratcheted )).sort('amplitude');
 x = fits(1).corrected_time;
 weights = cat(1,toplot.cluster_weight);
 
@@ -115,7 +116,8 @@ for i = 1:4
     h(i) = subplot(4,2, 4+i);
     hold on
     M = get_corrected_measurement(toplot,measurements{i},input);
-	shadedErrorBar(x, nanwmean(M,weights),nanstd(M),colors{1},1);
+	shadedErrorBar(x, nanwmean(M,weights),nanstd(M)/sqrt(size(M,1)),...
+    colors{1},1);
 %     for j = 1:size(M,1) % workaround to get transparent lines
 %         y = M(j,:);
 %         xflip = [x(1 : end - 1) fliplr(x)];
