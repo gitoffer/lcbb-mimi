@@ -47,7 +47,7 @@ for j = 1:Nboot
         
         % filter by time criterion for averaging
         filtered = fitsOI( ...
-            [fitsOI.center] > left(k) & [fitsOI.center] < right(k));
+            [fitsOI.center] > left(k) & [fitsOI.center] <= right(k));
         filtered_bs_cell = fits_bs_cell( ...
             [fits_bs_cell.center] > left(k) & [fits_bs_cell.center] <= right(k));
         filtered_bs_fit = fits_bs_fit( ...
@@ -60,7 +60,6 @@ for j = 1:Nboot
             this_cluster = filtered([filtered.cluster_label] == i);
             this_cluster_bs_cell = filtered_bs_cell([filtered_bs_cell.cluster_label] == i);
             this_cluster_bs_fit = filtered_bs_fit([filtered_bs_fit.cluster_label] == i);
-            
             
             if ~isempty(this_cluster)
                 % empirical
@@ -100,7 +99,8 @@ save('~/Desktop/bootstrap_wt','num_member','num_neighbors','num_bs_cell','num_bs
 N = zeros( numel(left), num_clusters );
 for k = 1:numel(left)
     
-    figure,
+    if k < 3, figure; end
+    if k > 1, subplot(3,2,k-1); end
     
     foo = ( sum(num_neighbors(k,:,:),3) ...
         - nanmean(squeeze( sum(num_bs_cell(:,k,:,:),4) )) ) ...
@@ -113,27 +113,33 @@ for k = 1:numel(left)
     bar(1:5, ...
         cat(1, foo,foo2)' );
     
-    xlabel('Center cluster label')
-    ylabel('Difference from MC neighbor count (random-pulse), normalized by standard deviation')
-    set(gca,'XTickLabel',entries);
-    title(['Number of neighbors ' ...
-        num2str(window) '0s after, ' num2str(left(k)) ' < center < ' num2str(right(k))]);
+    if k < 3
+        xlabel('Center cluster label')
+        ylabel('Z score')
+%         set(gca,'XTickLabel',entries);
+    end
+        title(['Number of neighbors ' ...
+            num2str(window) '0s after, ' num2str(left(k)) ' < center < ' num2str(right(k))]);
     
 end
 
 %% Break down neighbor identity
 
-for k = 1:6
+for k = 1:numel(left)
     
-    figure,
+    if k < 3, figure; end
+    if k > 1, subplot(3,2,k-1); end
     
     foo = ( squeeze(num_neighbors(k,:,:)) ...
         - squeeze(nanmean(num_bs_fit(:,k,:,:))) ) ...
         ./squeeze(nanstd(num_bs_fit(:,k,:,:)));
     % iterate through all center labels
-    bar(1:5,foo);
+    bar(1:5,foo,'LineStyle','None');
     
-    set(gca,'XTickLabel',[entries,'N/A']);
+    if k < 3
+        ylabel('Z score')
+%         set(gca,'XTickLabel',[entries,'N/A']);
+    end
     
     title(['Number of neighbors ' ...
         num2str(window) '0s after, ' num2str(left(k)) ' < center < ' num2str(right(k))]);
