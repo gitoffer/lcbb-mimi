@@ -66,6 +66,7 @@ fits = assign_datafield(fits,aligned_measurement,'measurement');
 fits = resample_traces(fits,'area_norm',[input.dt]);
 fits = resample_traces(fits,'area',[input.dt]);
 fits = resample_traces(fits,'myosin',[input.dt]);
+fits = resample_traces(fits,'myosin_rate',[input.dt]);
 fits = resample_traces(fits,'area_rate',[input.dt]);
 fits = resample_traces(fits,'measurement',[input.dt]);
 

@@ -1,15 +1,15 @@
 classdef Fitted
     %--- FITTEd -----------------------------------------------------------
-	% A fitted pulse as found by multiple-Gaussian fitting
-	%
-	% Methods:
-    % 
+    % A fitted pulse as found by multiple-Gaussian fitting
+    %
+    % Methods:
+    %
     % --- Constructor ---
-	%	Fitted - INPUT: CellObj, parameter, fitID, and opt_struct
+    %	Fitted - INPUT: CellObj, parameter, fitID, and opt_struct
     % --- Edit fit array ---
-	%	add_fit - tries to append a given new_fit onto an array. Fails if
-	%   	the same pulse already exists in the array
-	%	removeFit - given a fitID, remove it from the object stack
+    %	add_fit - tries to append a given new_fit onto an array. Fails if
+    %   	the same pulse already exists in the array
+    %	removeFit - given a fitID, remove it from the object stack
     %   cat - concatenate two Fitted arrays
     % --- Comparator ---
     %   eq - right now will be equal if overlap of width_frame is > 3
@@ -33,7 +33,7 @@ classdef Fitted
     %   bin_fits - bin each embryo by amplitude
     % --- Analysis ---
     %   fcm_cluster - cluster the array by a datafield, using Fuzzy c-means
-	%	find_near_fits - find fits near a 'central' fit given a time-window
+    %	find_near_fits - find fits near a 'central' fit given a time-window
     %   bootstrap_cluster_label - intra-embryo exchange of all cluster
     %      labels
     %   bootstrap_stackID - intra-embryo exchange of all stackID (includes
@@ -42,8 +42,8 @@ classdef Fitted
     %   plot_binned_fits
     %   plot_heatmap (sorted)
     %   movie
-	% --- Export ---
-	%   export_field2csv (export given measurement to csv file)
+    % --- Export ---
+    %   export_field2csv (export given measurement to csv file)
     %
     % See also: PULSE, TRACK, CELLOBJ
     %
@@ -97,8 +97,8 @@ classdef Fitted
         % Flags to keep track during analysis
         manually_added % whether it's manually added
         bootstrapped % whether its randomly shuffled
-
-        time_windows % 
+        
+        time_windows %
         nearIDs % fitIDs of 'nearby' fits, ordered w.r.t. time_windows
         
         cluster_label
@@ -106,15 +106,15 @@ classdef Fitted
         
     end
     methods % Dynamic methods
-    
-% --------------------- Constructor -----------------------------------------
-    
+        
+        % --------------------- Constructor -----------------------------------------
+        
         function this_fit = Fitted(cell,params,fitID,opt)
             %Fitted Constructor - use from FIT_GAUSSIANS (array constructor)
             % Will populate the pulse-centric fields, like the margins, and
             % aligned curves and time.
-            % 
-			% USAGE: fit = FITTED(cell,params,fitID)
+            %
+            % USAGE: fit = FITTED(cell,params,fitID)
             
             if nargin > 0
                 
@@ -176,11 +176,11 @@ classdef Fitted
                 this_fit.aligned_time_padded = x;
                 this_fit.fit_padded = fitted_y;
                 this_fit.residual = res;
-                        
-%                 names = fieldnames(this_fit);
-%                 for i = 1:numel(names)
-%                     [fit.(names{i})] = deal(this_fit.(names{i}));
-%                 end
+                
+                %                 names = fieldnames(this_fit);
+                %                 for i = 1:numel(names)
+                %                     [fit.(names{i})] = deal(this_fit.(names{i}));
+                %                 end
                 this_fit.manually_added = 0;
                 this_fit.bootstrapped = 0;
                 this_fit.opt = opt;
@@ -195,7 +195,7 @@ classdef Fitted
             [fits(ismember([fits.fitID],fitIDs)).cellID] = deal(cellID);
         end
         
-% --------------------- Edit fit array -----------------------------------
+        % --------------------- Edit fit array -----------------------------------
         
         function [obj_array,errorflag] = add_fit(obj_array,new_fit)
             %ADD_FIT tries to append a new_fit to a FITS array. Fails if
@@ -215,16 +215,16 @@ classdef Fitted
         end % add_fit
         
         function obj_array = removeFit(obj_array,fitID)
-			%removeFit Removes a fit of a given fitID from an array
-			% USAGE: obj_array = obj_array.removeFit(fitID)
+            %removeFit Removes a fit of a given fitID from an array
+            % USAGE: obj_array = obj_array.removeFit(fitID)
             obj_array([obj_array.fitID] == fitID) = [];
         end % removeFit
-
+        
         function fit_array = reindex_fitID( fit_array, new_embryoID )
-			%reindex_fitID Given an fit-array of the same embryoID, and a
-			% new_embryoID, re-index the fitIDs of the array with a new set
-			% of identifiers beginning with the new_embryoID
-			
+            %reindex_fitID Given an fit-array of the same embryoID, and a
+            % new_embryoID, re-index the fitIDs of the array with a new set
+            % of identifiers beginning with the new_embryoID
+            
             old_embryoID = fit_array(1).embryoID;
             if any( [fit_array.embryoID] ~= old_embryoID )
                 error('Must input an array with the same original embryoID');
@@ -242,36 +242,36 @@ classdef Fitted
                 + (new_embryoID - old_embryoID)*100000;
             
         end % reindex_fitID
-                
-% --------------------- Comparator ----------------------------------------
-
+        
+        % --------------------- Comparator ----------------------------------------
+        
         function equality = eq(fit1,fit2)
             % Equality comparator for FITTED
             % right now slow, expecting array in first argument and single object
-			% in the second (fit2). Will return equal if the width_frame of two
-			% fits have overlap > 3.
+            % in the second (fit2). Will return equal if the width_frame of two
+            % fits have overlap > 3.
             if numel(fit1) > 1 && numel(fit2) > 1
                 error('Cannot handle TWO array inputs.');
             end
-%             names = setdiff(fieldnames(fit2),{'fitID','category'});
+            %             names = setdiff(fieldnames(fit2),{'fitID','category'});
             equality = false(1,numel(fit1));
             for j = 1:numel(fit1)
                 if fit1(j).stackID == fit2.stackID
-                % can't use bsxfun because of un-uniform output
+                    % can't use bsxfun because of un-uniform output
                     if numel(fit1(j).width_frames( ...
                             ismember(fit1(j).width_frames, fit2.width_frames))) > 3
                         equality(j) = 1;
                     end
                 end
             end
-
+            
         end %eq
         
-% --------------------- Array access/set ----------------------------------
+        % --------------------- Array access/set ----------------------------------
         
         function fits = get_stackID(fit_array,stackID)
             % Find the FIT(s) with the given stackID(s)
-			% usage: fitsOI = fits.get_stackID(stackID)
+            % usage: fitsOI = fits.get_stackID(stackID)
             fits = fit_array( ismember([ fit_array.stackID ], stackID) );
         end %get_stackID
         
@@ -283,7 +283,7 @@ classdef Fitted
         
         function fits = get_fitID(fit_array,fitID)
             % Find the FIT(s) with the given fitID(s)
-			% USAGE: fitsOI = fits.get_fitID(fitID)
+            % USAGE: fitsOI = fits.get_fitID(fitID)
             %             fits = fit_array( ismember([ fit_array.fitID ], fitID) );
             fitID = nonans(fitID);
             fits = Fitted;
@@ -317,7 +317,7 @@ classdef Fitted
             
         end %set_fitID
         
-% --------------------- Alignment functions -------------------------------
+        % --------------------- Alignment functions -------------------------------
         
         function [fits] = align_fits(fits,measurement,name)
             %ALIGN_PEAKS Aligns the global maxima of a given array of
@@ -351,10 +351,10 @@ classdef Fitted
                 m = nan(1, l + r + 1); % Make the padded vector
                 lb = center_idx - left_len;
                 ub = min(center_idx - left_len + durations(i) - 1, max(durations) );
-
+                
                 m( lb: ub) = ...
                     measurement( fits(i).margin_frames, fits(i).stackID );
-
+                
                 fits(i).(name) = m;
                 
             end
@@ -362,8 +362,8 @@ classdef Fitted
         end % align_fits
         
         function [fits] = assign_datafield(fits,data,name)
-			%assign_datafield Assign a matrix into the fields of fitted objects
-			% USAGE: fits = assign_datafield(fits,data,name)
+            %assign_datafield Assign a matrix into the fields of fitted objects
+            % USAGE: fits = assign_datafield(fits,data,name)
             if size(data,1) ~= numel(fits)
                 error('Data size must be the same as the number of FITTED objects.');
             end
@@ -465,7 +465,7 @@ classdef Fitted
                 this_fit.aligned_time_padded = x - this_fit.center;
                 this_fit.opt = newOpt;
                 fits(i) = this_fit;
-
+                
             end
             
         end %retrace
@@ -487,46 +487,61 @@ classdef Fitted
             M = cat(1,fits.corrected_measurement);
         end
         
-% --------------------- Array operations ----------------------------------
+        % --------------------- Array operations ----------------------------------
         
-		function fits = bin_fits(fits)
+        function fits = bin_fits(fits,range)
             %BIN_FITS Bin fits according to their amplitudes. Quartile binning.
-
+            
             [fits.bin] = deal(NaN);
             
-			embryoIDs = unique( [fits.embryoID] );
-
-			for i = embryoIDs
-				
+            embryoIDs = unique( [fits.embryoID] );
+            
+            for i = embryoIDs
+                
                 % Get fits in this embryo that are not manually curated
-				fits_this_embryo = ...
+                fits_this_embryo = ...
                     fits( [fits.embryoID] == i & ~[fits.manually_added] );
-				fitIDs_this_embryo = [ fits_this_embryo.fitID ];
+                fitIDs_this_embryo = [ fits_this_embryo.fitID ];
                 
                 % Sort by amplitude
-				amps = [ fits_this_embryo.amplitude ];
-				[ sorted_amps, sortID ] = sort( amps, 2, 'descend' );
-
+                amps = [ fits_this_embryo.amplitude ];
+                [ sorted_amps, sortID ] = sort( amps, 2, 'ascend' );
+                
                 % Get percentile cutoffs
-				cutoffs = prctile( sorted_amps, [ 25 50 75 ] );
-				sortedID = fitIDs_this_embryo( sortID );
-				
+                cutoffs = prctile( sorted_amps, range );
+                cutoffs = [0, cutoffs, max(amps) - eps];
+                num_bins = numel(cutoffs) - 1;
+                sortedID = fitIDs_this_embryo( sortID );
+                
                 % Get fitIDs
-				top = sortedID(1 : find( sorted_amps < cutoffs(3), 1) );
-				top_middle = sortedID( find(sorted_amps < cutoffs(3),1) + 1 : ...
-					find(sorted_amps < cutoffs(2), 1) );
-				bottom_middle = sortedID( find(sorted_amps < cutoffs(2), 1) + 1 : ...
-					find( sorted_amps < cutoffs(1), 1) );
-				bottom = sortedID( find(sorted_amps < cutoffs(1), 1) + 1: end);
-
+                binned = cell(1,num_bins);
+                for j = 1:num_bins
+                    if j == numel(cutoffs) - 1
+                        binned{j} = sortedID( ...
+                            find(sorted_amps > cutoffs(j),1) : end );
+                        
+                    else
+                        binned{j} = sortedID( ...
+                            find(sorted_amps > cutoffs(j),1) : ...
+                            find(sorted_amps > cutoffs(j+1),1) - 1 );
+                    end
+                    
+                end
+                
+                % consistency tests
+                if numel(unique([binned{:}])) ~= numel(fits_this_embryo) || ...
+                        ~isempty( setxor([binned{:}],sortedID) )
+                    display('Something is wrong');
+                    keyboard;
+                end
+                
                 % Assign bins
-				[fits( ismember([fits.fitID],top ) ).bin] = deal(1);
-                [fits( ismember([fits.fitID],top_middle ) ).bin] = deal(2);
-                [fits( ismember([fits.fitID],bottom_middle ) ).bin] = deal(3);
-                [fits( ismember([fits.fitID],bottom ) ).bin] = deal(4);
-
-			end
-			
+                for j = 1:num_bins
+                    [fits( ismember([fits.fitID],binned{j} ) ).bin] = deal(j);
+                end
+                
+            end
+            
         end %bin_fits
         
         function fits = sort(fits,field)
@@ -536,13 +551,13 @@ classdef Fitted
             fits = fits(order);
             
         end % sort
-
-% --------------------- Analsysis -----------------------------------------
+        
+        % --------------------- Analsysis -----------------------------------------
         
         function fits = fcm_cluster(fits,k,datafield,max_nan)
             %FCM_CLUSTER Uses fuzzy c-means to cluster a given datafield in
             % the fit_array. In order to standardize the cluster naming
-            % schematic, 
+            % schematic,
             %
             % USAGE: fits = fits.fcm_cluster(5,'corrected_area_norm')
             %        fits = fits.fcm_cluster(5,'corrected_area_norm',3)
@@ -553,7 +568,7 @@ classdef Fitted
             %           will normalize by taking the Z score within each
             %           pulse
             %        max_nan - maximum number of tolerated NaN
-            % 
+            %
             % OUTPUT: fits - with cluster_label updated
             % xies@mit.edu
             
@@ -576,13 +591,13 @@ classdef Fitted
             
             fits = set_field(fits,[filtered.fitID], 'cluster_label', labels);
             fits = set_field(fits,[filtered.fitID], 'cluster_weight', max_prob);
-%             for i = 1:numel(labels)
-%                 fits([fits.fitID] == filtered(i).fitID).cluster_label = ...
-%                     labels(i);
-%                 fits([fits.fitID] == filtered(i).fitID).cluster_weight = ...
-%                     max_prob(i);
-%             end
-
+            %             for i = 1:numel(labels)
+            %                 fits([fits.fitID] == filtered(i).fitID).cluster_label = ...
+            %                     labels(i);
+            %                 fits([fits.fitID] == filtered(i).fitID).cluster_weight = ...
+            %                     max_prob(i);
+            %             end
+            
             % deal with non-clustered fits (label = 6, weight = NaN)
             [fits(cellfun(@isempty, {fits.cluster_label} )).cluster_label] = ...
                 deal(6);
@@ -607,7 +622,7 @@ classdef Fitted
             end
             
         end % cluster
-
+        
         function fits = find_near_fits(fits,time_windows,neighborID)
             %FIND_NEAR_FITS Find the number (and fitID) of each fitted
             % pulse within an range of time-windows and the first-order
@@ -623,8 +638,8 @@ classdef Fitted
             % xies@mit
             
             num_fits = numel(fits);
-%             nearby_fits = cell(1,num_fits);
-%             nearIDs = cell(1,num_fits);
+            %             nearby_fits = cell(1,num_fits);
+            %             nearIDs = cell(1,num_fits);
             
             for i = 1:num_fits
                 
@@ -641,8 +656,8 @@ classdef Fitted
                 % Find all neighboring fits
                 neighbor_fits = fits.get_fitID(...
                     [ same_embryo( ...
-                        ismember([same_embryo.stackID], neighbor_cells) ...
-                        ).fitID ]);
+                    ismember([same_embryo.stackID], neighbor_cells) ...
+                    ).fitID ]);
                 
                 fits(i).nearIDs = cell( 1, numel(time_windows ) );
                 if ~isempty( neighbor_fits )
@@ -696,7 +711,7 @@ classdef Fitted
             % Perform intra-embryo bootstrapping of stackID (private)
             % INPUT: fits
             %        cells
-            % 
+            %
             % OUTPUT: fits_bs
             %         cells_bs
             %
@@ -795,11 +810,11 @@ classdef Fitted
                     keyboard
                 end
                 
-             end
+            end
             
         end % bootstrap_stackID
         
-% --------------------- Visualization -------------------------------------
+        % --------------------- Visualization -------------------------------------
         
         function plot_binned_fits(fits)
             %Plot error-bar maps of the aligned myosin and aligned area
@@ -811,34 +826,39 @@ classdef Fitted
             x = fits(1).corrected_time;
             
             num_bins = numel(unique(nonans([fits.bin])));
-            C = [[1 0 0];[0 0 1];[0 0 0];[0 1 0]];
+            C = varycolor( num_bins );
             
-            figure; clf; hold on; h = gcf;
-            figure; clf; hold on; g = gcf;
             for i = 1:num_bins
                 
                 fits2bin = fits( [fits.bin] == i);
-                figure(h)
-                shadedErrorBar( x, ...
-                    nanmean( cat(1, fits2bin.corrected_myosin ) ), ...
-                    nanstd( cat(1, fits2bin.corrected_myosin ) ), ...
-                    {'Color',C(i,:)}, 1);
+                subplot(2,1,1);
+                hold on
+                M = nanmean( cat(1, fits2bin.corrected_myosin) );
+%                 shadedErrorBar( x, ...
+%                     nanmean( cat(1, fits2bin.corrected_myosin ) ), ...
+%                     nanstd( cat(1, fits2bin.corrected_myosin ) ), ...
+%                     {'Color',C(i,:)}, 1);
+                plot(x,bsxfun(@minus,M,nanmin(M)), ...
+                    'Color',C(i,:) );
                 
-                figure(g)
-                shadedErrorBar( x, ...
-                    nanmean( cat(1, fits2bin.corrected_area_norm ) ), ...
-                    nanstd( cat(1, fits2bin.corrected_area_norm ) ), ...
-                    {'Color',C(i,:)}, 1);
+                subplot(2,1,2);
+                hold on
+%                 shadedErrorBar( x, ...
+%                     nanmean( cat(1, fits2bin.corrected_area_norm ) ), ...
+%                     nanstd( cat(1, fits2bin.corrected_area_norm ) ), ...
+%                     {'Color',C(i,:)}, 1);
+                plot(x,nanmean( cat(1, fits2bin.corrected_area_norm) ), ...
+                      'Color',C(i,:) );
                 
             end
             
-            figure(h)
+            subplot(2,1,1)
             xlabel('Aligned time (sec)')
             ylabel('Myosin intensity (a.u.)')
-            figure(g)
+            subplot(2,1,2)
             xlabel('Aligned time (sec)')
             ylabel('\Delta area (\mum^2)')
-
+            
         end % plot_binned_fits
         
         function plot_heatmap(fits,sortname)
@@ -912,8 +932,8 @@ classdef Fitted
             
         end %movie
         
-% ------------------------- Export ----------------------------------------
-
+        % ------------------------- Export ----------------------------------------
+        
         function export_field2csv(fits,filepath,fieldname)
             %Exports the given FIELDNAME of a FIT array to CSV file
             %
@@ -936,16 +956,16 @@ classdef Fitted
             
         end %export_field2csv
         
-%         function export_array(fits,foldername)
-%             %EXPORT_ARRAY Exports the entire array
-%             
-%             prop_list = properties('Fitted');
-%             mat2write
-%             
-%         end
+        %         function export_array(fits,foldername)
+        %             %EXPORT_ARRAY Exports the entire array
+        %
+        %             prop_list = properties('Fitted');
+        %             mat2write
+        %
+        %         end
         
     end % Dynamic methods
- 
+    
     methods (Static)
         
     end

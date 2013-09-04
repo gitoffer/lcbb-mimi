@@ -36,7 +36,7 @@ end
 
 %%
 
-% fits = fits.fcm_cluster(5,'corrected_area_norm',3);
+fits = fits.fcm_cluster(5,'corrected_area_norm',3);
 
 fits_wt = fits.get_embryoID( 1:5 );
 fits_twist = fits.get_embryoID( 6:7 );
@@ -52,7 +52,7 @@ for i = 1:5+1
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(i) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(i) ');']);
     
-    eval(['cluster' num2str(i) '_wt.plot_heatmap']);
+%     eval(['cluster' num2str(i) '_wt.plot_heatmap']);
 
 end
 

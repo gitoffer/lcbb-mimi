@@ -15,7 +15,7 @@ bins = linspace(-500,500,50);
 colors = {'r-','b-','k-','g-'};
 
 for i = 1:4
-    hold on
+    hold on;
     plot_cdf([fitsOI([fitsOI.bin]==i).center],bins,colors{i});
     xlim([-300 250]);
 end

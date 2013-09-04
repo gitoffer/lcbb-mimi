@@ -5,12 +5,18 @@ fits_incell = cellfun(@fits.get_fitID, ...
     {cells([cells.flag_tracked] == 1 & [cells.embryoID] < 6).fitID}, ...
     'UniformOutput',0);
 
+fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));
 for i = 1:numel(fits_incell)
+    fits_incell{i} = fits_incell{i}.sort('center');
     fits_center_incell{i} = [fits_incell{i}.center];
+    foo = [fits_incell{i}.cluster_label];
+    fits_label_incell{i} = foo(1:end-1);
+    foo = [fits_incell{i}.center];
+    centers{i} = foo(1:end-1);
 end
 
-freq_wt = cellfun(@(x) diff(sort(x)), fits_center_incell,'UniformOutput',0);
+freq_wt = cellfun(@(x) diff(x), fits_center_incell,'UniformOutput',0);
 % "center" of a pulse pair
 center = cellfun(@sort_pair_mean, fits_center_incell,'UniformOutput',0);
 
