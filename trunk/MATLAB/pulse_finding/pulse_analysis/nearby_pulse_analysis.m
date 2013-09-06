@@ -28,9 +28,9 @@ left = [-Inf -Inf 0 60 120 180]; right = [Inf 0 60 120 180 Inf];
 
 num_member = zeros(numel(left),num_clusters);
 
-empirical(Nboot,numel(left)).num_near = [];
-empirical(Nboot,numel(left)).origin_labels = [];
-empirical(Nboot,numel(left)).target_labels = [];
+empirical(1,numel(left)).num_near = [];
+empirical(1,numel(left)).origin_labels = [];
+empirical(1,numel(left)).target_labels = [];
 
 random_cell(Nboot,numel(left)).num_near = [];
 random_cell(Nboot,numel(left)).origin_labels = [];
@@ -44,18 +44,15 @@ for j = 1:Nboot
     
     tic
     % make permutations
-%     [fits_bs_cell,cells_bs_cell] = cells.bootstrap_stackID(fitsOI);
-%     % get nearby pulses
-%     fits_bs_cell = fits_bs_cell.find_near_fits(time_windows,neighborID);
-%     
-%     % randomize pulses
-%     [fits_bs_fit,cells_bs_fit] = fitsOI.bootstrap_stackID(cells);
-%     fits_bs_fit = fits_bs_fit.find_near_fits(time_windows(window),neighborID);
+    [fits_bs_cell,cells_bs_cell] = cells.bootstrap_stackID(fitsOI);
+    % get nearby pulses
+    fits_bs_cell = fits_bs_cell.find_near_fits(time_windows,neighborID);
     
-    num_bs_cell = zeros(num_clusters,num_clusters+1);
-    num_bs_fit = zeros(num_clusters,num_clusters+1);
-    num_neighbors = zeros(num_clusters,num_clusters+1);
+    % randomize pulses
+    [fits_bs_fit,cells_bs_fit] = fitsOI.bootstrap_stackID(cells);
+    fits_bs_fit = fits_bs_fit.find_near_fits(time_windows,neighborID);
 
+    keyboard
     for k = 1:numel(left) % iterating through time-bins
         
         % filter by time criterion for averaging
@@ -68,48 +65,59 @@ for j = 1:Nboot
         filtered_bs_fit = fits_bs_fit( ...
             [fits_bs_fit.center] > left(k) & [fits_bs_fit.center] <= right(k));
         
-        % breakdown neighbor by clusters
-        for i = 1:num_clusters
-            
-            % get current cluster for empirical
-            if j == 1
-                this_cluster = filtered([filtered.cluster_label] == i);
-                if ~isempty(this_cluster)
-                    % tabulate
-                    this_nearIDs = cat(1,this_cluster.nearIDs);
-                    num_near = cellfun(@(x) numel(x(~isnan(x))), this_nearIDs);
-                    num_near = num_near(:,6);
-                    target_labels = ...
-                        [fitsOI.get_fitID([this_nearIDs{:,window}]).cluster_label];
-                    num_neighbors(i,:) = ([foo.cluster_label],1:6);
-                    num_member(k,i) = numel(this_cluster);
-                end
-            end
-            
-            % get current cluster for simulated cells/pulses
-            this_cluster_bs_cell = filtered_bs_cell([filtered_bs_cell.cluster_label] == i);
-            this_cluster_bs_fit = filtered_bs_fit([filtered_bs_fit.cluster_label] == i);
-                        
-            if ~isempty(this_cluster_bs_cell)
-                % random-cell
-                nearIDs_cell = cat(1,this_cluster_bs_cell.nearIDs);
-                foo = fits_bs_cell.get_fitID([nearIDs_cell{:,window}]);
-                num_bs_cell(j,k,i,:) = hist([foo.cluster_label],1:6);
-            end
-            
-            if ~isempty(this_cluster_bs_fit)
-                % random-pulse
-                nearIDs_fit = cat(1,this_cluster_bs_fit.nearIDs);
-                foo = fits_bs_fit.get_fitID([nearIDs_fit{:,window}]);
-                num_bs_fit(j,k,i,:) = hist([foo.cluster_label],1:6);
-            end
-            
-        end
+        % get current cluster for empirical (only once)
         if j == 1
-            num_near{j,k} = num_neighbors;
+            if ~isempty(filtered)
+                this_nearIDs = cat(1,filtered.nearIDs);
+                % calculate num-neighbors for each pulse
+                num_near = cellfun(@(x) numel(x(~isnan(x))), this_nearIDs);
+                % origin labels
+                labels = [filtered.cluster_label]';
+                % get all target labels
+                target_labels = ...
+                    cellfun(@(x) [fitsOI.get_fitID(x).cluster_label], ...
+                    this_nearIDs,'UniformOutput',0);
+                
+                empirical(k).num_near = num_near;
+                empirical(k).origin_labels = labels;
+                empirical(k).target_labels = target_labels;
+            end
         end
-        num_near_cell{j,k} = num_bs_cell;
-        num_near_fit{j,k} = num_bs_fit;
+        
+        % random-cell
+        if ~isempty(this_cluster_bs_cell)
+            nearIDs_cell = cat(1,filtered_bs_cell.nearIDs);
+            % tabluate num-neighbors for each pulse
+            num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs_cell);
+            % get origin labels
+            labels = [filtered_bs_cell.cluster_label]';
+            % break down all target labels
+            target_labels = ...
+                cellfun(@(x) [fitsOI.get_fitID(x).cluster_label], ...
+                nearIDs_cell,'UniformOutput',0);
+            
+            random_cell(j,k).num_near = num_near;
+            random_cell(j,k).origin_labels = labels;
+            random_cell(j,k).target_labels = target_labels;
+        end
+        keyboard
+        
+        % random-fit
+        if ~isempty(this_cluster_bs_fit)
+            nearIDs_fit = cat(1,filtered_bs_fit.nearIDs);
+            % tabluate num-neighbors for each pulse
+            num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs_fit);
+            % get origin labels
+            labels = [filtered_bs_fit.cluster_label]';
+            % break down all target labels
+            target_labels = ...
+                cellfun(@(x) [fitsOI.get_fitID(x).cluster_label], ...
+                nearIDs_fit,'UniformOutput',0);
+            
+            random_pulse(j,k).num_near = num_near;
+            random_pulse(j,k).origin_labels = labels;
+            random_pulse(j,k).target_labels = target_labels;
+        end
         
     end
     
@@ -118,7 +126,8 @@ for j = 1:Nboot
     
 end
 
-save('~/Desktop/bootstrap_wt','num_member','num_neighbors','num_bs_cell','num_bs_fit');
+save(['~/Desktop/bootstrap_wt_N' num2str(Nboot)], ...
+    'empirical','random_cell','random_fit');
 
 %% Total neighbor number
 
