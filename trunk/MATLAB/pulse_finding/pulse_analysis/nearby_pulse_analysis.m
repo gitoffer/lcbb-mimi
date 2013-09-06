@@ -20,34 +20,49 @@ num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
 window = 6;
-Nboot = 100;
+Nboot = 200;
 
 left = [-Inf -Inf 0 60 120 180]; right = [Inf 0 60 120 180 Inf];
 
 %% Permute stackID
 
 num_member = zeros(numel(left),num_clusters);
-num_neighbors = zeros(numel(left),num_clusters,num_clusters+1);
-num_bs_cell = zeros(Nboot,numel(left),num_clusters,num_clusters+1);
-num_bs_fit = zeros(Nboot,numel(left),num_clusters,num_clusters+1);
+
+empirical(Nboot,numel(left)).num_near = [];
+empirical(Nboot,numel(left)).origin_labels = [];
+empirical(Nboot,numel(left)).target_labels = [];
+
+random_cell(Nboot,numel(left)).num_near = [];
+random_cell(Nboot,numel(left)).origin_labels = [];
+random_cell(Nboot,numel(left)).target_labels = [];
+
+random_pulse(Nboot,numel(left)).num_near = [];
+random_pulse(Nboot,numel(left)).origin_labels = [];
+random_pulse(Nboot,numel(left)).target_labels = [];
 
 for j = 1:Nboot
     
     tic
     % make permutations
-    [fits_bs_cell,cells_bs_cell] = cells.bootstrap_stackID(fitsOI);
-    % get nearby pulses
-    fits_bs_cell = fits_bs_cell.find_near_fits(time_windows,neighborID);
+%     [fits_bs_cell,cells_bs_cell] = cells.bootstrap_stackID(fitsOI);
+%     % get nearby pulses
+%     fits_bs_cell = fits_bs_cell.find_near_fits(time_windows,neighborID);
+%     
+%     % randomize pulses
+%     [fits_bs_fit,cells_bs_fit] = fitsOI.bootstrap_stackID(cells);
+%     fits_bs_fit = fits_bs_fit.find_near_fits(time_windows(window),neighborID);
     
-    % randomize pulses
-    [fits_bs_fit,cells_bs_fit] = fitsOI.bootstrap_stackID(cells);
-    fits_bs_fit = fits_bs_fit.find_near_fits(time_windows,neighborID);
-    
+    num_bs_cell = zeros(num_clusters,num_clusters+1);
+    num_bs_fit = zeros(num_clusters,num_clusters+1);
+    num_neighbors = zeros(num_clusters,num_clusters+1);
+
     for k = 1:numel(left) % iterating through time-bins
         
         % filter by time criterion for averaging
-        filtered = fitsOI( ...
-            [fitsOI.center] > left(k) & [fitsOI.center] <= right(k));
+        if j == 1
+            filtered = fitsOI( ...
+                [fitsOI.center] > left(k) & [fitsOI.center] <= right(k));
+        end
         filtered_bs_cell = fits_bs_cell( ...
             [fits_bs_cell.center] > left(k) & [fits_bs_cell.center] <= right(k));
         filtered_bs_fit = fits_bs_fit( ...
@@ -56,19 +71,25 @@ for j = 1:Nboot
         % breakdown neighbor by clusters
         for i = 1:num_clusters
             
-            % get current cluster
-            this_cluster = filtered([filtered.cluster_label] == i);
-            this_cluster_bs_cell = filtered_bs_cell([filtered_bs_cell.cluster_label] == i);
-            this_cluster_bs_fit = filtered_bs_fit([filtered_bs_fit.cluster_label] == i);
-            
-            if ~isempty(this_cluster)
-                % empirical
-                this_nearIDs = cat(1,this_cluster.nearIDs);
-                foo = fitsOI.get_fitID([this_nearIDs{:,window}]);
-                num_neighbors(k,i,:) = hist([foo.cluster_label],1:6);
-                num_member(k,i) = numel(this_cluster);
+            % get current cluster for empirical
+            if j == 1
+                this_cluster = filtered([filtered.cluster_label] == i);
+                if ~isempty(this_cluster)
+                    % tabulate
+                    this_nearIDs = cat(1,this_cluster.nearIDs);
+                    num_near = cellfun(@(x) numel(x(~isnan(x))), this_nearIDs);
+                    num_near = num_near(:,6);
+                    target_labels = ...
+                        [fitsOI.get_fitID([this_nearIDs{:,window}]).cluster_label];
+                    num_neighbors(i,:) = ([foo.cluster_label],1:6);
+                    num_member(k,i) = numel(this_cluster);
+                end
             end
             
+            % get current cluster for simulated cells/pulses
+            this_cluster_bs_cell = filtered_bs_cell([filtered_bs_cell.cluster_label] == i);
+            this_cluster_bs_fit = filtered_bs_fit([filtered_bs_fit.cluster_label] == i);
+                        
             if ~isempty(this_cluster_bs_cell)
                 % random-cell
                 nearIDs_cell = cat(1,this_cluster_bs_cell.nearIDs);
@@ -84,6 +105,11 @@ for j = 1:Nboot
             end
             
         end
+        if j == 1
+            num_near{j,k} = num_neighbors;
+        end
+        num_near_cell{j,k} = num_bs_cell;
+        num_near_fit{j,k} = num_bs_fit;
         
     end
     
@@ -110,8 +136,10 @@ for k = 1:numel(left)
         ./ nanstd(squeeze( sum(num_bs_fit(:,k,:,:),4) ));
     
     % Z-score bargraph
-    bar(1:5, ...
-        cat(1, foo,foo2)' );
+    h = bar(1:5, ...
+        cat(1, foo,foo2)' ,'LineStyle','None');
+    set(h(1),'FaceColor','r');
+    set(h(2),'FaceColor','g');
     
     if k < 3
         xlabel('Center cluster label')
