@@ -11,19 +11,24 @@ for k = 3:10
     
     Niter = 100;
     labels_all = nan( Niter, size(X,1) );
+    labels_rand = nan( Niter, size(X,1) );
     
     for i = 1:Niter
         
         [~,U] = fcm(X,k,o);
         [~,labels_all(i,:)] = max(U);
+        labels_rand(i,:) = randi(k,size(X,1),1);
         
+        if mod(i,10) == 0, display('.'); end
     end
     
     RI = zeros(Niter);
+    RI_random = zeros(Niter);
     
     for i = 1:Niter
         for j = 1:Niter
             RI(i,j) = rand_index( labels_all(i,:), labels_all(j,:) );
+            RI_random(i,j) = rand_index( labels_rand(i,:),labels_rand(j,:) );
         end
     end
     
@@ -31,12 +36,19 @@ for k = 3:10
     avgRI(k-2) = mean(RI(:));
     stdRI(k-2) = std(RI(:));
 
+    avgRI_random(k-2) = mean(RI_random(:));
+    stdRI_random(k-2) = std(RI_random(:));
+    
 end
 
+errorbar(3:10,avgRI,stdRI),xlabel('# of clusters'),ylabel('Rand index')
+hold on,errorbar(3:10,avgRI_random,stdRI_random,'r-')
 
 %%
 
 fits = fits.fcm_cluster(5,'corrected_area_norm',3);
+
+%%
 
 fits_wt = fits.get_embryoID( 1:5 );
 fits_twist = fits.get_embryoID( 6:7 );
@@ -52,7 +64,7 @@ for i = 1:5+1
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(i) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(i) ');']);
     
-%     eval(['cluster' num2str(i) '_wt.plot_heatmap']);
+    eval(['cluster' num2str(i) '_wt.plot_heatmap']);
 
 end
 
@@ -92,7 +104,7 @@ figure
 
 for i = 1:num_clusters
     
-    eval(['this_cluster = cluster' num2str(i) '_wt.sort(''cluster_weight'');']);
+    eval(['this_cluster = cluster' num2str(i) '.sort(''cluster_weight'');']);
     cluster_area = cat(1,this_cluster.corrected_area_norm);
     
     subplot(2,num_clusters,i);

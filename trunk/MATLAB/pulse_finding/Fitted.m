@@ -287,15 +287,17 @@ classdef Fitted
             %             fits = fit_array( ismember([ fit_array.fitID ], fitID) );
             fitID = nonans(fitID);
             fits = Fitted;
+            
             if numel(fitID) > 0
                 fits(numel(fitID)) = Fitted;
                 for i = 1:numel(fitID)
                     hit = [fit_array.fitID] == fitID(i);
                     if any( hit )
-                        fits(i) = fit_array([fit_array.fitID] == fitID(i));
+                        fits(i) = fit_array( hit );
                     end
                 end
             end
+            
             % ger rid of empty ones
             fits( cellfun(@isempty,{fits.fitID}) ) = [];
         end %get_fitID
@@ -699,6 +701,7 @@ classdef Fitted
                 l = cat(1,fits.cluster_label);
                 labels( [fits.embryoID] == i ) = ...
                     l( randperm(numel(this)) );
+                
             end
             for i = 1:numel(fits)
                 fits(i).cluster_label = labels(i);
@@ -754,6 +757,7 @@ classdef Fitted
                 rangeS( isnan(A(center_frame,:)) ) = NaN;
                 range = nonans(rangeS);
                 
+                % these cells must also have been tracked
                 if any( [cells.get_stackID(range).flag_tracked] == 0),
                     keyboard;
                 end
@@ -793,9 +797,11 @@ classdef Fitted
                     keyboard
                 end
                 
-                % put fit into new cell and fit array
-                fits(i).stackID = this_fit.stackID;
-                fits(i).cellID = this_fit.cellID;
+                % put fit into new fit array
+                fits(i).stackID = this_fit.stackID; % input stackID
+                fits(i).cellID = this_fit.cellID;   % input cellID
+                fits(i).cluster_label = this_fit.cluster_label; % input cluster label
+                % put fit into cell  
                 cells( [cells.stackID] == this_fit.stackID ).fitID = ...
                     nonans([cells.get_stackID( this_fit.stackID ).fitID this_fitID]);
                 cells( [cells.stackID] == this_fit.stackID).num_fits = ...
@@ -804,8 +810,8 @@ classdef Fitted
                 % flag the fact that this is a bootstrapped pulse
                 fits(i).bootstrapped = 1;
                 
-                % sanity check -- number of total fitID within cells must
-                % be the same (pm 1)
+                % sanity check -- number of total fitID within all cells must
+                % be the same
                 if sum(cellfun(@(x) numel(nonans(x)),{cells.fitID})) ~= old_total
                     keyboard
                 end
@@ -895,12 +901,19 @@ classdef Fitted
         function varargout = movie(fits, fitID, embryo_stack, cells)
             % MOVIE - Wrapper for MAKE_CELL_IMG to make a movie of a single
             % fitted pulse.
-            %
-            % USAGE: fits.movie(fitID,cells,input,measurement);
+            % 
+            % USAGE: fits.movie(fitID,cells);
             % xies@mit.edu
+            
+            if nargin < 4
+                cells = embryo_stack;
+                embryo_stack = fitID;
+                fitID = fits.fitID;
+            end
             
             % Extract this fit
             this_fit = fits.get_fitID(fitID);
+            if isempty(this_fit), varargout{1} = []; return; end
             % Find its embryo
             this_embryo = embryo_stack( this_fit.embryoID );
             % The frames2load are the width-frames (1 sigma away)
