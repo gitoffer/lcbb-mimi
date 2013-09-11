@@ -498,6 +498,7 @@ classdef CellObj
                 cIDs = cIDs( randIdx );
                 % rewrite cells and fits
                 for k = 1:numel(c)
+                    
                     cells( idx(k) ).stackID = sIDs(k);
                     cells( idx(k) ).cellID = cIDs(k);
                     
@@ -508,6 +509,9 @@ classdef CellObj
                     end
                 end
             end
+            % sort cells by stackID
+            [~,I] = sort([cells.stackID],'ascend');
+            cells = cells(I);
             
         end % bootstrap_stackID
         
