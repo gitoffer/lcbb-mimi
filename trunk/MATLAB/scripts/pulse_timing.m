@@ -12,11 +12,11 @@ bins = linspace(-500,500,50);
 % 
 % bar(bins,cat(1,N1,N2,N3,N4)');
 
-colors = {'r-','b-','k-','g-'};
+colors = varycolor(10);
 
-for i = 1:4
+for i = 1:10
     hold on;
-    plot_cdf([fitsOI([fitsOI.bin]==i).center],bins,colors{i});
+    plot_cdf( [fitsOI([fitsOI.bin]==i).center],bins,'Color',colors(i,:) );
     xlim([-300 250]);
 end
 

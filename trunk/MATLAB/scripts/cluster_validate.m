@@ -106,7 +106,7 @@ for i = 1:numel(num_clusters)
 end
 %% Get jump-distortion
 
-Niter = 100;
+Niter = 1;
 Dk = zeros(Niter,numel(num_clusters) + 1);
 for n = 1:Niter
     for i = 1:numel(num_clusters)
@@ -122,6 +122,7 @@ for n = 1:Niter
         Dk( n, i+1 ) = distortion(data2cluster,labels);
         
     end
+    display(['Finished with N = ' num2str(n)]);
     
 end
 
