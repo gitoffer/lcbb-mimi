@@ -38,7 +38,7 @@ end
 
 %% Visualizing mean properties
 
-name2plot = 'number_cells_connected_by_myosin';
+name2plot = 'area_sm';
 
 figure, clear H
 embryoID_OI = 1:5;
@@ -57,7 +57,7 @@ for i = 1:numel( embryoID_OI )
     embryoID = embryoID_OI(i);
     
     time = embryo_stack(embryoID).dev_time;
-    data = embryo_stack(embryoID).(name2plot)/num_cells(i);
+    data = embryo_stack(embryoID).(name2plot);
     
     %     data = data(:,label == 1);
     %     switch i

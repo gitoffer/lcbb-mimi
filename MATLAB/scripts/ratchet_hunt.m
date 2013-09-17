@@ -4,10 +4,11 @@ unratcheted = cluster4_wt;
 N = 2; colors = {'b','r'};
 
 % measurements to plot (up to four)
-measurements = {myosin_ring1+myosin_ring2,myosin_inside+myosin_ring3,myosin_connection,myosins};
-names = {'Junctional myosin','Medial myosin','Connection','Total Myosin'};
-ytitles = {'Intensity (a.u.)','Intensity (a.u.)','',''};
-ylimits = {[0 .8e4],[0 .8e4],[0 10],[0 1.5e4]};
+measurements = {myosin_ring1+myosin_ring2,anisotropies, ...
+    minors,majors};
+names = {'Junctional myosin','Anisotropy','Fraction','Myosin inertia'};
+ytitles = {'Intensity (a.u.)','Pixels','',''};
+ylimits = {[0 .8e4],[1 1.6],[5 10],[5 10]};
 which = 1;
 % rearrange order so that [which] comes first
 measurements = [measurements(which) measurements(setdiff(1:4,which))];
@@ -16,7 +17,7 @@ ytitles = [ytitles(which) ytitles(setdiff(1:4,which))];
 ylimits = [ylimits(which) ylimits(setdiff(1:4,which))];
 
 % construct anon function for filtering pulses
-condition = @(x) ([x.center] > -Inf & [x.center] < 0 );
+condition = @(x) ([x.center] > 0 & [x.center] < 30 );
 
 %% bootstrap ratcheted
 % figure
@@ -57,12 +58,8 @@ for i = 1:4
     subplot(4,2, 4+i);
     
     M = squeeze( bootstats(i,:,:) );
-    plot(x,nanmean(M),'k')
-%     shadedErrorBar( x, nanmean(M),nanstd(M)/sqrt(Nsample), colors{1},1);
+    plot(x,nanmean(M),'k');
     hold on
-%     title(['BS: ' names{i}]);
-%     xlabel('Pulse time (sec)');set(gca,'XLim',[-50 60]);
-%     ylabel(ytitles{i});set(gca,'YLim',ylimits{i});
     
 end
 
@@ -76,7 +73,7 @@ weights = cat(1,toplot.cluster_weight);
 % pseudo-color is special
 M = toplot.get_corrected_measurement(measurements{1},input);
 subplot(4,2,[2 4]);
-imagesc(x,1:numel(toplot), M); colorbar
+imagesc(x,1:numel(toplot), M); colorbar;
 title(names{1});
 
 for i = 1:4
@@ -122,13 +119,7 @@ for i = 1:4
     M = get_corrected_measurement(toplot,measurements{i},input);
 	shadedErrorBar(x, nanwmean(M,weights),nanstd(M),...
     colors{1},1);
-%     for j = 1:size(M,1) % workaround to get transparent lines
-%         y = M(j,:);
-%         xflip = [x(1 : end - 1) fliplr(x)];
-%         yflip = [y(1 : end - 1) fliplr(y)];
-%         patch(xflip, yflip, 'b', 'EdgeColor', colors{2}, 'LineWidth', 5, 'EdgeAlpha', 0.1, 'Facealpha', 0);
-%         hold on
-%     end
+
     title(names{i});
     xlim([-80 80]);
     xlabel('Pulse time (sec)');set(gca,'XLim',[-50 60]);
