@@ -5,20 +5,14 @@ bins = linspace(-500,500,50);
 
 %% by bin
 
-% N1 = hist([fits([fits.bin]==1).center],bins);
-% N2 = hist([fits([fits.bin]==2).center],bins);
-% N3 = hist([fits([fits.bin]==3).center],bins);
-% N4 = hist([fits([fits.bin]==4).center],bins);
-% 
-% bar(bins,cat(1,N1,N2,N3,N4)');
-
-colors = varycolor(10);
+colors = pmkmp(13);
 
 for i = 1:10
     hold on;
     plot_cdf( [fitsOI([fitsOI.bin]==i).center],bins,'Color',colors(i,:) );
     xlim([-300 250]);
 end
+xlabel('Developmental time (sec)');
 
 %% by behavior
 
@@ -50,4 +44,20 @@ xlabel('Developmental time (sec)')
 ylabel('Probability')
 xlim([-300 300])
 
-%%
+%% behavior by temporal bins
+
+left = [-Inf    -Inf    0   60  120 180];
+right = [Inf    0       60  120 180 Inf];
+N = zeros( numel(left), 6);
+for i = 1:numel(left)
+    
+    filter = @(x) ([x.center] > left(i) & [x.center] <= right(i));
+    N(i,:) = hist( [fitsOI(filter(fitsOI)).cluster_label], 1:6);
+    
+end
+h = bar(1:numel(left)-1, N(2:end,:),'LineStyle','none');
+for i = 1:6
+    set(h(i),'FaceColor',colors{i});
+end
+legend([entries,'N/A']);
+ylabel('Count');

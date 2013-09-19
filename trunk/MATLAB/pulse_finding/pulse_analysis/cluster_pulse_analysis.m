@@ -69,7 +69,7 @@ for i = 1:5+1
 end
 
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
-colors = {'b','c','g','r','m'};
+colors = {'b','c','g','r','m','k'};
 
 %%
 
