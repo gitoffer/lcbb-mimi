@@ -7,6 +7,7 @@ fits_incell = cellfun(@fits.get_fitID, ...
 
 fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));
+
 for i = 1:numel(fits_incell)
     fits_incell{i} = fits_incell{i}.sort('center');
     fits_center_incell{i} = [fits_incell{i}.center];
@@ -26,11 +27,34 @@ xlabel('Time between pulses (sec)')
 ylabel('Probability')
 title('Wild-type')
 
+figure
+scatter([center{:}], [freq_wt{:}],100,'filled')
+xlabel('Developmental time (sec)');
+ylabel('Time between pulses (sec)');
+title('Wild-type')
+
+%%
+figure
+S = [100 500 100 500 100];
+for i = 1:5
+    centerflat = [center{:}];
+    freqflat = [freq_wt{:}];
+    
+    scatter( ...
+        centerflat([fits_label_incell{:}] == i), ...
+        freqflat([fits_label_incell{:}] == i), S(i), colors{i}, 'filled')
+    hold on
+end
+
+hline(80,'r--','twist average');
+hline(60,'b--','WT average')
+xlabel('Developmental time (sec)');
+
 %% twist
 
 twist_cells = cells( ismember([cells.embryoID], [6,7]) );
 
-fits_incell = cellfun(@fits_all.get_fitID,{twist_cells.fitID},'UniformOutput',0);
+fits_incell = cellfun(@fits.get_fitID,{twist_cells.fitID},'UniformOutput',0);
 
 fits_center_incell = cell(1,numel(fits_incell));
 

@@ -1,14 +1,14 @@
-ratcheted = [cluster1_wt cluster2_wt];
+ratcheted = [cluster1_wt cluster2_wt cluster3_wt];
 unratcheted = cluster4_wt;
 
 N = 2; colors = {'b','r'};
 
 % measurements to plot (up to four)
 measurements = {myosin_ring1+myosin_ring2,myosin_ring3+myosin_inside, ...
-    myosin_fraction,majors};
+    myosin_fraction,myosin_inertia};
 names = {'Junctional myosin','Medial myosin','Fraction','Myosin inertia'};
 ytitles = {'Intensity (a.u.)','Pixels','',''};
-ylimits = {[0 .8e4],[0 .8e4],[0 1],[5 10]};
+ylimits = {[0 .8e4],[0 .8e4],[0 1],[0 .5]};
 which = 1;
 % rearrange order so that [which] comes first
 measurements = [measurements(which) measurements(setdiff(1:4,which))];
@@ -28,7 +28,7 @@ x = fits(1).corrected_time;
 Nsample = 100;
 
 % bootstrap using unratcheted bins
-bootstats = zeros(4, Nsample, numel(x));
+bootstats = zeros(10, Nsample, numel(x));
 for N = 1:Nsample
     
     N_amp_bins = max( unique([ fits.bin ]) );
