@@ -1,6 +1,6 @@
 %% Nearby pulse analysis
 
-fitsOI = fits_twist;
+fitsOI = fits_wt;
 
 %%
 
@@ -119,19 +119,21 @@ for j = 1:Nboot
     
 end
 
-MC_twist_pcenter.empirical = empirical;
-MC_twist_pcenter.random_cell = random_cell;
-MC_twist_pcenter.random_pulse = random_pulse;
-MC_twist_pcenter.def = neighbor_defition;
+MC_wt_pcenter.empirical = empirical;
+MC_wt_pcenter.random_cell = random_cell;
+MC_wt_pcenter.random_pulse = random_pulse;
+MC_wt_pcenter.def = neighbor_defition;
 
-save(['~/Desktop/bootstrap_twist_pcenter_N' num2str(Nboot) '_2'], ...
-    'MC_twist_pcenter');
+save(['~/Desktop/bootstrap_wt_pcenter_N' num2str(Nboot) '_2'], ...
+    'MC_wt_pcenter');
 
 %% Select correct timing
 
 % select dataset
-MC = MC_twist_pcenter;
+MC = MC_wt_pcenter;
 
+window = 3; % neighborhood time window
+    
 empirical = MC.empirical;
 random_cell = MC.random_cell;
 random_pulse = MC.random_pulse;
@@ -140,7 +142,7 @@ random_pulse = MC.random_pulse;
 left = [-Inf -Inf 0 60 120 180];
 right = [Inf 0 60 120 180 Inf];
 
-for K = 1
+for K = 1:6
     
     num_emp = empirical.num_near;
     num_cell = cat(3,random_cell.num_near);
@@ -169,11 +171,9 @@ for K = 1
     labels_pulse = labels_pulse( filter(random_pulse(1)) );
     target_pulse = target_pulse( filter(random_pulse(1)), :, :);
     
-    % Distribution of means within a behavior
-    window = 6;
-    
     for i = 1:5
-        
+    
+        % Distribution of means within a behavior
         this_count_cell = squeeze( num_cell( labels_cell == i,window,:) );
         this_count_pulse = squeeze( num_pulse( labels_pulse == i,window,:) );
         this_count_emp = num_emp( labels_emp == i, window);
@@ -185,21 +185,21 @@ for K = 1
         [Nmean_pulse,bins] = hist(mean_of_pulse,30);
         [Nmean_cell,bins] = hist(mean_of_cell,bins);
         
-        figure(1)
-        subplot(5,1,i);
-        h = bar(bins, ...
-            cat(1,Nmean_cell/sum(Nmean_cell),Nmean_pulse/sum(Nmean_pulse))', ...
-            'LineStyle','None');
-        set(h(1),'FaceColor','red'),set(h(2),'FaceColor',[0 100/255 0]);
-        vline(mean_of_emp,'b');
+%         figure(1)
+%         subplot(5,1,i);
+%         h = bar(bins, ...
+%             cat(1,Nmean_cell/sum(Nmean_cell),Nmean_pulse/sum(Nmean_pulse))', ...
+%             'LineStyle','None');
+%         set(h(1),'FaceColor','red'),set(h(2),'FaceColor',[0 100/255 0]);
+%         vline(mean_of_emp,'b');
         
-        title(entries{i})
+%         title(entries{i})
         
-        if i == 1
-            xlabel('Average number of neighbors')
-            ylabel('Frequency')
-            legend('Random-cell','Random-pulse','Empirical');
-        end
+%         if i == 1
+%             xlabel('Average number of neighbors')
+%             ylabel('Frequency')
+%             legend('Random-cell','Random-pulse','Empirical');
+%         end
         
         zscores_cell(K,i) = ( mean_of_emp - mean(mean_of_cell) ) / std(mean_of_cell);
         zscores_pulse(K,i) = ( mean_of_emp - mean(mean_of_pulse) ) / std(mean_of_pulse);
@@ -235,11 +235,11 @@ for K = 1
     end
     
     figure(2)
-    subplot(1,1,K);
-    h = bar(1:5,cat(1,zscores_cell(K,:),zscores_pulse(K,:))');
+    subplot(6,1,K);
+    h = bar(1:5,cat(1,zscores_cell(K,:),zscores_pulse(K,:))','LineStyle','none');
     set(h(1),'FaceColor','red'),set(h(2),'FaceColor','green');
     title([ num2str(left(K)) ' < center <= ' num2str(right(K)) ])
-    ylim([-1 2])
+    ylim([-2.5 3])
 %     
 end
 

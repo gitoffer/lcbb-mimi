@@ -14,7 +14,7 @@ mdf_file{9} = '~/Desktop/Tracked pulses/01-29-2013-3/01-29-2013-3-mimi.mdf'; emb
 
 match_thresh = 1;
 
-for i = 1:9
+for i = 2
     
     % Load MDF into matrix
     mdf_mat = read_mdf(mdf_file{i});

@@ -894,7 +894,7 @@ classdef Fitted
             x = fits(1).corrected_time;
             
             num_bins = numel(unique(nonans([fits.bin])));
-            C = PMKMP( num_bins ); % use perceptual map
+            C = pmkmp( num_bins ); % use perceptual map
             
             % iterate through all bin
             for i = 1:num_bins
@@ -935,6 +935,7 @@ classdef Fitted
         end % plot_binned_fits
         
         function plot_heatmap(fits,sortname)
+            % Uses IMAGESC instead of PCOLOR (PCOLOR is werid)
             
             if nargin < 2, sortname = 'amplitude'; end
             
@@ -950,19 +951,29 @@ classdef Fitted
             ylabel('Fitted amplitudes');
             
             subplot(1,5,2:3)
-            [X,Y] = meshgrid( fits(1).corrected_time, 1:numel(fits));
-            pcolor( X,Y, cat(1,fits.corrected_myosin) );
+%             [X,Y] = meshgrid( fits(1).corrected_time, 1:numel(fits));
+%             pcolor( X,Y, cat(1,fits.corrected_myosin) );
+            imagesc( ...
+                fits(1).corrected_time, ...
+                1:numel(fits), ...
+                cat(1,fits.corrected_myosin) );
             shading flat; axis tight; colorbar;
             title('Myosin intensity')
             xlabel('Pulse time (sec)');
+            axis xy
 %             colormap(pmkmp(255))
             
             subplot(1,5,4:5)
-            pcolor( X,Y, cat(1,fits.corrected_area_norm) );
+%             pcolor( X,Y, cat(1,fits.corrected_area_norm) );
+            imagesc( ...
+                fits(1).corrected_time, ...
+                1:numel(fits), ...
+                cat(1,fits.corrected_area_norm) );
             shading flat; axis tight; colorbar;
             caxis( [-10 10] );
             title('Area response');
             xlabel('Pulse time (sec)');
+            axis xy
 %             colormap(pmkmp(255))
             
         end %plot_heatmap

@@ -26,19 +26,28 @@ colors = {'b-','c-','g-','m-','r-'};
 for i = 1:5
     hold on
     plot_cdf([fitsOI([fitsOI.cluster_label]==i).center],bins,colors{i});
-    xlim([-500 500])
+    xlim([-300 300])
 end
+xlabel('Developmental time (sec)')
+ylabel('CDF')
 legend(entries{:})
 
 %% behavior in count/PDF
+bins = linspace(-500,500,30);
 
 colors = {'b','c','g','m','r'};
 N = zeros(5,numel(bins));
 for i = 1:5
     N(i,:) = hist([fitsOI([fitsOI.cluster_label]==i).center],bins);
 end
-% set(gca,'ColorOrder',colors);
-bar(bins,N');
-xlim([-300 250])
+
+h = plot(bins,bsxfun(@rdivide,N',sum(N')) );
+for i = 1:5
+    set(h(i),'Color',colors{i});
+end
+legend(entries{:})
+xlabel('Developmental time (sec)')
+ylabel('Probability')
+xlim([-300 300])
 
 %%

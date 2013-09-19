@@ -4,11 +4,11 @@ unratcheted = cluster4_wt;
 N = 2; colors = {'b','r'};
 
 % measurements to plot (up to four)
-measurements = {myosin_ring1+myosin_ring2,anisotropies, ...
-    minors,majors};
-names = {'Junctional myosin','Anisotropy','Fraction','Myosin inertia'};
+measurements = {myosin_ring1+myosin_ring2,myosin_ring3+myosin_inside, ...
+    myosin_fraction,majors};
+names = {'Junctional myosin','Medial myosin','Fraction','Myosin inertia'};
 ytitles = {'Intensity (a.u.)','Pixels','',''};
-ylimits = {[0 .8e4],[1 1.6],[5 10],[5 10]};
+ylimits = {[0 .8e4],[0 .8e4],[0 1],[5 10]};
 which = 1;
 % rearrange order so that [which] comes first
 measurements = [measurements(which) measurements(setdiff(1:4,which))];
@@ -17,7 +17,7 @@ ytitles = [ytitles(which) ytitles(setdiff(1:4,which))];
 ylimits = [ylimits(which) ylimits(setdiff(1:4,which))];
 
 % construct anon function for filtering pulses
-condition = @(x) ([x.center] > 0 & [x.center] < 30 );
+condition = @(x) ([x.center] > 0 & [x.center] < 60 );
 
 %% bootstrap ratcheted
 % figure
@@ -97,7 +97,6 @@ for i = 1:4
 end
 
 linkaxes(h,'x');
-
 
 %% plot ratcheted portion
 
