@@ -106,7 +106,7 @@ for i = 1:numel(num_clusters)
 end
 %% Get jump-distortion
 
-Niter = 1;
+Niter = 100;
 Dk = zeros(Niter,numel(num_clusters) + 1);
 for n = 1:Niter
     for i = 1:numel(num_clusters)

@@ -95,9 +95,12 @@ classdef CellObj
         fit_bg		% Background fit
         fit_gausses	% Sum of all gaussians fitted
         fit_time	% The time-domain of fitted pulses
+        raw         % Raw curve
         residuals   % Residuals
+        params      % Keep track of parameters
         num_fits    % Number of pulses found
         fitID       % The fitIDs of FITTED found in this cell
+        opt         % fit_opts
         
         % Tracking
 		flag_tracked % Flagged if tracked
@@ -119,6 +122,8 @@ classdef CellObj
         
         function [new_cells,fit] = fit_gaussians(cells,opts)
             %FIT_GAUSSIANS Fit multiple-Gaussians with a F-test stop
+            % Uses LSQCURVEFIT
+            % Might try 
             
             num_embryos = max(unique([cells.embryoID]));
             num_cells = hist([cells.embryoID],1:num_embryos);
@@ -172,6 +177,7 @@ classdef CellObj
                     
                     % Turn on the 'fitted' flag
                     this_cell.flag_fitted = 1;
+                    this_cell.opt = opt;
                     
                     % --- Get fitted curves, except for array of Gaussians ---
 %                     curve = synthesize_gaussians(gauss_p(:,2:end),t); % Get gaussians/time
@@ -180,6 +186,8 @@ classdef CellObj
                     this_cell.fit_colorized = P; this_cell.fit_bg = background;
 					this_cell.fit_time = t;
                     this_cell.residuals = residuals;
+                    this_cell.params = gauss_p;
+                    this_cell.raw = y;
                     
                     % --- Get pulse info ---
                     this_cell.num_fits = size(gauss_p,2) - 1;
@@ -202,7 +210,7 @@ classdef CellObj
 						% Collect the cell-centric fitted curve for this peak
 						fit_gausses(:,j - 1) = lsq_gauss1d(gauss_p(:,j),this_cell.fit_time);
                     end
-                    
+                
                 this_cell.fit_gausses = fit_gausses;    
                 else % This cell will NOT be fitted
                     this_cell.fit_colorized = NaN;
@@ -214,6 +222,8 @@ classdef CellObj
                     this_cell.fitID = NaN;
                     this_cell.num_tracks = NaN;
                     this_cell.trackID = NaN;
+                    this_cell.params = NaN;
+                    this_cell.opt = NaN;
                 end
                 new_cells(stackID) = this_cell;
                 
@@ -231,9 +241,20 @@ classdef CellObj
             %@CellObj.addFit Add a fitID to a cell
             cellobj.fitID = [cellobj.fitID fit.fitID];
             cellobj.num_fits = cellobj.num_fits + 1;
+            % update gauss curves
 			cellobj.fit_gausses = ...
 				cat(2,cellobj.fit_gausses,...
                 lsq_gauss1d([fit.amplitude;fit.center;fit.width],cellobj.fit_time)');
+            % add new params
+            cellobj.params = cat(2,cellobj.params,...
+                [fit.amplitude;fit.center;fit.width]);
+            params = cellobj.params;
+            t = cellobj.fit_time;
+            % recompute residuals
+            cellobj.residuals = cellobj.raw ...
+                - synthesize_gaussians_withbg(params,t);
+            P = plot_peak_color(params(:,2:end),t);
+            cellobj.fit_colorized = P;
         end % addFit
         
         function cellobj = removeFit(cellobj,fitID)
@@ -242,6 +263,17 @@ classdef CellObj
             cellobj.fitID(idx) = []; % remove fitID 
             cellobj.fit_gausses(:,idx) = []; % remove Gaussian colorized peak
             cellobj.num_fits = cellobj.num_fits - 1;
+            % update parameter list (remove)
+            cellobj.params(:,idx+1) = [];
+            
+            params = cellobj.params;
+            t = cellobj.fit_time;
+            % update residuals
+            cellobj.residuals = cellobj.raw - ...
+                synthesize_gaussians_withbg(params,t);
+            % update colorized curves
+            P = plot_peak_color(params(:,2:end),t); % Get colorized fit
+            cellobj.fit_colorized = P;
         end % removeFit
         
         function cellobj = addTrack(cellobj,trackID)
