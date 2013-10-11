@@ -6,6 +6,7 @@ adj = nan(num_cells);
 
 for i = 1:num_cells
     my_neighb = neighborID{t,i};
+    my_neighb = my_neighb(my_neighb > 0);
     if any(~isnan(my_neighb))
         adj(i,my_neighb) = 1;
     end

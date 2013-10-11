@@ -1,23 +1,29 @@
 % Pulse timing 
 
 fitsOI = fits_wt;
-bins = linspace(-500,500,50);
+bins = linspace(-500,500,30);
 
 %% by bin
 
 colors = pmkmp(13);
 
+N = zeros(10,numel(bins));
 for i = 1:10
     hold on;
     plot_cdf( [fitsOI([fitsOI.bin]==i).center],bins,'Color',colors(i,:) );
+    N(i,:) = hist([fitsOI([fitsOI.bin] == i).center],bins);
+    plot(bins,N,'Color',colors(i,:));
     xlim([-300 250]);
 end
+
+% imagesc(bins,5:10:95,N);
+ylabel('Strength %-tile')
 xlabel('Developmental time (sec)');
 
-%% by behavior
+%% by behavior in CDF
 
 colors = {'b-','c-','g-','m-','r-'};
-for i = 1:5
+for i = [1 4]
     hold on
     plot_cdf([fitsOI([fitsOI.cluster_label]==i).center],bins,colors{i});
     xlim([-300 300])
@@ -30,14 +36,16 @@ legend(entries{:})
 bins = linspace(-500,500,30);
 
 colors = {'b','c','g','m','r'};
-N = zeros(5,numel(bins));
-for i = 1:5
+N = zeros(2,numel(bins));
+for i = [1 4]
     N(i,:) = hist([fitsOI([fitsOI.cluster_label]==i).center],bins);
 end
 
-h = plot(bins,bsxfun(@rdivide,N',sum(N')) );
-for i = 1:5
-    set(h(i),'Color',colors{i});
+N = bsxfun(@rdivide, N, sum(N,2));
+
+h = bar(bins,N','LineStyle','None');
+for i = [1 4]
+    set(h(i),'FaceColor',colors{i});
 end
 legend(entries{:})
 xlabel('Developmental time (sec)')

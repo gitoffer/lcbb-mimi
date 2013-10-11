@@ -4,11 +4,12 @@ function [h,cdf,bins] = plot_cdf(observations,bins,varargin)
 % observations of a random variable, plot the cumulative probability
 % functionof the variable.
 %
-% SYNOPSIS: h = plot_cdf(x,nbins,patch_options)
-%           [h,cdf,bins] = plot_cdf(x,nbins,patch_options)
+% SYNOPSIS: h = plot_cdf(x,bins,line_options)
+%           [h,cdf,bins] = plot_cdf(x,bins,line_options)
+%           plot_cdf(x,'r-');
 % INPUT: x - observed variable
-%        nbins - number of bins (default = 30)
-%        line_options - e.g. 'linestyle','r-'
+%        nbins - bins (default, linspace 30)
+%        line_options - e.g. 'r-'
 % OUTPUT: h - figure handle
 %         cdf
 %         bins
@@ -23,6 +24,15 @@ switch nargin
     case 1
         bins = [];
 end
+
+% check that second argin is not a linestyle
+if ischar(bins)
+    linestyle = {bins};
+    bins = [];
+else
+    linestyle = varargin;
+end
+
 if isempty(bins)
     bins = linspace(nanmin(observations(:)),nanmax(observations(:)),30);
 end
@@ -36,11 +46,8 @@ cdf = cumsum(counts);
 normalization_factors = sum(counts(:));
 cdf = bsxfun(@rdivide,cdf,normalization_factors);
 
-if nargin > 2
-    h = plot(bins,cdf,varargin{:});
-else
-    h = plot(bins,cdf);
-end
+h = plot(bins,cdf,linestyle{:});
+
 
 % for i = 1:num_var
 %     [counts] = hist(observations(:,i),edges);

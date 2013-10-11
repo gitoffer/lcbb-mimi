@@ -942,15 +942,8 @@ classdef Fitted
             fits = sort(fits,sortname);
             
             figure
-            subplot(1,5,1)
-            h = plot( numel(fits):-1:1 , [fits.amplitude] );
-            set(h,'LineWidth',5);
-            set(gca, 'CameraUpVector', [1 0 0] );
-            set(gca, 'XLim', [1 numel(fits)] );
-            set(gca, 'XTick', []);
-            ylabel('Fitted amplitudes');
             
-            subplot(1,5,2:3)
+            subplot(1,4,1:2)
             [X,Y] = meshgrid( fits(1).corrected_time, 1:numel(fits));
             pcolor( X,Y, cat(1,fits.corrected_myosin) );
 %             imagesc( ...
@@ -963,15 +956,15 @@ classdef Fitted
             axis xy
 %             colormap(pmkmp(255))
             
-            subplot(1,5,4:5)
+            subplot(1,4,3:4)
             pcolor( X,Y, cat(1,fits.corrected_area_norm) );
 %             imagesc( ...
 %                 fits(1).corrected_time, ...
 %                 1:numel(fits), ...
 %                 cat(1,fits.corrected_area_norm) );
             shading flat; axis tight; colorbar;
-            caxis( [-10 10] );
-            title('Area response');
+            caxis( [-5 5] );
+            title('Local area change');
             xlabel('Pulse time (sec)');
             axis xy
 %             colormap(pmkmp(255))
@@ -1008,7 +1001,7 @@ classdef Fitted
             % MAKE_CELL_IMG)
             h.frames2load = frames;
             
-            h.channels = {'Membranes','Myosin'};
+            h.channels = {'Membranes','Rho Kinase thresholded'};
             
             % Pad the curve
             this_cell = cells.get_stackID( this_fit.stackID );

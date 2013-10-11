@@ -2,11 +2,12 @@
 % Wildtype
 
 fits_incell = cellfun(@fits.get_fitID, ...
-    {cells([cells.flag_tracked] == 1 & [cells.embryoID] < 6).fitID}, ...
+    {cells([cells.flag_tracked] > -1 & [cells.embryoID] < 6).fitID}, ...
     'UniformOutput',0);
 
 fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));
+centers = cell(1,numel(fits_incell));
 
 for i = 1:numel(fits_incell)
     fits_incell{i} = fits_incell{i}.sort('center');
@@ -17,7 +18,7 @@ for i = 1:numel(fits_incell)
     centers{i} = foo(1:end-1);
 end
 
-freq_wt = cellfun(@(x) diff(x), fits_center_incell,'UniformOutput',0);
+freq_wt = cellfun(@diff, fits_center_incell,'UniformOutput',0);
 % "center" of a pulse pair
 center = cellfun(@sort_pair_mean, fits_center_incell,'UniformOutput',0);
 
@@ -52,17 +53,23 @@ xlabel('Developmental time (sec)');
 
 %% twist
 
-twist_cells = cells( ismember([cells.embryoID], [6,7]) );
+fits_incell = cellfun(@fits.get_fitID,{cells.get_embryoID(6:7).fitID},'UniformOutput',0);
 
-fits_incell = cellfun(@fits.get_fitID,{twist_cells.fitID},'UniformOutput',0);
-
+fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));
+centers = cell(1,numel(fits_incell));
 
 for i = 1:numel(fits_incell)
+    fits_incell{i} = fits_incell{i}.sort('center');
     fits_center_incell{i} = [fits_incell{i}.center];
+    foo = [fits_incell{i}.cluster_label];
+    fits_label_incell{i} = foo(1:end-1);
+    foo = [fits_incell{i}.center];
+    centers{i} = foo(1:end-1);
 end
 
 freq_twist = cellfun(@(x) diff(sort(x)), fits_center_incell, 'UniformOutput',0);
+center_twist = cellfun(@sort_pair_mean, fits_center_incell, 'UniformOutput',0);
 
 %% cta (seperate two cta populations)... see cta_clustering.m
 
@@ -102,14 +109,13 @@ bins = linspace(0,250,50);
 
 [N_wt, bins] = hist( [freq_wt{:}] , bins);
 [N_twist,bins] = hist( [freq_twist{:}], bins);
-[N_cta1, bins] = hist( [freq_cta1{:}] , bins);
-[N_cta2, bins] = hist( [freq_cta2{:}] , bins);
-N_cta = N_cta1 + N_cta2;
+% [N_cta1, bins] = hist( [freq_cta1{:}] , bins);
+% [N_cta2, bins] = hist( [freq_cta2{:}] , bins);
+% N_cta = N_cta1 + N_cta2;
 
 bar( bins, ... 
-    cat( 1,N_wt/sum(N_wt), ...
-    N_cta/sum(N_cta), ...
-    N_twist/sum(N_twist) ...
+    cat( 1,N_wt, ...
+    N_twist ...
     )', 'Grouped');
 
 set(gca,'XLim',[0 250]);
@@ -117,30 +123,26 @@ set(gca,'XLim',[0 250]);
 xlabel('Period between pulses (sec)')
 ylabel('Probability')
 legend(['Wild-type, N = ' num2str(sum(N_wt))], ...
-    ['cta, N = ' num2str(sum(N_cta))], ...
     ['twist, N = ' num2str(sum(N_twist))] ...
     );
 
-figure, bar( bins, cat(1,N_cta1/sum(N_cta1), N_cta2/sum(N_cta2))' ,'Grouped');
-set(gca,'Xlim',[0 250]);
-xlabel('Period between pulses (sec)')
-ylabel('Probability')
-legend(['cta (constricting), N = ' num2str(sum(N_cta1))], ...
-    ['cta (expanding), N = ' num2str(sum(N_cta2))] ...
-    );
+% figure, bar( bins, cat(1,N_cta1/sum(N_cta1), N_cta2/sum(N_cta2))' ,'Grouped');
+% set(gca,'Xlim',[0 250]);
+% xlabel('Period between pulses (sec)')
+% ylabel('Probability')
+% legend(['cta (constricting), N = ' num2str(sum(N_cta1))], ...
+%     ['cta (expanding), N = ' num2str(sum(N_cta2))] ...
+%     );
 
 %% Count number of pulses per cell for different genotypes
 
 N_wt = hist( [cells( [cells.embryoID] < 6 ).num_fits] , 1:15);
 N_twist = hist( [cells( ismember([cells.embryoID], [6 7]) ).num_fits] ,1:15);
-N_cta = hist( [cells( [cells.embryoID] > 7 ).num_fits] ,1:15);
+% N_cta = hist( [cells( [cells.embryoID] > 7 ).num_fits] ,1:15);
 
 bar(1:15, ...
-    cat( 1, N_wt, N_twist, N_cta)' );
+    cat( 1, N_wt, N_twist)' );
 
 legend(['Wild-type, cells = ' num2str(sum(N_wt))], ...
-    ['twist, cells = ' num2str(sum(N_twist))], ...
-    ['cta, cells = ' num2str(sum(N_cta))] ...
+    ['twist, cells = ' num2str(sum(N_twist))] ...
     );
-
-
