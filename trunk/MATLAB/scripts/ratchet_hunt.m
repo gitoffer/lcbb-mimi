@@ -17,7 +17,7 @@ ytitles = [ytitles(which) ytitles(setdiff(1:4,which))];
 ylimits = [ylimits(which) ylimits(setdiff(1:4,which))];
 
 % construct anon function for filtering pulses
-condition = @(x) ([x.center] > 0 & [x.center] < 60 );
+condition = @(x) ([x.center] < 0 & [x.center] < 60 );
 
 %% bootstrap ratcheted
 % figure

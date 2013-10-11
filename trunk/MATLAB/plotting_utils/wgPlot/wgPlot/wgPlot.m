@@ -119,7 +119,7 @@ if eWeighted
     if nSegment > 0
         x=[coord(ii(p),1),coord(jj(p),1),repmat(nan,nSegment,1)]';
         y=[coord(ii(p),2),coord(jj(p),2),repmat(nan,nSegment,1)]';
-%         hE=[hE,plot(x(:),y(:),'color',edgeMap(kk,:),plotParm{:})];
+        hE=[hE,plot(x(:),y(:),'color',edgeMap(kk,:),plotParm{:})];
         hE=[hE,plot(x(:),y(:),'lineWidth',unique(eWt(eWt==kk))/2,'color',edgeMap(kk,:),plotParm{:})];
         % Draw legend bar
         line([legLim(kk),legLim(kk+1)],[legY,legY],'lineWidth',15,'color',edgeMap(kk,:));

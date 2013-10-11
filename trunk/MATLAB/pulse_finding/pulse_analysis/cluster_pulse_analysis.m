@@ -46,7 +46,7 @@ hold on,errorbar(3:10,avgRI_random,stdRI_random,'r-')
 
 %%
 
-fits = fits.fcm_cluster(5,'corrected_area_norm',3);
+fits = fits_wt.fcm_cluster(5,'corrected_area_norm',3);
 
 %%
 
@@ -104,13 +104,13 @@ figure
 
 for i = 1:num_clusters
     
-    eval(['this_cluster = cluster' num2str(i) '.sort(''cluster_weight'');']);
+    eval(['this_cluster = cluster' num2str(i) '_wt.sort(''cluster_weight'');']);
     cluster_area = cat(1,this_cluster.corrected_area_norm);
     
     subplot(2,num_clusters,i);
     [X,Y] = meshgrid( fits(1).corrected_time,1:numel(this_cluster) );
     pcolor( X,Y, cluster_area );
-    shading flat, caxis([-10 10]),colorbar;
+    shading flat, caxis([-7 7]),colorbar;
         title(['Cluster ' num2str(i) ]);
     xlabel('Pulse time (sec)')
     
@@ -126,11 +126,11 @@ end
 %% Breakdown behavior by embryoID
 
 clear N
-for i = 1:num_clusters
-    N(i,:) = hist( [fits( [fits.cluster_label] == i).embryoID] ,1:10);
+for i = 1:num_clusters + 1
+    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID] ,[1 5 7 11]);
 end
 
-bar(1:10, bsxfun(@rdivide, N, sum(N))' ,'stacked' );
-xlim([0 11])
+bar(bsxfun(@rdivide, N, sum(N))' ,'stacked' );
+xlim([0 4])
 xlabel('EmbryoID')
-legend(entries{:});
+legend(entries{:},'N/A');

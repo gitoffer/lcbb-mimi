@@ -1,14 +1,15 @@
-function F = make_embryo_pulse_movie(fits,cells,input,embryoID)
+function F = make_embryo_pulse_movie(fits,cells,input,path,flag2label)
 %MAKE_EMBRYO_PULSE_MOVIE - Make a movie of all pulses found within
 % an embryo. Only the center frames of each pulse is highlighted,
 % and the fitID and cellID of that pulse will be shown in text.
 %
 % SYNOPSIS:
 
-
-if nargin > 3
-    fits = fits.get_embryoID(embryoID);
-    cells = cells.get_embryoID(embryoID);
+if nargin < 4
+    path = '~/Desktop/movie.avi';
+    flag2label = 0;
+elseif nargin < 5
+    flag2label = 0;
 end
 
 % check that all fits and cells belong to the same embryo
@@ -29,7 +30,8 @@ cIDs = [fits.cellID];
 num_frames = numel(dev_time);
 X = input.X; Y = input.Y;
 
-
+F = avifile(path,'compression','None');
+fig = figure(1);
 for frame = 1:num_frames
     
 	this_img = zeros(Y,X);
@@ -59,13 +61,17 @@ for frame = 1:num_frames
     end
 
     imshow(this_img,[]);
-	hold on;
-	text(x-10,y+8,str_fitID,'Color','red','fontsize',10);
-    text(x-10,y-8,str_cellID,'Color','green','fontsize',10);
-    hold off;
+    if flag2label
+        hold on;
+        text(x-10,y+8,str_fitID,'Color','red','fontsize',10);
+        text(x-10,y-8,str_cellID,'Color','green','fontsize',10);
+        hold off;
+    end
     
-    F(frame) = getframe;
+    F = addframe(F,fig);
     
 end
+
+F = close(F);
 
 end

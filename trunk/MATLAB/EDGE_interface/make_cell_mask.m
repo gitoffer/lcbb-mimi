@@ -1,4 +1,4 @@
-function mask = make_cell_mask(cellobj,frames,stackID,input)
+function mask = make_cell_mask(cellobj,frames,input)
 %MAKE_CELL_MASK Make a BW mask of a CellObj using POLY2MASK.
 %
 % SYNOPSIS: mask = make_cell_mask(cells,frames,stackID,input)

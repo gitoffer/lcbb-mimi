@@ -1,6 +1,6 @@
 %% Nearby pulse analysis
 
-fitsOI = fits_twist;
+fitsOI = fits_wt;
 
 %%
 
@@ -9,7 +9,7 @@ time_windows = 10:10:100; % seconds
 neighbor_defition = @(central, neighbors, tau) ...
     abs( [neighbors.center] - central.center ) < tau ...
     & ~( neighbors == central ) ...
-    & ([neighbors.center] - central.center) > 0;
+    & ([neighbors.center] - central.center) >= 0;
 
 fitsOI = fitsOI.find_near_fits(time_windows,neighborID, neighbor_defition);
 
@@ -124,13 +124,13 @@ MC_twist_pcenter.random_cell = random_cell;
 MC_twist_pcenter.random_pulse = random_pulse;
 MC_twist_pcenter.def = neighbor_defition;
 
-save(['~/Desktop/bootstrap_twist_pcenter_N' num2str(Nboot) ''], ...
-    'MC_twost_pcenter');
+save(['~/Desktop/bootstrap_twist_pcenter_N' num2str(Nboot) '_shorter_sub'], ...
+    'MC_twist_pcenter');
 
 %% Select correct timing
 
 % select dataset
-MC = MC_wt_pcenter;
+MC = MC_wt_mcenter;
 
 window = 3; % neighborhood time window
     
@@ -142,7 +142,7 @@ random_pulse = MC.random_pulse;
 left = [-Inf -Inf 0  60  120 180];
 right = [Inf 0    60 120 180 Inf];
 
-for K = 6
+for K = 1
     
     num_emp = empirical.num_near;
     num_cell = cat(3,random_cell.num_near);
@@ -194,38 +194,38 @@ for K = 6
         vline(mean_of_emp,'b');
         title(entries{i})
         
-%         if i == 1
-%             xlabel('Average number of neighbors')
-%             ylabel('Frequency')
-%             legend('Random-cell','Random-pulse','Empirical');
-%         end
+        if i == 1
+            xlabel('Average number of neighbors')
+            ylabel('Frequency')
+            legend('Random-cell','Random-pulse','Empirical');
+        end
         
         zscores_cell(K,i) = ( mean_of_emp - mean(mean_of_cell) ) / std(mean_of_cell);
         zscores_pulse(K,i) = ( mean_of_emp - mean(mean_of_pulse) ) / std(mean_of_pulse);
         
-        % breakdown neighbor (tagets)
-%         for j = 1:6
-%             
-%             num_target_emp = cellfun(@(x) numel(x(x == j)), ...
-%                 squeeze( target_emp( labels_emp == i,6,:)) );
-%             num_target_cell = cellfun(@(x) numel(x(x == j)), ...
-%                 squeeze( target_cell( labels_cell == i,6,:) ));
-%             num_target_pulse = cellfun(@(x) numel(x(x == j)), ...
-%                 squeeze( target_pulse( labels_pulse == i,6,:) ));
-%             
-%             mean_of_emp = mean(num_target_emp);
-%             mean_of_cell = mean(num_target_cell);
-%             mean_of_pulse = mean(num_target_pulse);
-%             
-%             z_target_cell(j) = (mean_of_emp - mean(mean_of_cell)) ...
-%                 /std(mean_of_cell);
-%             z_target_pulse(j) = (mean_of_emp - mean(mean_of_pulse)) ...
-%                 /std(mean_of_pulse);
-%             
-%         end
+%         breakdown neighbor (tagets)
+        for j = 1:6
+            
+            num_target_emp = cellfun(@(x) numel(x(x == j)), ...
+                squeeze( target_emp( labels_emp == i,6,:)) );
+            num_target_cell = cellfun(@(x) numel(x(x == j)), ...
+                squeeze( target_cell( labels_cell == i,6,:) ));
+            num_target_pulse = cellfun(@(x) numel(x(x == j)), ...
+                squeeze( target_pulse( labels_pulse == i,6,:) ));
+            
+            mean_of_emp = mean(num_target_emp);
+            mean_of_cell = mean(num_target_cell);
+            mean_of_pulse = mean(num_target_pulse);
+            
+            z_target_cell(j) = (mean_of_emp - mean(mean_of_cell)) ...
+                /std(mean_of_cell);
+            z_target_pulse(j) = (mean_of_emp - mean(mean_of_pulse)) ...
+                /std(mean_of_pulse);
+            
+        end
 %         
 %         figure(3)
-%         subplot(6,5,(K-1)*5 + i);
+%         subplot(1,5,(K-1)*5 + i);
 %         h = bar(1:6, cat(1,z_target_cell,z_target_pulse)' );
 %         set(h(1),'FaceColor','red'),set(h(2),'FaceColor','green');
 %         xlim([0 7])
@@ -233,13 +233,13 @@ for K = 6
         
     end
     
-%     figure(2)
-%     subplot(6,1,K);
-%     h = bar(1:5,cat(1,zscores_cell(K,:),zscores_pulse(K,:))','LineStyle','none');
-%     set(h(1),'FaceColor','red'),set(h(2),'FaceColor','green');
-%     title([ num2str(left(K)) ' < center <= ' num2str(right(K)) ])
-%     ylim([-2.5 3])
-%     
+    figure(2)
+    subplot(1,1,K);
+    h = bar(1:5,cat(1,zscores_cell(K,:),zscores_pulse(K,:))','LineStyle','none');
+    set(h(1),'FaceColor','red'),set(h(2),'FaceColor','green');
+    title([ num2str(left(K)) ' < center <= ' num2str(right(K)) ])
+    ylim([-2.5 3])
+    
 end
 
 %% Cross-validation Variance testing
@@ -263,6 +263,7 @@ for k = 1:numel(subsamples)
         random_pulse = MC.random_pulse( IDs );
         
         num_emp = MC.empirical.num_near;
+       
         num_cell = cat(3,random_cell.num_near);
         num_pulse = cat(3,random_pulse.num_near);
         
