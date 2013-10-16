@@ -53,7 +53,7 @@ for i = 1:num_embryos
     
     % Special case for neighborID -- need to re-index the cellIDs
     if strcmpi(name_to_extract,'identity of neighbors-all')
-        data = cellfun(@(x) x+sum(num_cells), data,'UniformOutput',false);
+        data = cellfun(@(x) add_to_pos(x,sum(num_cells)), data,'UniformOutput',false);
     end
     % Special case for centroid-y -- subtract yref
     if strcmpi(name_to_extract,'centroid-y')
@@ -141,3 +141,6 @@ end
 %     end
 end
 
+function array = add_to_pos(array,a)
+    array( array > 0 ) = array( array > 0 ) + a;
+end
