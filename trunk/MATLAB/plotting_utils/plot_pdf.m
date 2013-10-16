@@ -1,14 +1,15 @@
-function h = plot_pdf(observations,nbins,varargin)
+function [counts,bins,h] = plot_pdf(observations,nbins,varargin)
 %PLOT_PDF
 % GIven a vector OBSERVATIONS of dimensions 1xD, where there are D
 % observations of a random variable, plot the probability density function
 % of the variable.
 %
-% SYNOPSIS: h = plot_pdf(x,nbins,patch_options)
+% SYNOPSIS: [counts,h] = plot_pdf(x,nbins,patch_options)
 % INPUT: x - observed variable
 %        nbins - number of bins (default = 30)
 %        patch_options - e.g. 'facecolor','red'
-% OUTPUT: h - figure handle
+% OUTPUT: counts
+%        h - figure handle
 % 
 % See also: PLOT_CDF
 %
