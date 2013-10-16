@@ -23,114 +23,17 @@ num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
 %% MC stackID
 
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
-Nboot = 400;
+o.Nboot = 200;
+o.timewindows = time_windows;
+o.savepath = ['~/Desktop/mc_stackID_wt_pcenter_Nboot' num2str(Nboot)];
+o.neighbor_def = neighbor_defition;
 
-%% Permute stackID
-
-num_member = zeros(1,num_clusters);
-
-random_cell(Nboot).num_near = [];
-random_cell(Nboot).origin_labels = [];
-random_cell(Nboot).target_labels = [];
-random_cell(Nboot).centers = [];
-
-random_pulse(Nboot).num_near = [];
-random_pulse(Nboot).origin_labels = [];
-random_pulse(Nboot).target_labels = [];
-random_pulse(Nboot).centers = [];
-
-for j = 1:Nboot
-    
-    tic
-    % make permutations
-    [fits_bs_cell,cells_bs_cell] = cells.bootstrap_stackID(fitsOI);
-    % get nearby pulses
-    fits_bs_cell = fits_bs_cell.find_near_fits(time_windows,neighborID);
-    
-    % randomize pulses
-    [fits_bs_fit,cells_bs_fit] = fitsOI.bootstrap_stackID(cells);
-    fits_bs_fit = fits_bs_fit.find_near_fits(time_windows,neighborID);
-    
-    % get current cluster for empirical (only once)
-    if j == 1
-        
-        this_nearIDs = cat(1,fitsOI.nearIDs);
-        % calculate num-neighbors for each pulse
-        num_near = cellfun(@(x) numel(x(~isnan(x))), this_nearIDs);
-        % origin labels
-        labels = [fitsOI.cluster_label]';
-        % get all target labels
-        target_labels = ...
-            cellfun(@(x) [fitsOI.get_fitID(x).cluster_label], ...
-            this_nearIDs,'UniformOutput',0);
-        % get centers
-        centers = [fitsOI.center];
-        
-        empirical.num_near = num_near;
-        empirical.origin_labels = labels;
-        empirical.target_labels = target_labels;
-        empirical.centers = centers;
-        
-    end
-    
-    % random-cell
-    if ~isempty(fits_bs_cell)
-        
-        nearIDs_cell = cat(1,fits_bs_cell.nearIDs);
-        % tabluate num-neighbors for each pulse
-        num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs_cell);
-        % get origin labels
-        labels = [fits_bs_cell.cluster_label]';
-        % break down all target labels
-        target_labels = ...
-            cellfun(@(x) [fits_bs_cell.get_fitID(x).cluster_label], ...
-            nearIDs_cell,'UniformOutput',0);
-        centers = [fits_bs_cell.center];
-        
-        random_cell(j).num_near = num_near;
-        random_cell(j).origin_labels = labels;
-        random_cell(j).target_labels = target_labels;
-        random_cell(j).centers = centers;
-        
-    end
-    
-    % random-fit
-    if ~isempty(fits_bs_fit)
-        
-        nearIDs_fit = cat(1,fits_bs_fit.nearIDs);
-        % tabluate num-neighbors for each pulse
-        num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs_fit);
-        % get origin labels
-        labels = [fits_bs_fit.cluster_label]';
-        % break down all target labels
-        target_labels = ...
-            cellfun(@(x) [fits_bs_fit.get_fitID(x).cluster_label], ...
-            nearIDs_fit,'UniformOutput',0);
-        centers = [fits_bs_fit.center];
-        
-        random_pulse(j).num_near = num_near;
-        random_pulse(j).origin_labels = labels;
-        random_pulse(j).target_labels = target_labels;
-        random_pulse(j).centers = centers;
-    end
-    
-    T = toc;
-    display(['Done with ' num2str(j) ' in ' num2str(T) ' seconds.']);
-    
-end
-
-MC_twist_pcenter.empirical = empirical;
-MC_twist_pcenter.random_cell = random_cell;
-MC_twist_pcenter.random_pulse = random_pulse;
-MC_twist_pcenter.def = neighbor_defition;
-
-save(['~/Desktop/bootstrap_twist_pcenter_N' num2str(Nboot) '_shorter_sub'], ...
-    'MC_twist_pcenter');
+MC_wt_pcenter = monte_carlo_pulse_location(fitsOI,cells_wt,neighborID, o);
 
 %% Select correct timing
 
 % select dataset
-MC = MC_wt_mcenter;
+MC = MC_wt_pcenter;
 
 window = 3; % neighborhood time window
     
@@ -203,7 +106,7 @@ for K = 1
         zscores_cell(K,i) = ( mean_of_emp - mean(mean_of_cell) ) / std(mean_of_cell);
         zscores_pulse(K,i) = ( mean_of_emp - mean(mean_of_pulse) ) / std(mean_of_pulse);
         
-%         breakdown neighbor (tagets)
+%         breakdown neighbor tagets
         for j = 1:6
             
             num_target_emp = cellfun(@(x) numel(x(x == j)), ...
