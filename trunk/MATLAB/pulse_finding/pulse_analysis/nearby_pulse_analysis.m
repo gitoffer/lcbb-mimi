@@ -9,7 +9,7 @@ time_windows = 10:10:100; % seconds
 neighbor_defition = @(central, neighbors, tau) ...
     abs( [neighbors.center] - central.center ) < tau ...
     & ~( neighbors == central ) ...
-    & ([neighbors.center] - central.center) >= 0;
+    & ([neighbors.center] - central.center) < 0;
 
 fitsOI = fitsOI.find_near_fits(time_windows,neighborID, neighbor_defition);
 
@@ -24,9 +24,9 @@ num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
 
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
-o.Nboot = 200;
+o.Nboot = 100;
 o.timewindows = time_windows;
-o.savepath = ['~/Desktop/mc_stackID_wt_pcenter_Nboot' num2str(o.Nboot)];
+o.savepath = ['~/Desktop/mc_stackID_wt_mcenter_Nboot' num2str(o.Nboot) '_k' num2str(num_clusters)];
 o.neighbor_def = neighbor_defition;
 
 MC_wt_pcenter = monte_carlo_pulse_location(fitsOI,cells,neighborID, o);
@@ -38,11 +38,10 @@ MC = MC_wt_pcenter;
 
 window = 3; % neighborhood time window
 clear temporal_bins
-temporal_bins(1,:) = [-Inf];
-temporal_bins(2,:) = [Inf];
+temporal_bins(1,:) = [-Inf, -Inf];
+temporal_bins(2,:) = [Inf,   0  ];
 
 opt.breakdown = 'off';
-
 
 plot_mc_results(MC,window,temporal_bins,opt)
 
@@ -74,7 +73,6 @@ for k = 1:numel(subsamples)
         labels_emp = MC.empirical.origin_labels;
         labels_cell = random_cell(1).origin_labels;
         labels_pulse = random_pulse(1).origin_labels;
-        
         
         for i = 1:num_clusters
             

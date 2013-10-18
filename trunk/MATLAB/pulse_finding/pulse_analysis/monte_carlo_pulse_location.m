@@ -28,14 +28,16 @@ cx = cat(2,cells.centroid_x); cy = cat(2,cells.centroid_y);
 random_cell(Nboot).num_near = [];
 random_cell(Nboot).origin_labels = [];
 random_cell(Nboot).target_labels = [];
-random_cell(Nboot).centers = [];
 random_cell(Nboot).correlation = [];
+random_cell(Nboot).centers = [];
+random_cell(Nboot).fitID = [];
 
 random_pulse(Nboot).num_near = [];
 random_pulse(Nboot).origin_labels = [];
 random_pulse(Nboot).target_labels = [];
-random_pulse(Nboot).centers = [];
 random_pulse(Nboot).correlation = [];
+random_pulse(Nboot).centers = [];
+random_pulse(Nboot).fitID = [];
 
 for j = 1:Nboot
     
@@ -69,6 +71,8 @@ for j = 1:Nboot
         empirical.target_labels = target_labels;
         empirical.centers = centers;
         
+        empirical.correlation = spatial_correlation(cx,cy,fits,30);
+        
     end
     
     % random-cell
@@ -89,6 +93,7 @@ for j = 1:Nboot
         random_cell(j).origin_labels = labels;
         random_cell(j).target_labels = target_labels;
         random_cell(j).centers = centers;
+        random_cell(j).fitID = [fits_bs_cell.fitID];
         
     end
     
@@ -110,6 +115,8 @@ for j = 1:Nboot
         random_pulse(j).origin_labels = labels;
         random_pulse(j).target_labels = target_labels;
         random_pulse(j).centers = centers;
+        random_pulse(j).fitID = [fits_bs_fit.fitID];
+        
     end
     
     % Compute correlation function
@@ -128,6 +135,9 @@ MC.random_pulse = random_pulse;
 MC.neighbor_def = neighbor_def;
 MC.time_windows = time_windows;
 
-save(opt.savepath,'MC');
+if ~isempty(opt.savepath)
+	save(opt.savepath,'MC');
+    display(['Saved to: ' savepath])
+end
 
 end

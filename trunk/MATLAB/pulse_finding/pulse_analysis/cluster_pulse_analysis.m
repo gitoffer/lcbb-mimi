@@ -2,7 +2,7 @@
 
 o = [2 100 1e-5 0];
 
-for k = 3:10
+for k = 2:10
     
     X = cat(1,fits.corrected_area_norm);
     X( isnan(X) ) = 0;
@@ -33,20 +33,22 @@ for k = 3:10
     end
     
     display(['Done with k = ' num2str(k) ' clusters']);
-    avgRI(k-2) = mean(RI(:));
-    stdRI(k-2) = std(RI(:));
+    avgRI(k-1) = mean(RI(:));
+    stdRI(k-1) = std(RI(:));
 
-    avgRI_random(k-2) = mean(RI_random(:));
-    stdRI_random(k-2) = std(RI_random(:));
+    avgRI_random(k-1) = mean(RI_random(:));
+    stdRI_random(k-1) = std(RI_random(:));
     
 end
 
-errorbar(3:10,avgRI,stdRI),xlabel('# of clusters'),ylabel('Rand index')
-hold on,errorbar(3:10,avgRI_random,stdRI_random,'r-')
+errorbar(2:10,avgRI,stdRI),xlabel('# of clusters'),ylabel('Rand index')
+hold on,errorbar(2:10,avgRI_random,stdRI_random,'r-')
 
 %%
 
-fits = fits_wt.fcm_cluster(5,'corrected_area_norm',3);
+num_clusters = 3;
+
+fits = fits.fcm_cluster(num_clusters,'corrected_area_norm',3);
 
 %%
 
@@ -56,7 +58,7 @@ fits_cta = fits.get_embryoID( 8:10 );
 
 clear cluster*
 
-for i = 1:5+1
+for i = 1:num_clusters+1
     
     eval(['cluster' num2str(i) ' = fits([fits.cluster_label] == ' num2str(i) ');']);
     
@@ -119,8 +121,23 @@ for i = 1:num_clusters
     shadedErrorBar( fits(1).corrected_time, ...
         nanwmean(cluster_area,weights), nanstd(cluster_area) , colors{i});
     xlabel('Pulse time (sec)')
+    ylim( [-5 5] );
     set(gca,'XTick',[-40 0 40]);
     
+end
+
+figure
+% 2D histogram heatmap view
+for i = 1:num_clusters
+    subplot(1,num_clusters,i);
+    eval(['A = cat(1,cluster' num2str(i) '_wt.corrected_area_norm);']);
+    bins = -5:.1:5;
+    N = hist(A,bins);
+    imagesc(fits(1).corrected_time,bins,bsxfun(@rdivide,N,sum(N)));
+    axis square xy;
+    colormap hot;
+    colorbar;
+    xlabel('Pulse time (sec)')
 end
 
 %% Breakdown behavior by embryoID

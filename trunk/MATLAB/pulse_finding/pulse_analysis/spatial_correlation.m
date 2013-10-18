@@ -37,7 +37,7 @@ for i = 1:Nfits
         lx(j) = centroid_x( frames(j),stackIDs(j) ) - cx;
         ly(j) = centroid_y( frames(j),stackIDs(j) ) - cy;
     end
-    R{i} = sqrt( lx.^2 + ly.^2 );
+    R{i} = [0 sqrt( lx.^2 + ly.^2 )];
     
 end
 
