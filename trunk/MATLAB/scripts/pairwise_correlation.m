@@ -15,35 +15,37 @@ physical_distance = delete_off_embryo_interaction(physical_distance,IDs);
 
 %% Generate the adjacency matrix
 
-adj = adjacency_matrix(neighborID,ref_time);
-angles = rad_flip_quadrant(get_neighbor_angle(centroids_x,centroids_y,1));
-horizontal_adj = adj; horizontal_adj(abs(angles) > pi/6) = NaN;
-vertical_adj = adj; vertical_adj(abs(angles) < pi/6) = NaN;
+adj = adjacency_matrix(neighborID(:,1:474),1);
+% angles = rad_flip_quadrant(get_neighbor_angle(centroids_x,centroids_y,1));
+% horizontal_adj = adj; horizontal_adj(abs(angles) > pi/6) = NaN;
+% vertical_adj = adj; vertical_adj(abs(angles) < pi/6) = NaN;
 
 %% Myosin correlation distance
+
 Dm = squareform(pdist( ...
-    myosins(1:end,:)',@(x,y) nan_pearsoncorr(x,y,0)));
+    bs(1:end,1:sum(num_cells(1:5)))',@(x,y) nan_pearsoncorr(x,y,4)));
 
 %% Dm - lower triangular matrix; mcorr_dist - lower triangular matrix without
 % neighbor_map terms
 neighbor_map = adj;
 
 % Delete diagonals (self-interaction terms)
-Dm(logical(eye(sum(num_cells)))) = NaN;
+Dm(logical(eye(sum(num_cells(1:5))))) = NaN;
 % Find only paris defined by "neighbor_map"
 mcorr_dist_neighbors = Dm.*neighbor_map;
-mcorr_dist_vneighbors = Dm.*vertical_adj;
-mcorr_dist_hneighbors = Dm.*horizontal_adj;
-mcorr_dist_neighbors(logical(triu(ones(sum(num_cells))))) = NaN;
-mcorr_dist_hneighbors(logical(triu(ones(sum(num_cells))))) = NaN;
-mcorr_dist_vneighbors(logical(triu(ones(sum(num_cells))))) = NaN;
+% mcorr_dist_vneighbors = Dm.*vertical_adj;
+% mcorr_dist_hneighbors = Dm.*horizontal_adj;
+mcorr_dist_neighbors(logical(triu( ones(474) ))) = NaN;
+% mcorr_dist_hneighbors(logical(triu(ones(sum(num_cells))))) = NaN;
+% mcorr_dist_vneighbors(logical(triu(ones(sum(num_cells))))) = NaN;
+
 % Delete upper triangle
-Dm(logical(tril(ones(sum(num_cells))))) = NaN;
+Dm(logical(tril(ones( 474 )))) = NaN;
 % Delete neighbor-pairs
 mcorr_dist = Dm;
 mcorr_dist(~isnan(neighbor_map)) = NaN;
 % Delete off-embryo blocks
-mcorr_dist = delete_off_embryo_interaction(mcorr_dist,IDs);
+mcorr_dist = delete_off_embryo_interaction(mcorr_dist,IDs(1:474));
 
 %%
 % Get CDF for all pairs
@@ -52,12 +54,13 @@ figure,h = plot_cdf(mcorr_dist(:),bins);
 set(h,'color','red');
 hold on,h = plot_cdf(mcorr_dist_neighbors(:),bins);
 set(h,'color','green');
-hold on,h = plot_cdf(mcorr_dist_hneighbors(:),bins);
-set(h,'color','k');
-hold on,plot_cdf(mcorr_dist_vneighbors(:),bins);
+% hold on,h = plot_cdf(mcorr_dist_hneighbors(:),bins);
+% set(h,'color','k');
+% hold on,plot_cdf(mcorr_dist_vneighbors(:),bins);
 legend('Non-neighbor pairs','All neighbor pairs','Horizontal neighbors','Vertical neighbors');
 hold off
 
+%%
 % Temporarily convert NaN to 0 to make addition work
 mcorr_dist0 = mcorr_dist; mcorr_dist0(isnan(mcorr_dist)) = 0;
 mcorr_dist_neighbors0 = mcorr_dist_neighbors;

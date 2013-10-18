@@ -35,7 +35,9 @@ ylabel('Time between pulses (sec)');
 title('Wild-type')
 
 %%
+
 figure
+
 S = [100 500 100 500 100];
 for i = 1:5
     centerflat = [center{:}];
