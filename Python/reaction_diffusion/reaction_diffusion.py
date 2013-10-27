@@ -17,6 +17,9 @@ import matplotlib.pyplot as plt
 #		Temporal discretization
 #		Simulation size
 
+def normalize(A):
+	A = A / sum(A)
+	return A
 
 def spatialLaplacian( A, dx2, dy2):
 	lapA = A
@@ -28,65 +31,44 @@ def spatialLaplacian( A, dx2, dy2):
 
 	return lapA
 
+# Diffusion constant
+D = 0.5
+# Reaction rate (degredation)
+k = 0.001
 
 # Lattice size(s) and stepsize(s)
-dx = 0.01
-dy = 0.01
-Nx = int( 1. / dx)
-Ny = int( 1. / dy)
-x = np.array( range( Nx ) )
-y = np.array( range( Ny ) )
-latXX, latYY = np.meshgrid( x,y )
+dx = 0.5
+dy = 0.5
+Nx = 50
+Ny = 50
 
 # Determine temporal stepsize by stability criterion
 dx2 = dx**2
 dy2 = dy**2
 dt = (dx2 * dy2) / ( 2 * 0.02 * (dx2 + dy2) )
+dt = 0.001
 
 # Number of steps
-numTimeStep = 5000
+numTimeStep = 1000
 
 # Initial Conditions
-# u = np.random.rand( Nx,Ny )
-u = np.zeros( (Nx,Ny) )
+u = np.random.rand( Nx,Ny )
+v = np.random.rand( Nx,Ny )
+ui = normalize( np.copy(u) )
+vi = normalize( np.copy(v) )
 v = np.zeros( (Nx,Ny) )
 
-## u[ int(Nx/2),int(Ny/2) ] = 1./Nx**2
-#radials = (latXX - int(Nx/2) )**2 + (latYY - int(Ny/2) )**2
-#circIdx = np.logical_and( radials < 50, radials > 20 )
-#u[ circIdx] = 1
-ui = u
-vi = v
-ui[1:-1,1:-1] = np.random.rand( Nx-2,Ny-2 )
-vi[1:-1,1:-1] = np.random.rand( Nx-2,Ny-2 )
-
-# Diffusion constants
-D_u = 0.02
-D_v = 0.05
-# Degredation rates
-d_u = 0.03
-d_v = 0.08
-
-tstart = time.time()
-historyOfStates = []
+histU = []
+histV = []
 for i in range( numTimeStep ):
-	state = np.copy(u)
-	historyOfStates.append(state)
-	
-	# Production terms
-	F_u = 0.08 * u - 0.08 * v + 0.03
-	F_u[F_u < 0] = 0
-	F_u[F_u > 0.2] = 0.2
 
-	G_v = 0.1 * u - 0.0 * v - 0.15
-	G_v[G_v < 0] = 0
-	G_v[G_v > 0.5] = 0.5
+	histU.append( np.copy(u) )
+	histV.append( np.copy(v) )
 	
-	du = ( F_u - d_u * u + D_u * spatialLaplacian( u,dx2,dy2 ) ) * dt
-	dv = ( G_v - d_v * v + D_v * spatialLaplacian( v,dx2,dy2 ) ) * dt
-	
-	u = ui + du
-	v = vi + dv
+	u = ui + ( 5*spatialLaplacian(u,dx2,dy2) \
+					+ 3 - (5+1) * u ) * dt
+	v = vi + ( 12*spatialLaplacian(v,dx2,dy2) \
+					+ 5 * u - u**2 ) * dt
 
 	ui = np.copy(u)
 	vi = np.copy(v)
