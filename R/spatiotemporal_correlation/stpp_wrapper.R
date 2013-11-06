@@ -1,7 +1,7 @@
 # get_PCFhat_stpp - Wrapper for PCFhat functionality in STPP
 
 get_PCFhat_stpp <- function( xyt, s.region, t.region, u, v,
-							h=hmsemin ) {
+							h=hmsemin, label=NULL) {
 
 	# Load libraries
 	require("stpp")
@@ -37,12 +37,21 @@ get_PCFhat_stpp <- function( xyt, s.region, t.region, u, v,
 	mhat = NULL
 	for(i in 1:length(atx)) mhat = c(mhat, Ms$z[atx[i],aty[i]])
 	
-	g = PCFhat(xyt=xyt,
+	if (is.null(label)) {
+		g = PCFhat(xyt=xyt,
 			   lambda = mhat*mut/ dim(xyt)[1],
 			   dist = u, times = v,
 				s.region = s.region, t.region = t.region,
 				correction=TRUE, hs = h)
-
+	}
+	else {
+		g = PCFhat_label(xyt=xyt,
+				lambda = mhat*mut/ dim(xyt)[1],
+				dist = u, times = v,
+				s.region = s.region, t.region = t.region,
+				correction=TRUE, hs = h,label=label)
+	}
+		
 	return(g)
 
 }
