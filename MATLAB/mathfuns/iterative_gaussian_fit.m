@@ -4,6 +4,8 @@ function [parameters,varargout] = iterative_gaussian_fit(y,x,alpha,lb,ub,bg)
 % will fit an exponential background.
 %
 % params = iterative_gaussian_fit(ydata,xdata,alpha,lb,ub,BG)
+% [p,resnorm] = iterative_gaussian_fit(ydata,xdata,alpha,lb,ub,BG)
+% [p,resnorm,J] = iterative_gaussian_fit(ydata,xdata,alpha,lb,ub,BG)
 %
 % See also: LSQCURVEFIT, LSQ_GAUSS1D
 %
@@ -60,9 +62,11 @@ end
 while significant
     
     if background
-        [p,resnorm,residual] = lsqcurvefit(@synthesize_gaussians_withbg,guess,x,y,LB,UB,opt);
+        [p,resnorm,residual,~,~,~,J] = ...
+            lsqcurvefit(@synthesize_gaussians_withbg,guess,x,y,LB,UB,opt);
     else
-        [p,resnorm,residual] = lsqcurvefit(@synthesize_gaussians,guess,x,y,LB,UB,opt);
+        [p,resnorm,residual,~,~,~,J] = ...
+            lsqcurvefit(@synthesize_gaussians,guess,x,y,LB,UB,opt);
     end
     
     %     this_fit = synthesize_gaussians(p,x);
@@ -119,6 +123,7 @@ if F_bg < Fcrit
 end
 
 if nargout > 1, varargout{1} = residuals; end
+if nargout > 2, varargout{2} = J;
 if ~exist('parameters','var'), parameters = []; end
 
 end
