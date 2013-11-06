@@ -48,6 +48,7 @@ classdef Fitted
 	%	
 	%		time_windows - neighborhood time-windows
 	%		nearIDs - fitIDs of nearby fits, ordered WRT time_windows
+	%		nearest_neighbor - fitID of nearest fit
 	%		
 	%		cluster_label - should be in order
 	%		cluster_weights - FCM weights
@@ -96,6 +97,7 @@ classdef Fitted
     %   movie
     % --- Export ---
     %   export_field2csv (export given measurement to csv file)
+    %   export_xyt - exports XYT of a set of pulses
     %
     % See also: PULSE, TRACK, CELLOBJ
     %
@@ -152,6 +154,7 @@ classdef Fitted
         
         time_windows %
         nearIDs % fitIDs of 'nearby' fits, ordered w.r.t. time_windows
+		nearest_neighbor % fitID of the nearest fit
         
         cluster_label
         cluster_weight
@@ -337,6 +340,7 @@ classdef Fitted
             % Find the FIT(s) with the given fitID(s)
             % USAGE: fitsOI = fits.get_fitID(fitID)
             %             fits = fit_array( ismember([ fit_array.fitID ], fitID) );
+            if iscell(fitID), fits = []; return; end
             fitID = nonans(fitID);
             fits = Fitted;
             
@@ -654,13 +658,13 @@ classdef Fitted
             
             % deal with non-clustered fits (label = 6, weight = NaN)
             [fits(cellfun(@isempty, {fits.cluster_label} )).cluster_label] = ...
-                deal(6);
+                deal(k+1);
             [fits(cellfun(@isempty, {fits.cluster_weight} )).cluster_weight] = ...
                 deal(NaN);
             
             % User input for label shuffling
             for i = 1:k
-                subplot(5,1,i)
+                subplot(k,1,i)
                 pcolor(cat(1,fits([fits.cluster_label] == i).(datafield)));
                 caxis([-10 10]),colorbar
                 shading flat
@@ -729,18 +733,22 @@ classdef Fitted
                     % Collect fits within window
                     for k = 1:numel( time_windows )
                         % neighbor succeeds center pulse
-%                         within_window = ...
-%                             abs([neighbor_fits.center] - this_fit.center) < time_windows(k) ...
-%                             & ~( neighbor_fits == this_fit ) ...
-%                             & ([neighbor_fits.center] - this_fit.center) <= 0 ;...
                         within_window = neighbor_def( ...
                             this_fit, neighbor_fits, time_windows(k) );
                         
                         if sum(within_window) > 0
                             nearby_fits = neighbor_fits(within_window);
                             fits(i).nearIDs(k) = {[nearby_fits.fitID]};
+							% In last time-window iteration, take the nearest
+							% fit and record its fitID
+							if k == numel( time_windows )
+								[~,nearest] = min(abs([nearby_fits.center] - this_fit.center));
+								fits(i).nearest_neighbor = ...
+									nearby_fits( nearest ).fitID;
+							end
                         else
                             fits(i).nearIDs(k) = {NaN};
+							fits(i).nearest_neighbor = NaN;
                         end
                         
                     end % loop over time window
@@ -748,6 +756,7 @@ classdef Fitted
                 else
                     % if there are no neighboring fits
                     [fits(i).nearIDs( 1:numel(time_windows) )] = deal({NaN});
+                    fits(i).nearest_neighbor = NaN;
                 end
                 
             end % loop over all fits
@@ -884,29 +893,29 @@ classdef Fitted
             
         end % bootstrap_stackID
 
-% 		function [perc,varargout] = percent_overlap(fits,cells)
-% 			%PERCENT_OVERLAP Counts the percentage of overlapping frames from the
-% 			% consecutive pulse-frames used to analyze each pulse.
-% 			%
-% 			% USAGE: perc = fits.percent_overlap(cells);
-% 			% 		 [perc,counts] = fits.percent_overlap(cells);
-% 			%
-% 			% xies@mit Oct 2013
-% 			
-% 			count = zeros(size(cat(2,cells.area)));
-% 
-% 			for i = 1:numel(fits)
-% 
-% 				this_fit = fits(i);
-% 				count( this_fit.margin_frames(3:end-2), this_fit.stackID) = ...
-% 					count( this_fit.margin_frames(3:end-2), this_fit.stackID) + 1;
-% 
-% 			end
-% 
-% 			perc = numel(count(count > 1)) / numel(count(count > 0));
-% 			if nargout > 1, varargout{1} = count; end
-% 
-% 		end
+		function [perc,varargout] = percent_overlap(fits,cells)
+			%PERCENT_OVERLAP Counts the percentage of overlapping frames from the
+			% consecutive pulse-frames used to analyze each pulse.
+			%
+			% USAGE: perc = fits.percent_overlap(cells);
+			% 		 [perc,counts] = fits.percent_overlap(cells);
+			%
+			% xies@mit Oct 2013
+			
+			count = zeros(size(cat(2,cells.area)));
+
+			for i = 1:numel(fits)
+
+				this_fit = fits(i);
+				count( this_fit.margin_frames(3:end-2), this_fit.stackID) = ...
+					count( this_fit.margin_frames(3:end-2), this_fit.stackID) + 1;
+
+			end
+
+			perc = numel(count(count > 1)) / numel(count(count > 0));
+			if nargout > 1, varargout{1} = count; end
+
+		end
         
 % --------------------- Visualization -------------------------------------
         
@@ -1068,15 +1077,46 @@ classdef Fitted
             
         end %export_field2csv
         
-        %         function export_array(fits,foldername)
-        %             %EXPORT_ARRAY Exports the entire array
-        %
-        %             prop_list = properties('Fitted');
-        %             mat2write
-        %
-        %         end
+        function [cx,cy,ct] = export_xyt( fits, cells, filename)
+            
+            cx = zeros(1,numel(fits));
+            cy = zeros(1,numel(fits));
+            
+            for i = 1:numel(fits)
+                
+                this_fit = fits(i);
+                
+                ct = findnearest( this_fit.center, cells(this_fit.stackID).dev_time);
+
+                x = cells.get_fitID( this_fit.fitID ).centroid_x;
+                y = cells.get_fitID( this_fit.fitID ).centroid_y;
+                
+                if numel(ct) > 1, ct = ct(1); end
+                
+                cx(i) = x( ct );
+                cy(i) = y( ct );
+                
+                if isnan(cx(i))
+                    I = find_nearest_nonan( x, ct );
+                    cx(i) = x(I);
+                    cy(i) = y(I);
+                end
+                
+            end
+            
+            ct = [fits.center];
+            l = [fits.cluster_label];
+            fIDs = [fits.fitID];
+            
+            [ct,order] = sort(ct,'ascend');
+            
+            M = cat(1,fIDs,cx(order),cy(order),ct,l)';
+            csvwrite(filename,M);
+            
+        end
         
     end % Dynamic methods
+    
     
     methods (Static)
         
