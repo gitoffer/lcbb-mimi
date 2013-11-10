@@ -68,8 +68,8 @@ while significant
         [p,resnorm,residual,~,~,~,J] = ...
             lsqcurvefit(@synthesize_gaussians,guess,x,y,LB,UB,opt);
     end
-    
-    %     this_fit = synthesize_gaussians(p,x);
+
+%     [p,residual,J,covB,resnorm] = nlinfit(x,y,@synthesize_gaussians_withbg,guess);
     
     n_peaks = n_peaks + 1;
     
@@ -83,6 +83,7 @@ while significant
         %     if P < alpha
         % Collect the "significant" parameters
         parameters = p;
+        Jacob = J;
         
         % Updapte the statistics
         significant = 1;
@@ -120,10 +121,11 @@ F_bg = ((resnorm_bg-resnorm)/(3*n_peaks)) ...
 Fcrit = finv(1-alpha,3*n_peaks,T-n_peaks*3-1+3);
 if F_bg < Fcrit
     parameters = p_bg;
+    Jacob = [];
 end
 
 if nargout > 1, varargout{1} = residuals; end
-if nargout > 2, varargout{2} = J;
+if nargout > 2, varargout{2} = Jacob;
 if ~exist('parameters','var'), parameters = []; end
 
 end

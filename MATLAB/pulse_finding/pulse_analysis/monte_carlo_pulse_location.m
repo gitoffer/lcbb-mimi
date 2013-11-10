@@ -65,12 +65,15 @@ for j = 1:Nboot
             this_nearIDs,'UniformOutput',0);
         % get centers
         centers = [fits.center];
+        CT = [ fits(~isnan([fits.nearest_neighbor])).center ];
+        nn = fits.get_fitID([fits.nearest_neighbor]);
+        dt = [nn.center] - CT;
         
         empirical.num_near = num_near;
         empirical.origin_labels = labels;
         empirical.target_labels = target_labels;
         empirical.centers = centers;
-        
+		empirical.neighbor_windows = dt;
         empirical.correlation = spatial_correlation(cx,cy,fits,30);
         
     end
@@ -88,12 +91,17 @@ for j = 1:Nboot
             cellfun(@(x) [fits_bs_cell.get_fitID(x).cluster_label], ...
             nearIDs_cell,'UniformOutput',0);
         centers = [fits_bs_cell.center];
-        
+       
+		CT = [fits_bs_cell(~isnan([fits_bs_cell.nearest_neighbor])).center];
+        nn = fits_bs_cell.get_fitID([fits_bs_cell.nearest_neighbor]);
+        dt = [nn.center] - CT;
+
         random_cell(j).num_near = num_near;
         random_cell(j).origin_labels = labels;
         random_cell(j).target_labels = target_labels;
         random_cell(j).centers = centers;
         random_cell(j).fitID = [fits_bs_cell.fitID];
+		random_cell(j).neighbor_windows = dt;
         
     end
     
@@ -111,11 +119,16 @@ for j = 1:Nboot
             nearIDs_fit,'UniformOutput',0);
         centers = [fits_bs_fit.center];
         
+        CT = [ fits_bs_fit(~isnan([fits_bs_fit.nearest_neighbor])).center ];
+        nn = fits_bs_fit.get_fitID([fits_bs_fit.nearest_neighbor]);
+        dt = [nn.center] - CT;
+        
         random_pulse(j).num_near = num_near;
         random_pulse(j).origin_labels = labels;
         random_pulse(j).target_labels = target_labels;
         random_pulse(j).centers = centers;
         random_pulse(j).fitID = [fits_bs_fit.fitID];
+		random_pulse(j).neighbor_windows = dt;
         
     end
     
