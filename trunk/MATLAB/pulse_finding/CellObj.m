@@ -25,9 +25,17 @@ classdef CellObj
     %
     % Properties (public)
     %   flag_fitted
-    %   fit_colorized
-    %   fit_bg
-    %   fit_gausses
+    %   fit_colorized % RGB colorization of multiple peaks, for colored movie display (see MAKE_PULSE_MOVIE)
+    %   fit_bg		% Background fit
+    %   fit_gausses	% Sum of all gaussians fitted
+    %   fit_time	% The time-domain of fitted pulses
+    %   raw         % Raw curve
+    %   residuals   % Residuals
+    %   jacobian    % Jacobian
+    %   params      % Keep track of pulse parameters
+    %   num_fits    % Number of pulses found
+    %   fitID       % The fitIDs of FITTED found in this cell
+    %   opt         % fit_opts
     %
     % Methods
 	%	--- Constructor ---
@@ -89,7 +97,7 @@ classdef CellObj
     
     properties
         
-        % Fitting
+        % Fitting parameters / statistics
         flag_fitted	% Flagged if not skipped in fitting
         fit_colorized % RGB colorization of multiple peaks, for colored movie display (see MAKE_PULSE_MOVIE)
         fit_bg		% Background fit
@@ -97,7 +105,8 @@ classdef CellObj
         fit_time	% The time-domain of fitted pulses
         raw         % Raw curve
         residuals   % Residuals
-        params      % Keep track of parameters
+        jacobian    % Jacobian
+        params      % Keep track of pulse parameters
         num_fits    % Number of pulses found
         fitID       % The fitIDs of FITTED found in this cell
         opt         % fit_opts
@@ -172,7 +181,7 @@ classdef CellObj
                     ub = [nanmax(y); t(end) - opt.end_tol; opt.sigma_ub];
                     
                     % Perform multiple-fitting
-                    [gauss_p, residuals] = iterative_gaussian_fit( ...
+                    [gauss_p, residuals, J] = iterative_gaussian_fit( ...
                         y,t,opt.alpha,lb,ub,opt.bg);
                     
                     % Turn on the 'fitted' flag
@@ -186,6 +195,7 @@ classdef CellObj
                     this_cell.fit_colorized = P; this_cell.fit_bg = background;
 					this_cell.fit_time = t;
                     this_cell.residuals = residuals;
+                    this_cell.jacobian = J;
                     this_cell.params = gauss_p;
                     this_cell.raw = y;
                     
@@ -218,6 +228,7 @@ classdef CellObj
                     this_cell.fit_gausses = NaN;
                     this_cell.fit_time = NaN;
                     this_cell.residuals = NaN;
+                    this_cell.jacobian = NaN;
                     this_cell.num_fits = NaN;
                     this_cell.fitID = NaN;
                     this_cell.num_tracks = NaN;

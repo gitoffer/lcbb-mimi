@@ -24,11 +24,10 @@ num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
 
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
-o.Nboot = 100;
+o.Nboot = 50;
 o.timewindows = time_windows;
-o.savepath = ['~/Desktop/mc_stackID_wt_mcenter_Nboot' num2str(o.Nboot) '_k' num2str(num_clusters)];
+o.savepath = ['~/Desktop/mc_stackID_wt_pcenter_Nboot' num2str(o.Nboot) '_k' num2str(num_clusters)];
 o.neighbor_def = neighbor_defition;
-
 MC_wt_pcenter = monte_carlo_pulse_location(fitsOI,cells,neighborID, o);
 
 %% Select correct timing
@@ -38,8 +37,8 @@ MC = MC_wt_pcenter;
 
 window = 3; % neighborhood time window
 clear temporal_bins
-temporal_bins(1,:) = [-Inf, -Inf];
-temporal_bins(2,:) = [Inf,   0  ];
+temporal_bins(1,:) = [-Inf, -Inf 0];
+temporal_bins(2,:) = [Inf,   0  Inf];
 
 opt.breakdown = 'off';
 

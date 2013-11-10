@@ -1,4 +1,7 @@
 function idx = dist_sampler(data,dist,bins)
+%DIST_SAMPLER
+%
+% idx = dist_sampler(data,dist,bins)
 
 nbins = numel(bins);
 idx = cell(1,nbins);
@@ -14,3 +17,5 @@ for i = 1:nbins
 end
 
 idx = [idx{:}];
+
+end
