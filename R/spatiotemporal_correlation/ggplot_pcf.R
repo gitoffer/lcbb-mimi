@@ -8,9 +8,7 @@ require(ggplot2)
 require(reshape2)
 require(scales)
 
-embryoID = 4
-
-d = melt(pcf[[embryoID]])
+d = melt(pcf)
 d$pcf = d$value
 d$dist = u[d$Var1]
 d$times = v[d$Var2]

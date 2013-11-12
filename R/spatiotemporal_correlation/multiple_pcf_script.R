@@ -30,75 +30,49 @@ for (embryoID in 1:num_emb) {
 	
 }
 
-### Get PCF for each embryo
+### Estimate overall PCF from all embryos
 
-for (embryoID in 1:num_emb) {
+g = get_PCFhat_stpp(
+		xyt = as.matrix(f[c('x','y','t')]),
+		s.region=s.region,t.region=c(min(f$t),max(f$t)),
+		u=u,v=v, label = get_embryoID(fitID))
+
+###### Load bootstrapped pulses ######
+
+fbs <- vector('list', Nboot)
+Nboot = 50
+for (n in 1:Nboot) {
 	
+	for (embryoID in 1:num_emb) {
 	
+		raw = as.matrix(read.csv(bs_filepath(embryoID,n)))
+		
+		thisf = data.frame( fitID = raw[,1],
+				x = raw[,2], y = raw[,3], t = raw[,4]
+		)
+		
+		thisf$behavior = cluster_names[raw[,5]]
+		
+		if (embryoID > 1) { fbs[[n]] = rbind(fbs[[n]],thisf) }
+		else {fbs[[n]] = thisf}
+		
+	}
+}
+
+###### Get bootstrapped PCF
+pcfbs <- vector('list', Nboot)
+gbs <- vector('list',Nboot)
+for (n in 1:Nboot) {
+	
+	gbs[[n]] = get_PCFhat_stpp(
+			xyt = as.matrix(fbs[[n]][c('x','y','t')]),
+			s.region = s.region, t.region = t.region,
+			u=u, v=v, h = 1.4,
+			label = get_embryoID(fbs[[n]]$fitID) )
+	
+	pcfbs[[n]] = gbs[[n]]$pcf
+	
+	print(paste('Done with: ', toString(n)))
 	
 }
 
-###### Get empirical PCF
-#
-#
-#
-#f <- vector("list", num_emb) # create list
-#l <- vector("list", num_emb) # create list
-#g1 <- vector("list", num_emb)
-#g4 <- vector("list", num_emb)
-#pcf1 <- vector("list", num_emb)
-#pcf4 <- vector("list", num_emb)
-#sbox <- vector("list", num_emb)
-#tbox <- vector("list", num_emb)
-#spatial_kernels <- vector("list", num_emb)
-#
-## User the same kernel size as the empirical distribution
-#
-#for (embryoID in 1:num_emb) {
-#	
-#	print (paste( filepath(embryoID)) )
-#	foo = as.matrix( read.csv(filepath(embryoID)) )
-#	f[[embryoID]] = as.3dpoints( foo[,1:3] )
-#	l[[embryoID]] = foo[,4]
-#	sbox[[embryoID]] = as.matrix(read.csv( sbox_filepath(embryoID)) )
-#	tbox[[embryoID]] = c( min(f[[embryoID]][,3]), max(f[[embryoID]][,3]) )
-#	
-#	g1[[embryoID]] = get_PCFhat_stpp(xyt = f[[embryoID]],
-#			s.region = sbox[[embryoID]], t.region = tbox[[embryoID]],
-#			u, v, h = 5, l[[embryoID]] == 1)
-#	
-#	g4[[embryoID]] = get_PCFhat_stpp(xyt = f[[embryoID]],
-#			s.region = sbox[[embryoID]], t.region = tbox[[embryoID]],
-#			u, v, h = 5, l[[embryoID]] == 4)
-#	
-#	spatial_kernels[[embryoID]] = 5
-#	
-#	pcf1[[embryoID]] = g1[[embryoID]]$pcf
-#	pcf4[[embryoID]] = g4[[embryoID]]$pcf
-#	
-#}
-#
-###### Get bootstrapped PCF
-#Nboot = 20
-#embryoID = 2
-#fbs <- vector('list', Nboot)
-#lbs <- vector('list', Nboot)
-#gbs1 <- vector('list', Nboot)
-#gbs4 <- vector('list', Nboot)
-#pcfbs1 <- vector('list', Nboot)
-#pcfbs4 <- vector('list', Nboot)
-#
-#for (n in 1:Nboot) {
-#	
-#	foo = as.matrix( read.csv(bs_filepath(embryoID,n)) )
-#	fbs[[n]] = as.3dpoints(foo[,1:3])
-#	lbs[[n]] = foo[,4]
-#	gbs1[[n]] = get_PCFhat_stpp( xyt = fbs[[n]], s.region = sbox[[embryoID]], t.region = tbox[[embryoID]],
-#			u,v, h = spatial_kernels[[embryoID]], lbs[[embryoID]] == 4)
-#	gbs4[[n]] = get_PCFhat_stpp( xyt = fbs[[n]], s.region = sbox[[embryoID]], t.region = tbox[[embryoID]],
-#			u,v, h = spatial_kernels[[embryoID]], lbs[[embryoID]] == 4)
-#	pcfbs1[[n]] = gbs1[[n]]$pcf
-#	pcfbs4[[n]] = gbs4[[n]]$pcf
-#	
-#}
-#
