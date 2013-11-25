@@ -1,6 +1,8 @@
 %% Pulse frequency
 % Wildtype
 
+bins = linspace(0,200,50);
+
 fits_incell = cellfun(@fits.get_fitID, ...
     {cells([cells.flag_tracked] > -1 & [cells.embryoID] < 6).fitID}, ...
     'UniformOutput',0);
@@ -22,7 +24,7 @@ freq_wt = cellfun(@diff, fits_center_incell,'UniformOutput',0);
 % "center" of a pulse pair
 center = cellfun(@sort_pair_mean, fits_center_incell,'UniformOutput',0);
 
-[N_wt,bins] = hist( [freq_wt{:}], 30);
+[N_wt,bins] = hist( [freq_wt{:}], bins);
 bar( bins, N_wt/sum(N_wt) );
 xlabel('Time between pulses (sec)')
 ylabel('Probability')

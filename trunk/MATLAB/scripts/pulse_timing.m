@@ -5,13 +5,14 @@ bins = linspace(-300,300,30);
 
 %% by bin
 
-colors = pmkmp(13);
+colors = pmkmp(10);
 
 N = zeros(10,numel(bins));
 for i = 1:10
     hold on;
-    N = hist([fitsOI([fitsOI.bin] == i).center],bins);
-    plot(bins,N,'Color',colors(i,:));
+%     N = hist([fitsOI([fitsOI.bin] == i).center],bins);
+%     plot(bins,N,'Color',colors(i,:));
+    plot_cdf([fitsOI([fitsOI.bin] == i).center],bins,'Color',colors(i,:));
     xlim([-250 300]);
 end
 

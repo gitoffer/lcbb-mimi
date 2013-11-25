@@ -4,8 +4,8 @@ clear fit_opts
 [fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity');
 [fit_opts(1:num_embryos).bg] = deal('on');
 
-[fit_opts(1:num_embryos).left_margin] = deal(4);
-[fit_opts(1:num_embryos).right_margin] = deal(8);
+[fit_opts(1:num_embryos).left_margin] = deal(10);
+[fit_opts(1:num_embryos).right_margin] = deal(10);
 [fit_opts(1:num_embryos).nan_thresh] = deal(30);
 [fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
 [fit_opts(1:num_embryos).end_tol] = deal(30);
@@ -39,7 +39,7 @@ fits = fits.align_fits(areas_sm,'area');
 fits = fits.align_fits(areas_rate,'area_rate');
 fits = fits.align_fits(myosins_rate,'myosin_rate');
 fits = fits.align_fits(anisotropies,'anisotropy');
-fits = fits.align_fits(myosin_ring1+myosin_ring2,'measurement');
+% fits = fits.align_fits(myosin_ring1+myosin_ring2,'measurement');
 
 aligned_area = cat(1,fits.area);
 aligned_myosin = cat(1,fits.myosin);
