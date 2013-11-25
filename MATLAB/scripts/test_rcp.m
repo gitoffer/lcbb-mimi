@@ -79,6 +79,7 @@ dev_junctional_2 = sqrt((mx-cx)^2 + (my-cy)^2);
 dev_nothing = sqrt((mx-cx)^2 + (my-cy)^2);
 
 %%
+
 DEBUG = 0;
 
 rcp_everywhere = image_inertia(everywhere,mask_everywhere,DEBUG);

@@ -399,7 +399,7 @@ classdef Fitted
                 [max_val,max_idx] = max( fitted_y );
                 if numel( fitted_y( fitted_y == max_val ) ) > 1
                     maxes = find( fitted_y == max_val );
-                    theoretical_middle = floor(max(durations)/2);
+                    theoretical_middle = ceil(max(durations)/2);
                     which = findnearest(maxes,theoretical_middle);
                     max_idx = maxes(which);
                 end
@@ -411,7 +411,7 @@ classdef Fitted
                 ub = min(center_idx - left_len + durations(i) - 1, max(durations) );
                 
                 m( lb: ub) = ...
-                    measurement( fits(i).margin_frames, fits(i).stackID );
+                    ensure_row(measurement( fits(i).margin_frames, fits(i).stackID ));
                 
                 fits(i).(name) = m;
                 
