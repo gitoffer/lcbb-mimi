@@ -2,6 +2,18 @@ classdef MatchTrackFit
     % A class to handle non-bijective mapping between two Map objects. Impelemented specifically
 	% for Tracked pulses (TRACK) and Fitted pulses (FITTED)
     %
+	% PROPERTIES dictTrackFit - A Map object (hashmap/dictionary) from tracked pulses to fitted pulses
+	%			 dictFitTrack - The reverse map
+	%
+	% Note that neither mapping is necessarily unique or onto.
+	%
+	% METHODS:
+	%	Constructor: obj = MatchTrackFit( track, fit, threshold_overlap )
+	%	Merge: [obj,conflictTF, conflictFT] = Merge(obj1,obj2)
+	%			Try to merge two objects. Return all conflicts.
+	%	removeElement: obj = removeElement(obj, key (ID), name (track or fit)
+	%	reassign: obj = reassibj(obj, trackID, fitID)
+	%
     % See also: MAP, TRACK, FITTED, Pulse
     %
     % xies@mit.edu Feb 2013
@@ -92,6 +104,15 @@ classdef MatchTrackFit
         function [obj,conflictTF,conflictFT] = Merge(obj,obj2)
             %Merge two map objects (aka when there is a new value in either
             %tracks or fits
+			%
+			% USAGE: [merged_obj, conflictTF, conflictFT] = ...
+			%				Merge( obj1,obj2 )
+			%
+			% A conflict occurs if a key in Map2 exists also in Map1, creating two
+			%	conflicting mappings between the value in Map1 and the new value in
+			%	Map2. This key/val pair is set aside and returned as a conflicted item.
+			%
+			% xies@mit.edu
             
             [mergedTF,conflictTF] = merge_maps(obj.dictTrackFit,obj2.dictTrackFit);
             [mergedFT,conflictFT] = merge_maps(obj.dictFitTrack,obj2.dictFitTrack);
