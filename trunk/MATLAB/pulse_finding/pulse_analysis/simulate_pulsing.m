@@ -42,7 +42,7 @@ for embryoID = 1:Nembryos
             
             this_count = numel(already_seen); %number of pulses in this cell already
             
-            if rand >= pulse_count(this_count + 1);
+            if rand >= pulse_count(this_count + 2);
                 accept = 0;
             else
                 

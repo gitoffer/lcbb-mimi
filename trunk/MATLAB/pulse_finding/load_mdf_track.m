@@ -45,9 +45,6 @@ for i = 1:num_tracks
 	
 	% Make sure that the frame doesn't lie beyond the well-tracked region
 	if mean(frames) > input.last_segmented, continue; end
-	
-    % Collect the image frames
-%     img_frame = frames;
     
 	% Get the coordinates of the track and the centroid of track
 	x = this_mdf(:,3);
@@ -84,6 +81,7 @@ for i = 1:num_tracks
     this_track.stackID = num_cell_pad(embryoID) + order(index);
 
 	% Collect the time/frame of track WRT aligned developmental time
+    frames( frames > numel(dev_time) ) = [];
 	this_track.dev_frame = ensure_row(frames);
 	this_track.dev_time = dev_time(frames);
     % Collect the frames WRT image time
@@ -105,7 +103,8 @@ unfit_cells = tracked_cells( ~[cells(tracked_cells).flag_fitted] );
 
 for i = 1:numel(tracks)
     tracks(i).trackID = i + input.embryoID*1000;
-    cells( tracks(i).stackID ).trackID = i + input.embryoID*1000;
+    cells( tracks(i).stackID ).trackID = ...
+        [cells( tracks(i).stackID ).trackID i + input.embryoID*1000];
 end
 
 end
