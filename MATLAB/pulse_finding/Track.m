@@ -72,6 +72,7 @@ classdef Track
         end % constructor
 % --------------------- Search methods -----------------------------------
         function objs = get_trackID(obj_array,trackID)
+            if nargin < 2, objs = []; return; end
             % search for and return the TRACKs with the given trackID(s)
             objs = obj_array( ismember([obj_array.trackID],trackID) );
         end %get_trackID
