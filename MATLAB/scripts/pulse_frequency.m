@@ -4,7 +4,7 @@
 bins = linspace(0,200,50);
 
 fits_incell = cellfun(@fits.get_fitID, ...
-    {cells([cells.flag_tracked] > -1 & [cells.embryoID] < 6).fitID}, ...
+    {cells.get_embryoID(1:5).fitID}, ...
     'UniformOutput',0);
 
 fits_label_incell = cell(1,numel(fits_incell));
@@ -24,39 +24,21 @@ freq_wt = cellfun(@diff, fits_center_incell,'UniformOutput',0);
 % "center" of a pulse pair
 center = cellfun(@sort_pair_mean, fits_center_incell,'UniformOutput',0);
 
-[N_wt,bins] = hist( [freq_wt{:}], bins);
-bar( bins, N_wt/sum(N_wt) );
-xlabel('Time between pulses (sec)')
-ylabel('Probability')
-title('Wild-type')
-
-figure
-scatter([center{:}], [freq_wt{:}],100,'filled')
-xlabel('Developmental time (sec)');
-ylabel('Time between pulses (sec)');
-title('Wild-type')
-
-%%
-
-figure
-
-S = [100 500 100 500 100];
-for i = 1:5
-    centerflat = [center{:}];
-    freqflat = [freq_wt{:}];
-    
-    scatter( ...
-        centerflat([fits_label_incell{:}] == i), ...
-        freqflat([fits_label_incell{:}] == i), S(i), colors{i}, 'filled')
-    hold on
-end
-
-hline(80,'r--','twist average');
-hline(60,'b--','WT average')
-xlabel('Developmental time (sec)');
+% [N_wt,bins] = hist( [freq_wt{:}], bins);
+% bar( bins, N_wt/sum(N_wt) );
+% xlabel('Time between pulses (sec)')
+% ylabel('Probability')
+% title('Wild-type')
+% 
+% figure
+% scatter([center{:}], [freq_wt{:}],100,'filled')
+% xlabel('Developmental time (sec)');
+% ylabel('Time between pulses (sec)');
+% title('Wild-type')
 
 %% twist
 
+% fits_incell = cellfun(@fits.get_fitID,{cells.get_embryoID(6:7).fitID},'UniformOutput',0);
 fits_incell = cellfun(@fits.get_fitID,{cells.get_embryoID(6:7).fitID},'UniformOutput',0);
 
 fits_label_incell = cell(1,numel(fits_incell));
@@ -75,6 +57,23 @@ end
 freq_twist = cellfun(@(x) diff(sort(x)), fits_center_incell, 'UniformOutput',0);
 center_twist = cellfun(@sort_pair_mean, fits_center_incell, 'UniformOutput',0);
 
+%%
+
+figure
+
+S = [100 500 100 500 100];
+for i = 1:5
+    centerflat = [center{:}];
+    freqflat = [freq_wt{:}];
+    
+    scatter( ...
+        centerflat([fits_label_incell{:}] == i), ...
+        freqflat([fits_label_incell{:}] == i), S(i), colors{i}, 'filled')
+    hold on
+end
+
+xlabel('Developmental time (sec)');
+
 %% cta (seperate two cta populations)... see cta_clustering.m
 
 cta_cells8 = cells( [cells.embryoID] == 8 );
@@ -92,7 +91,6 @@ for i = 1:numel(fits_incell)
 end
 
 freq_cta1 = cellfun(@(x) diff(sort(x)), fits_center_incell, 'UniformOutput',0);
-
 
 fits_incell8 = cellfun(@fits_all.get_fitID, ...
     {cells(  c8([cta_cells8.cellID]) == 2 ).fitID}, 'UniformOutput', 0);
@@ -118,8 +116,8 @@ bins = linspace(0,250,50);
 % N_cta = N_cta1 + N_cta2;
 
 bar( bins, ... 
-    cat( 1,N_wt, ...
-    N_twist ...
+    cat( 1,N_wt/sum(N_wt), ...
+    N_twist/sum(N_twist) ...
     )', 'Grouped');
 
 set(gca,'XLim',[0 250]);
