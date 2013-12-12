@@ -1,10 +1,10 @@
-function rho = image_inertia(img,mask,debug)
+function rho = image_inertia(img,com,debug)
 %IMAGE_INERTIA Find the inertial moment around the center of mass for a 2D image.
 %
-% SYNOPSIS: rho = image_inertia(img,mask)
+% SYNOPSIS: rho = image_inertia(img,com)
 %
 % INPUT: img - binary or grayscale image
-%        mask - maximum mask (for normalization)
+%        com - (x,y) center of mass coordinates
 %
 % OUTPUT: rho - moment of inertia
 %
@@ -18,9 +18,8 @@ if nargin < 3, debug = 0; end
 [X,Y] = meshgrid(1:N,1:M);
 
 % find center of mass
-cell_mass = sum(img(img > 0));
-meanx = sum(sum( img.*X ))/cell_mass;
-meany = sum(sum( img.*Y ))/cell_mass;
+meanx = com(1);
+meany = com(2);
 
 if debug
     figure,imshow(img,[]),hold on,plot(meanx,meany,'r*');hold off;
@@ -38,11 +37,12 @@ R2 = X.^2 + Y.^2;
 
 % calculate rotation moment (rho)
 rho = sum(sum( R2 .* (img)));
-% normalize by max MR^2
-rho = rho / sum(sum(img));
-rho = rho / numel(mask(mask > 0));
-% rho = rho / maxR2;
 
-% rho = 1 - rho;
+% normalize by total mass of image
+rho = rho / sum(sum(img));
+% normalize by number of pixels
+rho = rho / numel(mask(mask > 0));
+% normalize by max MR^2
+% rho = rho / maxR2;
 
 end
