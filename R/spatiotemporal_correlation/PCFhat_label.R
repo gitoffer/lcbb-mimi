@@ -4,7 +4,7 @@
 ###############################################################################
 
 
-PCFhat_label <- function(xyt, s.region, t.region, dist, times, lambda, ks="box", hs, kt="box", ht, correction = TRUE, label) 
+PCFhat_label <- function(xyt, s.region, t.region, dist, times, lambda, ks="box", hs, kt="box", ht, correction = TRUE, embryoID =NULL,label=NULL) 
 {
 	require(splancs)
 	require(KernSmooth)
@@ -72,16 +72,31 @@ PCFhat_label <- function(xyt, s.region, t.region, dist, times, lambda, ks="box",
 	
 	nev <- rep(0,ntimes)
 	
-	klist <- .Fortran("pcffunction_lab", as.double(ptsx),
-			as.double(ptsy), as.double(ptst), 
-			as.integer(npt), as.double(polyx),
-			as.double(polyy), as.integer(np),
-			as.double(dist), as.integer(ndist),
-			as.double(times), as.integer(ntimes),
-			as.double(bsupt), as.double(binft),
-			as.double(lambda), as.integer(ks), as.integer(kt),
-			as.integer(edg), as.double(hs),
-			as.double(ht), (pcfhat), as.integer(label))
+	if (is.null(label))
+		klist <- .Fortran('kernel_pcf_embryos', as.double(ptsx),
+				as.double(ptsy), as.double(ptst), 
+				as.integer(npt), as.double(polyx),
+				as.double(polyy), as.integer(np),
+				as.double(dist), as.integer(ndist),
+				as.double(times), as.integer(ntimes),
+				as.double(bsupt), as.double(binft),
+				as.double(lambda), as.integer(ks), as.integer(kt),
+				as.integer(edg), as.double(hs),
+				as.double(ht), (pcfhat), as.integer(embryoID))
+	else
+		klist <- .Fortran('kernel_pcf_embryos_labels', as.double(ptsx),
+				as.double(ptsy), as.double(ptst), 
+				as.integer(npt), as.double(polyx),
+				as.double(polyy), as.integer(np),
+				as.double(dist), as.integer(ndist),
+				as.double(times), as.integer(ntimes),
+				as.double(bsupt), as.double(binft),
+				as.double(lambda), as.integer(ks), as.integer(kt),
+				as.integer(edg), as.double(hs),
+				as.double(ht), (pcfhat), as.integer(embryoID),
+				labels)
+			
+	
 	pcfhat <- klist[[20]]
 	
 	if (misl==1) 

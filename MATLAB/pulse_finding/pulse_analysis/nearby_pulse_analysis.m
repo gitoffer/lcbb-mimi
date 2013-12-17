@@ -1,6 +1,6 @@
 %% Nearby pulse analysis
 
-fitsOI = fits_wt;
+fitsOI = fits_twist;
 
 %%
 

@@ -3,7 +3,10 @@
 # Author: xies
 ###############################################################################
 
-num_emb = 5
+dyn.load('~/Desktop/Code Library/Fortran/PCF/kernel_pcf_embryos.so')
+dyn.load('~/Desktop/Code Library/Fortran/PCF/kernel_pcf_embryos_labels.so')
+
+num_embryo = 2
 u = seq(1,30)
 v = seq(1,100)
 
@@ -16,14 +19,15 @@ cluster_names = c('Ratcheted',
 				'Stretched',
 				'N/A')
 
-for (embryoID in 1:num_emb) {
+for (embryoID in 6:7) {
 	
+	print(paste(filepath(embryoID)))
 	raw = as.matrix(read.csv(filepath(embryoID)))
 	thisf = data.frame( fitID = raw[,1],
 			x = raw[,2], y = raw[,3], t = raw[,4])
-	thisf$behavior = cluster_names[raw[,5]] 
+	thisf$behavior = raw[,5] 
 			
-	if (embryoID > 1) { f = rbind(f,thisf) }
+	if (embryoID > 6) { f = rbind(f,thisf) }
 	else {f = thisf}
 	
 }
@@ -39,29 +43,30 @@ detach(f)
 
 h_values = 2.5
 
-g = get_PCFhat_stpp(
+g_twist = get_PCFhat_stpp(
 		xyt = as.matrix(f[c('x','y','t')]),
 		s.region=s.region,t.region=t.region,
-		u=u,v=v, label = as.numeric(get_embryoID(f$fitID) ),
+		u=u,v=v, embryoID = as.numeric(get_embryoID(f$fitID) ),
 		h = h_values)
 
 ###### Load bootstrapped pulses ######
 
 fbs <- vector('list', Nboot)
-Nboot = 100
+Nboot = 50
 for (n in 1:Nboot) {
 	
-	for (embryoID in 1:num_emb) {
+	for (embryoID in 6:7) {
 	
+#		print(paste('EmbryoID: ', embryoID, ' iteration: ', n))
 		raw = as.matrix(read.csv(bs_filepath(embryoID,n)))
 		
 		thisf = data.frame( fitID = raw[,1],
 				x = raw[,2], y = raw[,3], t = raw[,4]
 		)
 		
-		thisf$behavior = cluster_names[raw[,5]]
+		thisf$behavior = raw[,5]
 		
-		if (embryoID > 1) { fbs[[n]] = rbind(fbs[[n]],thisf) }
+		if (embryoID > 6) { fbs[[n]] = rbind(fbs[[n]],thisf) }
 		else {fbs[[n]] = thisf}
 		
 	}
@@ -69,19 +74,22 @@ for (n in 1:Nboot) {
 
 ###### Get bootstrapped PCF ######
 
-gbs <- vector('list',Nboot)
-pcfbs <- vector('list', Nboot)
+gbs_twist <- vector('list',Nboot)
+pcfbs_twist <- vector('list', Nboot)
 for (n in 1:Nboot) {
 	
-	gbs[[n]] = get_PCFhat_stpp(
+	gbs_twist[[n]] = get_PCFhat_stpp(
+			
 			xyt = as.matrix(fbs[[n]][c('x','y','t')]),
 			s.region = s.region, t.region = t.region,
-			u=u, v=v, h = 2.5,
-			label = as.numeric(get_embryoID(fbs[[n]]$fitID)) )
+			u=u, v=v, h = h_values,
+			embryoID = as.numeric(get_embryoID(fbs[[n]]$fitID)) )
 	
-	pcfbs[[n]] = gbs[[n]]$pcf
+	pcfbs_twist[[n]] = gbs_twist[[n]]$pcf
 	
 	print(paste('Done with: ', toString(n)))
 	
+
 }
+
 

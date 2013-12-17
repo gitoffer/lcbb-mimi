@@ -44,7 +44,7 @@ guess = [height(1);x(max(1));x(3)-x(1)];
 if background
     significant = 1;
     resnorm_old = sum(y.^2);
-    guess_bg = [1;0;100]; % [A, offset, lambda]
+    guess_bg = [1;100;0]; % [A, lambda, offset]
     
     n_peaks = 0;
     % Negative
@@ -111,7 +111,7 @@ end
 
 % Final test against background-only model
 
-guess_bg = [1;x(1);30];
+guess_bg = [1;30;x(1)];
 p_bg = lsqcurvefit(@lsq_exponential,guess_bg,x,y,[0 -inf 0],[inf inf inf],opt);
 residuals = lsq_exponential(p_bg,x) - y;
 resnorm_bg = sum(residuals.^2);

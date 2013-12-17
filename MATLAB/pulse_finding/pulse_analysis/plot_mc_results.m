@@ -66,7 +66,7 @@ for K = 1:nbins
         set(h(1),'FaceColor','red');
         set(h(2),'FaceColor',[0 100/255 0]);
         vline(mean_of_emp,'b');
-        xlim([1 3]);
+        xlim([0 3]);
         
         if i == 1
             xlabel('Average number of neighbors');

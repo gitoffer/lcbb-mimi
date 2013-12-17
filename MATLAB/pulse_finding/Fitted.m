@@ -998,7 +998,7 @@ classdef Fitted
 %                 1:numel(fits), ...
 %                 cat(1,fits.corrected_area_norm) );
             shading flat; axis tight; colorbar;
-            caxis( [-5 5] );
+            caxis( [-8 8] );
             title('Local area change');
             xlabel('Pulse time (sec)');
             axis xy
@@ -1100,6 +1100,7 @@ classdef Fitted
                     I = find_nearest_nonan( x, ct );
                     cx(i) = x(I);
                     cy(i) = y(I);
+                    if isnan(cx(i)), keyboard; end
                 end
                 
             end
