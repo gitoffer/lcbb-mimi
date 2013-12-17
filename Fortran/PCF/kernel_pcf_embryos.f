@@ -7,7 +7,7 @@ C     This function provides an edge corrected estimate
 C     of the space-time pair correlation function.
 C
 
-      subroutine pcffunction_lab(x,y,txy,n,xp,yp,np,s,ns,t,nt,
+      subroutine kernel_pcf_embryos(x,y,txy,n,xp,yp,np,s,ns,t,nt,
      +     bsupt,binft,lambda,ks,kt,edg,hs,ht,pcfhat,label)
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -35,7 +35,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       two=2d0
 
       do iu=1,ns
-        do iv=1,nt
+         do iv=1,nt
             do i=1,n
 
                 xi=x(i)
@@ -43,7 +43,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                 ti=txy(i)
 
                     do j=1,n
-                            
+                        
                         if ((j.ne.i).and.(label(i).eq.label(j))) then
 
                             hij=dsqrt( (xi-x(j))*(xi-x(j)) + (yi-y(j))*(yi-y(j)) )
