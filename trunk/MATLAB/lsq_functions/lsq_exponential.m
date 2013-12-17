@@ -2,9 +2,9 @@ function y = lsq_exponential(params,t)
 % For use by LSQ functions
 
 A = params(1);
-center = params(2);
-lambda = params(3);
+lambda = params(2);
+offset = params(3);
 
-y = A*exp((t)/lambda) + center;
+y = A*exp((t)/lambda) + offset;
 
 end

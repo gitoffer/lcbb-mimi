@@ -41,7 +41,7 @@ end
 name2plot = 'area_sm';
 
 figure, clear H
-embryoID_OI = 1:5;
+embryoID_OI = 1:2;
 color = hsv(numel(embryoID_OI));
 for i = 1:numel( embryoID_OI )
     

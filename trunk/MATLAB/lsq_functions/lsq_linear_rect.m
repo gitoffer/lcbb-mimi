@@ -5,3 +5,7 @@ intercept = params(2);
 
 y = slope*x + intercept;
 y(y<0) = 0;
+
+y = y + params(3);
+
+end

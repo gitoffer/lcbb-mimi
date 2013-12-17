@@ -10,13 +10,15 @@
 % mdf_file{6} = '~/Desktop/Tracked pulses/Twist injection series 006/twist_series_006_mimi.mdf'; embryoID(6) = 6;
 % mdf_file{7} = '~/Desktop/Tracked pulses/Twist injection series 022/twist_injection_002_mimi.mdf'; embryoID(7) = 7;
 
-mdf_file{1} = '~/Desktop/Tracked pulses/Twist injection series 006/twist_series_006_mimi.mdf'; embryoID(1) = 1;
-mdf_file{2} = '~/Desktop/Tracked pulses/Twist injection series 022/twist_injection_022_mimi.mdf'; embryoID(2) = 2;
-mdf_file{4} = '~/Desktop/Tracked pulses/Control Injection Series 002/control002.mdf'; embryoID(4) = 4;
+% mdf_file{1} = '~/Desktop/Tracked pulses/Twist injection series 006/twist_series_006_mimi.mdf'; embryoID(1) = 1;
+% mdf_file{2} = '~/Desktop/Tracked pulses/Twist injection series 022/twist_injection_022_mimi.mdf'; embryoID(2) = 2;
+% mdf_file{4} = '~/Desktop/Tracked pulses/Control Injection Series 002/control002.mdf'; embryoID(4) = 4;
+
+mdf_file{1} = '~/Desktop/Tracked pulses/12-04-2013 twi RNAi/merge_t1-70.mdf'; embryoID(1) = 1;
 
 match_thresh = 1;
 
-for i = 4
+for i = 1
     
     % Load MDF into matrix
     mdf_mat = read_mdf(mdf_file{i});

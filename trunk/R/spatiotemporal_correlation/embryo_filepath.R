@@ -12,7 +12,7 @@ filepath <- function (embryoID) {
 
 bs_filepath <- function (embryoID,nboot) {
 	return( paste('~/Desktop/Pulse xyt csv/Embryo ', toString(embryoID),
-					'/simulated/emb', toString(embryoID), '_N', toString(nboot), '.csv',
+					'/random_cell/emb', toString(embryoID), '_N', toString(nboot), '.csv',
 					sep = '') )
 }
 

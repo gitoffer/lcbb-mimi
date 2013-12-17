@@ -7,6 +7,8 @@ if ~isvector(x),error('Input should be a vector.'); end
 
 N = numel(x);
 log = isnan(x);
-[~,I] = min( abs( (1:N)'.*~log - start ) );
+y = (1:N)'.*~log - start;
+y( y < 0 ) = Inf;
+[~,I] = min(y);
 
 end

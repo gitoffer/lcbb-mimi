@@ -1,7 +1,7 @@
 # get_PCFhat_stpp - Wrapper for PCFhat functionality in STPP
 
 get_PCFhat_stpp <- function( xyt, s.region=NULL, t.region=NULL, u, v,
-							h=hmsemin, label=NULL) {
+							h=hmsemin, embryoID, label=NULL) {
 
 	# Load libraries
 	require("stpp")
@@ -26,6 +26,7 @@ get_PCFhat_stpp <- function( xyt, s.region=NULL, t.region=NULL, u, v,
 	# Optimize t?e kernel bandwidth (h) by mean squared-error (MSE)
 	#	analysis at set h values to scan
 	#	Default: number of h-values: 50, max h-value: 4
+	
 	hmsemin = mse2d( as.points(xy), s.region, nsmse = 50, range = 10)
 	hmsemin = hmsemin$h[ which.min(hmsemin$mse) ] # Argmin MSE
 	
@@ -41,7 +42,7 @@ get_PCFhat_stpp <- function( xyt, s.region=NULL, t.region=NULL, u, v,
 				lambda = mhat*mut/ dim(xyt)[1],
 				dist = u, times = v,
 				s.region = s.region, t.region = t.region,
-				correction=TRUE, hs = h,label=label)
+				correction=TRUE, hs = h,embryoID=embryoID,label=label)
 		
 	return(g)
 	
