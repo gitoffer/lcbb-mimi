@@ -554,6 +554,8 @@ classdef Fitted
             
             embryoIDs = unique( [fits.embryoID] );
             
+            if nargin < 2, range = 10:10:90; end
+            
             for i = embryoIDs
                 
                 % Get fits in this embryo that are not manually curated
@@ -1077,7 +1079,11 @@ classdef Fitted
             
         end %export_field2csv
         
-        function [cx,cy,ct] = export_xyt( fits, cells, filename)
+        function [cx,cy,ct] = export_xyt( fits, cells, filename, traceback)
+            % NB: trackback - turn 'on' to use the earliest tracked
+            % cell centroid
+            
+            if nargin < 4, traceback = 'off'; end
             
             cx = zeros(1,numel(fits));
             cy = zeros(1,numel(fits));
@@ -1086,21 +1092,29 @@ classdef Fitted
                 
                 this_fit = fits(i);
                 
-                ct = findnearest( this_fit.center, cells(this_fit.stackID).dev_time);
-
                 x = cells.get_fitID( this_fit.fitID ).centroid_x;
                 y = cells.get_fitID( this_fit.fitID ).centroid_y;
-                
-                if numel(ct) > 1, ct = ct(1); end
-                
-                cx(i) = x( ct );
-                cy(i) = y( ct );
-                
-                if isnan(cx(i))
-                    I = find_nearest_nonan( x, ct );
-                    cx(i) = x(I);
-                    cy(i) = y(I);
-                    if isnan(cx(i)), keyboard; end
+
+                if strcmpi(traceback,'on')
+                    
+                    cx(i) = x(find_earlierst_nonan(x));
+                    cy(i) = y(find_earlierst_nonan(y));
+                    
+                else
+                    ct = findnearest( this_fit.center, ...
+                        cells.get_stackID(this_fit.stackID).dev_time);
+
+                    if numel(ct) > 1, ct = ct(1); end
+
+                    cx(i) = x( ct );
+                    cy(i) = y( ct );
+
+                    if isnan(cx(i))
+                        I = find_nearest_nonan( x, ct );
+                        cx(i) = x(I);
+                        cy(i) = y(I);
+                        if isnan(cx(i)), keyboard; end
+                    end
                 end
                 
             end

@@ -3,7 +3,7 @@ function [pulses,simulated_sequence] = simulate_pulsing(cells,fits,frequency,pul
 %
 % xies@mit.edu
 
-Nembryos = numel(unique([fits.embryoID]));
+all_embryoIDs = unique([fits.embryoID]);
 
 Npulses = numel(fits);
 
@@ -19,7 +19,7 @@ total_fit = 0;
 simulated_sequence = [];
 
 % Scatter all pulses amongst pulses
-for embryoID = 1:Nembryos
+for embryoID = all_embryoIDs
     
     % Sort pulses by their center of occurence
     pulses_in_embryo = fits.get_embryoID(embryoID).sort('center');
