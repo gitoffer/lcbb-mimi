@@ -6,13 +6,13 @@
 
 filepath <- function (embryoID) {
 	return( paste('~/Desktop/Pulse xyt csv/Embryo ', toString(embryoID),
-					'/emb', toString(embryoID), '_emp.csv',
+					'/emb', toString(embryoID), '_emp_traceback.csv',
 					sep = '') )
 }
 
 bs_filepath <- function (embryoID,nboot) {
 	return( paste('~/Desktop/Pulse xyt csv/Embryo ', toString(embryoID),
-					'/random_cell/emb', toString(embryoID), '_N', toString(nboot), '.csv',
+					'/random_cell/emb', toString(embryoID), '_N', toString(nboot), '_traceback.csv',
 					sep = '') )
 }
 
