@@ -1,9 +1,15 @@
+# TODO: Add comment
+# 
+# Author: Imagestation
+###############################################################################
+
+
 # TODO: Simulated pulsing
 # 
 # Author: xies
 ###############################################################################
 
-eIDs = c(6:8)
+eIDs = c(1:5)
 num_embryo = length(eIDs)
 u = seq(1,30)
 v = seq(1,100)
@@ -11,11 +17,11 @@ v = seq(1,100)
 ### Load embryo pulsing location into a dataframe
 
 cluster_names = c('Ratcheted',
-				'Ratcheted - early',
-				'Ratcheted -delayed',
-				'Unratcheted',
-				'Stretched',
-				'N/A')
+		'Ratcheted - early',
+		'Ratcheted -delayed',
+		'Unratcheted',
+		'Stretched',
+		'N/A')
 f =NULL
 for (embryoID in eIDs) {
 	
@@ -23,8 +29,8 @@ for (embryoID in eIDs) {
 	raw = as.matrix(read.csv(filepath(embryoID)))
 	thisf = data.frame( fitID = raw[,1],
 			x = raw[,2], y = raw[,3], t = raw[,4])
-#	thisf$behavior = raw[,5]
-			
+	thisf$behavior = raw[,5]
+	
 	if (embryoID > eIDs[1]) { f = rbind(f,thisf) }
 	else {f = thisf}
 	
@@ -39,25 +45,26 @@ detach(f)
 
 ### Estimate overall PCF from all embryos
 
+h_values = 3.5
+
 dyn.load('~/Desktop/Code Library/Fortran/PCF/kernel_pcf_embryos.so')
 dyn.load('~/Desktop/Code Library/Fortran/PCF/kernel_pcf_embryos_labels.so')
-
-h_values = 2.5
 
 g = get_PCFhat_stpp(
 		xyt = as.matrix(f[c('x','y','t')]),
 		s.region=s.region,t.region=t.region,
 		u=u,v=v, embryoID = as.numeric(get_embryoID(f$fitID) ),
+		label = f$behavior == 4,
 		h = h_values)
 
 ###### Load bootstrapped pulses ######
 
-Nboot = 5
+Nboot = 50
 fbs <- vector('list', Nboot)
 for (n in 1:Nboot) {
 	
 	for (embryoID in eIDs) {
-	
+		
 		print(paste('EmbryoID: ', embryoID, ' iteration: ', n))
 		raw = as.matrix(read.csv(bs_filepath(embryoID,n)))
 		
@@ -65,7 +72,7 @@ for (n in 1:Nboot) {
 				x = raw[,2], y = raw[,3], t = raw[,4]
 		)
 		
-#		thisf$behavior = raw[,5]
+		thisf$behavior = raw[,5]
 		
 		if (embryoID > eIDs[1]) { fbs[[n]] = rbind(fbs[[n]],thisf) }
 		else {fbs[[n]] = thisf}
@@ -80,11 +87,11 @@ pcfbs <- vector('list', Nboot)
 for (n in 1:Nboot) {
 	
 	gbs[[n]] = get_PCFhat_stpp(
-			
 			xyt = as.matrix(fbs[[n]][c('x','y','t')]),
 			s.region = s.region, t.region = t.region,
 			u=u, v=v, h = h_values,
-			embryoID = as.numeric(get_embryoID(fbs[[n]]$fitID))
+			embryoID = as.numeric(get_embryoID(fbs[[n]]$fitID)),
+			label = fbs[[n]]$behavior == 4
 	)
 	
 	pcfbs[[n]] = gbs[[n]]$pcf

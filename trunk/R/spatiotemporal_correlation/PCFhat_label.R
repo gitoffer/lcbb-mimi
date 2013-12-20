@@ -72,7 +72,8 @@ PCFhat_label <- function(xyt, s.region, t.region, dist, times, lambda, ks="box",
 	
 	nev <- rep(0,ntimes)
 	
-	if (is.null(label))
+	
+	if (is.null(label)) {
 		klist <- .Fortran('kernel_pcf_embryos', as.double(ptsx),
 				as.double(ptsy), as.double(ptst), 
 				as.integer(npt), as.double(polyx),
@@ -83,7 +84,11 @@ PCFhat_label <- function(xyt, s.region, t.region, dist, times, lambda, ks="box",
 				as.double(lambda), as.integer(ks), as.integer(kt),
 				as.integer(edg), as.double(hs),
 				as.double(ht), (pcfhat), as.integer(embryoID))
-	else
+		pcfhat <- klist[[20]]
+		
+	}
+	else {
+		
 		klist <- .Fortran('kernel_pcf_embryos_labels', as.double(ptsx),
 				as.double(ptsy), as.double(ptst), 
 				as.integer(npt), as.double(polyx),
@@ -93,11 +98,14 @@ PCFhat_label <- function(xyt, s.region, t.region, dist, times, lambda, ks="box",
 				as.double(bsupt), as.double(binft),
 				as.double(lambda), as.integer(ks), as.integer(kt),
 				as.integer(edg), as.double(hs),
-				as.double(ht), (pcfhat), as.integer(embryoID),
-				labels)
-			
+				as.double(ht), as.integer(embryoID),
+				as.logical(label),0,(pcfhat))
+		pcfhat <- klist[[23]]
+		print(length(klist))
+	}
 	
-	pcfhat <- klist[[20]]
+#	counts <- klist[[22]]
+#	print(paste('Blah: ',counts))
 	
 	if (misl==1) 
 	{
