@@ -26,7 +26,7 @@ save('~/Desktop/fits_raw.mat','fits_raw','cells_raw')
 
 %% sub-set of pulses
 
-fits = fits.retrace(cells,fit_opts);
+fits = fits.retrace(cells,fit_opts)
 
 fits_wt = fits.get_embryoID(1:5);
 fits_twist = fits.get_embryoID(6:7);
