@@ -143,71 +143,71 @@ input(7).embryoID = 7;
 input(7).fixed = 0;
 input(7).last_segmented = 70;
 
-input(11).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/12-04-2013 SqhGap twi RNAi/Measurements';
-input(11).zslice = 1;
-input(11).actual_z = 6;
-input(11).tref = 1;
-input(11).t0 = 0;
-input(11).ignore_list = [];
-input(11).dt = 7.45;
-input(11).um_per_px = 0.21255;
-input(11).X = 1000;
-input(11).Y = 400;
-input(11).T = 100;
-input(11).fixed = 0;
-input(11).yref = 0;
-input(11).embryoID = 11;
-input(11).last_segmented = 50;
-
-% cta
-
-input(8).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
+input(8).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/12-04-2013 SqhGap twi RNAi/Measurements';
 input(8).zslice = 1;
-input(8).actual_z = 5;
-input(8).tref = 40;
-input(8).t0 = 14;
+input(8).actual_z = 6;
+input(8).tref = 1;
+input(8).t0 = 0;
 input(8).ignore_list = [];
-input(8).dt = 6.804;
-input(8).um_per_px = 0.2125;
+input(8).dt = 7.45;
+input(8).um_per_px = 0.21255;
 input(8).X = 1000;
 input(8).Y = 400;
 input(8).T = 100;
-input(8).yref = 0; %um
-input(8).embryoID = 8;
 input(8).fixed = 0;
-input(8).last_segmented = 95;
+input(8).yref = 0;
+input(8).embryoID = 8;
+input(8).last_segmented = 50;
 
-input(9).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_29_13_3/Measurements';
+% cta
+
+input(9).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
 input(9).zslice = 1;
-input(9).actual_z = 6;
-input(9).tref = 15;
-input(9).t0 = 0;
+input(9).actual_z = 5;
+input(9).tref = 40;
+input(9).t0 = 14;
 input(9).ignore_list = [];
-input(9).dt = 7.5;
-input(9).um_per_px = 0.1812;
+input(9).dt = 6.804;
+input(9).um_per_px = 0.2125;
 input(9).X = 1000;
 input(9).Y = 400;
-input(9).T = 45;
+input(9).T = 100;
 input(9).yref = 0; %um
 input(9).embryoID = 9;
 input(9).fixed = 0;
-input(9).last_segmented = 45;
+input(9).last_segmented = 95;
 
-input(10).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_31_13_3/Measurements';
+input(10).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_29_13_3/Measurements';
 input(10).zslice = 1;
-input(10).actual_z = 5;
-input(10).tref = 50;
-input(10).t0 = 14;
+input(10).actual_z = 6;
+input(10).tref = 15;
+input(10).t0 = 0;
 input(10).ignore_list = [];
-input(10).dt = 8;
-input(10).um_per_px = 0.213;
+input(10).dt = 7.5;
+input(10).um_per_px = 0.1812;
 input(10).X = 1000;
 input(10).Y = 400;
-input(10).T = 85;
+input(10).T = 45;
 input(10).yref = 0; %um
 input(10).embryoID = 10;
 input(10).fixed = 0;
-input(10).last_segmented = 80;
+input(10).last_segmented = 45;
+
+input(11).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_31_13_3/Measurements';
+input(11).zslice = 1;
+input(11).actual_z = 5;
+input(11).tref = 50;
+input(11).t0 = 14;
+input(11).ignore_list = [];
+input(11).dt = 8;
+input(11).um_per_px = 0.213;
+input(11).X = 1000;
+input(11).Y = 400;
+input(11).T = 85;
+input(11).yref = 0; %um
+input(11).embryoID = 11;
+input(11).fixed = 0;
+input(11).last_segmented = 80;
 
 % princeton dataset
 input_princeton(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
@@ -242,7 +242,6 @@ input_princeton(2).embryoID = 2;
 input_princeton(2).fixed = 0;
 input_princeton(2).last_segmented = 70;
 
-
 input_princeton(3).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Control Inject Series001/Measurements';
 input_princeton(3).zslice = 1;
 input_princeton(3).actual_z = 8;
@@ -274,22 +273,6 @@ input_princeton(4).yref = 0; %um
 input_princeton(4).embryoID = 4;
 input_princeton(4).fixed = 0;
 input_princeton(4).last_segmented = 55;
-
-input_twi(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/12-04-2013 SqhGap twi RNAi/Measurements';
-input_twi(1).zslice = 1;
-input_twi(1).actual_z = 6;
-input_twi(1).tref = 1;
-input_twi(1).t0 = 0;
-input_twi(1).ignore_list = [];
-input_twi(1).dt = 7.45;
-input_twi(1).um_per_px = 0.21255;
-input_twi(1).X = 1000;
-input_twi(1).Y = 400;
-input_twi(1).T = 100;
-input_twi(1).fixed = 0;
-input_twi(1).yref = 0;
-input_twi(1).embryoID = 1;
-input_twi(1).last_segmented = 50;
 
 % input_rok(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/080213 RokGap 1/Measurements';
 % input_rok(1).zslice = 2;
@@ -363,10 +346,10 @@ msmts2make_twi = { ...
 
 %% Load data (will beep when done)
 
-% EDGEstack = load_edge_data({input.folder2load},msmts2make_twi{:});
+EDGEstack = load_edge_data({input.folder2load},msmts2make_twi{:});
 % EDGEstack_cta = load_edge_data({input_cta.folder2load},msmts2make{:});
 % EDGEstack_princeton = load_edge_data({input_princeton.folder2load},msmts2make_princeton{:});
-EDGEstack_twi = load_edge_data({input_twi.folder2load},msmts2make_twi{:});
+% EDGEstack_twi = load_edge_data({input_twi.folder2load},msmts2make_twi{:});
 % EDGEstack_rok = load_edge_data({input_rok.folder2load},msmts2make_rok{:});
 beep;
 
