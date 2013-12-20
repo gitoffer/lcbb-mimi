@@ -33,7 +33,7 @@ MC_wt_pcenter = monte_carlo_pulse_location(fitsOI,cells,neighborID, o);
 %% Select correct timing
 
 % select dataset
-MC = MC_wt_pcenter;
+MC = MC;
 
 window = 3; % neighborhood time window
 clear temporal_bins
