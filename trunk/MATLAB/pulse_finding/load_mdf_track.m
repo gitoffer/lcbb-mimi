@@ -78,7 +78,7 @@ for i = 1:num_tracks
 	% Collect relevant information into track struct
     this_track.embryoID = input.embryoID; this_track.mdfID = i;
     this_track.cellID = order(index);
-    this_track.stackID = num_cell_pad(embryoID) + order(index);
+    this_track.stackID = 1000*(embryoID) + order(index);
 
 	% Collect the time/frame of track WRT aligned developmental time
     frames( frames > numel(dev_time) ) = [];
@@ -88,8 +88,8 @@ for i = 1:num_tracks
 %     this_track.img_frame = img_frame;
     
 	% Construct Track object
-	cells(this_track.stackID).flag_tracked = 1;
-    cells(this_track.stackID).num_tracks = cells(order(index)).num_tracks + 1;
+	cells([cells.stackID] == this_track.stackID).flag_tracked = 1;
+    cells([cells.stackID] == this_track.stackID).num_tracks = cells(order(index)).num_tracks + 1;
 	
 	tracks(trackID) = Track(this_track);
 
@@ -98,13 +98,13 @@ end
 % filter out non-fitted cells
 
 tracked_cells = [unique([tracks.stackID])];
-unfit_cells = tracked_cells( ~[cells(tracked_cells).flag_fitted] );
+unfit_cells = tracked_cells( ~[cells.get_stackID(tracked_cells).flag_fitted] );
 [tracks(ismember([tracks.stackID],unfit_cells))] = [];
 
 for i = 1:numel(tracks)
     tracks(i).trackID = i + input.embryoID*1000;
-    cells( tracks(i).stackID ).trackID = ...
-        [cells( tracks(i).stackID ).trackID i + input.embryoID*1000];
+    cells( [cells.stackID] == tracks(i).stackID ).trackID = ...
+        [cells( [cells.stackID] == tracks(i).stackID ).trackID i + input.embryoID*1000];
 end
 
 end
