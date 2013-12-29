@@ -377,7 +377,7 @@ classdef Fitted
         
 % --------------------- Alignment functions -------------------------------
         
-        function [fits] = align_fits(fits,measurement,name)
+        function [fits] = align_fits(fits,cells,name)
             %ALIGN_PEAKS Aligns the global maxima of a given array of
             %FITTED objects
             % Will return also a given measurement aligned according to the
@@ -387,6 +387,15 @@ classdef Fitted
             
             num_fits = numel(fits);
             durations = cellfun(@numel, {fits.margin_frames} );
+            
+            switch name
+                case 'area'
+                    cell_name = 'area_sm';
+                case 'myosin'
+                    cell_name = 'myosin_intensity';
+                otherwise
+                    cell_name = name;
+            end
             
             for i = 1:num_fits
                 
@@ -399,7 +408,7 @@ classdef Fitted
                 [max_val,max_idx] = max( fitted_y );
                 if numel( fitted_y( fitted_y == max_val ) ) > 1
                     maxes = find( fitted_y == max_val );
-                    theoretical_middle = ceil(max(durations)/2);
+                    theoretical_middle = floor(max(durations)/2);
                     which = findnearest(maxes,theoretical_middle);
                     max_idx = maxes(which);
                 end
@@ -410,8 +419,8 @@ classdef Fitted
                 lb = center_idx - left_len;
                 ub = min(center_idx - left_len + durations(i) - 1, max(durations) );
                 
-                m( lb: ub) = ...
-                    ensure_row(measurement( fits(i).margin_frames, fits(i).stackID ));
+                m( lb: ub) = ensure_row( ...
+                    cells.get_stackID(fits(i).stackID).(cell_name)(fits(i).margin_frames ));
                 
                 fits(i).(name) = m;
                 
@@ -683,7 +692,7 @@ classdef Fitted
             
         end % cluster
         
-        function fits = find_near_fits(fits,time_windows,neighborID,neighbor_def)
+        function fits = find_near_fits(fits,cells,time_windows,neighbor_def)
             %FIND_NEAR_FITS Find the number (and fitID) of each fitted
             % pulse within an range of time-windows and the first-order
             % neighbors, given array of fitted pulses. Results will
@@ -713,20 +722,23 @@ classdef Fitted
             
             for i = 1:num_fits
                 
+                
                 this_fit = fits(i);
                 % Get fits in the same embryo
                 same_embryo = fits( [fits.embryoID] == this_fit.embryoID );
                 % Get the center frame of this pulse
                 center_frame = fix( mean(this_fit.margin_frames) );
                 % Get all neighboring cells
-                neighbor_cells = neighborID{ center_frame , this_fit.stackID};
+                neighbor_cells = ...
+                    cells.get_stackID(this_fit.stackID).identity_of_neighbors_all...
+                    { center_frame };
                 
                 fits(i).time_windows = time_windows;
                 
                 % Find all neighboring fits
                 neighbor_fits = fits.get_fitID([ ...
                     same_embryo( ...
-                    ismember([same_embryo.stackID], neighbor_cells) ...
+                    ismember([same_embryo.cellID], neighbor_cells) ...
                     ).fitID ]);
                 
                 fits(i).nearIDs = cell( 1, numel(time_windows ) );

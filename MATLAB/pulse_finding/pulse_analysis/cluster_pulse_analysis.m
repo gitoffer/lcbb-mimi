@@ -144,10 +144,11 @@ end
 
 clear N
 for i = 1:num_clusters + 1
-    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID] ,[1 5 7 11]);
+    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID] ,[0 5 9 11]);
 end
 
 bar(bsxfun(@rdivide, N, sum(N))' ,'stacked' );
-xlim([0 4])
-xlabel('EmbryoID')
+xlim([0 3])
+set(gca,'XTickLabels',{'WT','twist',''});
+% xlabel('EmbryoID')
 legend(entries{:},'N/A');

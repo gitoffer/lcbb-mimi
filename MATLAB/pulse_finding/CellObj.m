@@ -120,7 +120,7 @@ classdef CellObj
     methods
         
         function obj = CellObj(this_cell)
-			% CellObj - Contructs object of CellObj class. Use from EDGE2CELL
+			% CellObj - Contructs object of CellObj class. Use from EMBRYO2CELL
             field_names = fieldnames(this_cell);
             for i = 1:numel(field_names)
                 obj.(field_names{i}) = this_cell.(field_names{i});
@@ -146,9 +146,10 @@ classdef CellObj
             
             fitID = 0; last_embryoID = cells(1).embryoID; fit = [];
             
-            for stackID = 1:sum(num_cells)
+            for i = 1:sum(num_cells)
                 
-                this_cell = cells(stackID);
+                this_cell = cells(i);
+				stackID = this_cell.stackID;
                 if this_cell.embryoID ~= last_embryoID, fitID = 0; end % reset fitID count
                 
                 % Get relevant indices
@@ -236,7 +237,7 @@ classdef CellObj
                     this_cell.params = NaN;
                     this_cell.opt = NaN;
                 end
-                new_cells(stackID) = this_cell;
+                new_cells(i) = this_cell;
                 
                 last_embryoID = this_cell.embryoID;
                 

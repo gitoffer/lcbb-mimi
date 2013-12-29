@@ -44,13 +44,13 @@ for j = 1:Nboot
     
     tic
     % make permutations of cell location
-    [fits_bs_cell,~] = cells.bootstrap_stackID(fits);
+    [fits_bs_cell,cells_bs_cell] = cells.bootstrap_stackID(fits);
     % get nearby pulses
-	fits_bs_cell = fits_bs_cell.find_near_fits(time_windows,neighborID,neighbor_def);
+	fits_bs_cell = fits_bs_cell.find_near_fits(cells_bs_cell,time_windows,neighbor_def);
     
     % make permutations of pulse location
-    [fits_bs_fit,~] = fits.bootstrap_stackID(cells);
-    fits_bs_fit = fits_bs_fit.find_near_fits(time_windows,neighborID,neighbor_def);
+    [fits_bs_fit,cells_bs_fit] = fits.bootstrap_stackID(cells);
+    fits_bs_fit = fits_bs_fit.find_near_fits(cells_bs_fit,time_windows,neighbor_def);
     
     % get current cluster for empirical (only once)
     if j == 1
@@ -75,7 +75,7 @@ for j = 1:Nboot
         empirical.target_labels = target_labels;
         empirical.centers = centers;
 		empirical.neighbor_windows = dt;
-        empirical.correlation = spatial_correlation(cx,cy,fits,30);
+%         empirical.correlation = spatial_correlation(cx,cy,fits,30);
         
     end
     
@@ -134,8 +134,8 @@ for j = 1:Nboot
     end
     
     % Compute correlation function
-    random_cell(j).correlation = spatial_correlation(cx,cy,fits_bs_cell,30);
-    random_pulse(j).correlation = spatial_correlation(cx,cy,fits_bs_fit,30);
+%     random_cell(j).correlation = spatial_correlation(cx,cy,fits_bs_cell,30);
+%     random_pulse(j).correlation = spatial_correlation(cx,cy,fits_bs_fit,30);
     
     T = toc;
     display(['Done with ' num2str(j) ' in ' num2str(T) ' seconds.']);
