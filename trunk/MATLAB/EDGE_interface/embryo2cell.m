@@ -18,10 +18,12 @@ measurements = intersect( measurements, allowed_names );
 for i = 1:sum(num_cells)
     
     % Collect the indices
-    stackID = i;
     embryo_index = find( (num_cells_padded - i) < 0, 1, 'last');
     cellID = i - num_cells_padded(embryo_index);
     
+	stackID = embryo_stack(embryo_index).input.embryoID * 1000 ...
+		+ cellID;
+
     this_cell.embryoID = embryo_stack(embryo_index).input.embryoID;
     this_cell.stackID = stackID;
     this_cell.cellID = cellID;
