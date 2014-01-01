@@ -31,16 +31,15 @@ xlabel('Time between pulses (sec)')
 ylabel('Probability')
 title('Wild-type')
 
-% figure
-% scatter([center{:}], [freq_wt{:}],100,'filled')
-% xlabel('Developmental time (sec)');
-% ylabel('Time between pulses (sec)');
-% title('Wild-type')
+figure
+scatter([center{:}], [freq_wt{:}],100,'filled')
+xlabel('Developmental time (sec)');
+ylabel('Time between pulses (sec)');
+title('Wild-type')
 
 %% twist
 
-fits_incell = cellfun(@fits_all.get_fitID,{cells.get_embryoID(6:7).fitID},'UniformOutput',0);
-fits_incell = cellfun(@fits8.get_fitID,{cells8.fitID},'UniformOutput',0);
+fits_incell = cellfun(@fits.get_fitID,{cells.get_embryoID(6:8).fitID},'UniformOutput',0);
 
 fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));
@@ -55,7 +54,7 @@ for i = 1:numel(fits_incell)
     centers{i} = foo(1:end-1);
 end
 
-freq_twist8 = cellfun(@(x) diff(sort(x)), fits_center_incell, 'UniformOutput',0);
+freq_twist = cellfun(@(x) diff(sort(x)), fits_center_incell, 'UniformOutput',0);
 center_twist = cellfun(@sort_pair_mean, fits_center_incell, 'UniformOutput',0);
 
 %%

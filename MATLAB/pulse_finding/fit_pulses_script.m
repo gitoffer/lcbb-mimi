@@ -20,7 +20,7 @@ clear fit_opts
 
 %% Perform fitting
 
-if ~exist('cells','var'), cells = embryo2cell(embryo_stack); end
+% if ~exist('cells','var'), cells = embryo2cell(embryo_stack); end
 [cells_raw,fits_raw] = fit_gaussians(cells,fit_opts);
 save('~/Desktop/fits_raw.mat','fits_raw','cells_raw')
 

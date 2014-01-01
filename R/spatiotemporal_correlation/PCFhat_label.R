@@ -1,6 +1,6 @@
-# TODO: Add comment
+# TODO: Handle inputs better... horrible!
 # 
-# Author: Imagestation
+# Author: modified by xies
 ###############################################################################
 
 

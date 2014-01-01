@@ -355,8 +355,8 @@ beep;
 
 %% Select which stack to load (esp. if there are multiple types of embryos)
 
-in = input_twi;
-stack2load = EDGEstack_twi;
+in = input;
+stack2load = EDGEstack;
 
 %% Load into various stand-alone files (e.g. areas, myosins)
 

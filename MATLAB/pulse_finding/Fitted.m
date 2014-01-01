@@ -921,8 +921,9 @@ classdef Fitted
 			for i = 1:numel(fits)
 
 				this_fit = fits(i);
-				count( this_fit.margin_frames(3:end-2), this_fit.stackID) = ...
-					count( this_fit.margin_frames(3:end-2), this_fit.stackID) + 1;
+                I = find([cells.stackID] == this_fit.stackID);
+				count( this_fit.margin_frames(3:end-2), I) = ...
+					count( this_fit.margin_frames(3:end-2), I) + 1;
 
 			end
 
@@ -1141,6 +1142,27 @@ classdef Fitted
             csvwrite(filename,M);
             
         end
+    
+    function fits = rename_stackID(fits)
+        for i = 1:numel(fits)
+            fits(i).stackID = ...
+                fits(i).embryoID*1000 + fits(i).cellID;
+        end
+    end
+    
+    function fits = rename_embryoID(fits,embryoID)
+        old_embryoID = fits(1).embryoID;
+        [fits.embryoID] = deal(embryoID);
+        fits = fits.rename_stackID;
+        for i = 1:numel(fits)
+            
+            fID = fits(i).fitID;
+            base = 10.^floor(log10(fID));
+            fID = fID - old_embryoID*base + embryoID*base;
+            fits(i).fitID = fID;
+            
+        end
+    end
         
     end % Dynamic methods
     

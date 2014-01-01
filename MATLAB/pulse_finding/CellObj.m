@@ -134,7 +134,7 @@ classdef CellObj
             % Uses LSQCURVEFIT
             % Might try 
             
-            num_embryos = max(unique([cells.embryoID]));
+            num_embryos = numel(unique([cells.embryoID]));
             num_cells = hist([cells.embryoID],1:num_embryos);
             
             if numel(opts) ~= num_embryos
@@ -155,7 +155,7 @@ classdef CellObj
                 % Get relevant indices
                 embryoID = this_cell.embryoID;
                 % Get specific options
-                opt = opts(embryoID);
+                opt = opts(1);
                 
                 Y = this_cell.(opt.to_fit); % curve to be fit
                 t = this_cell.dev_time;     % independent variable (domain)
@@ -700,6 +700,29 @@ classdef CellObj
 			end
             
         end % make_binary_sequence
+        
+        function cells = rename_stackID(cells)
+            for i = 1:numel(cells)
+                cells(i).stackID = cells(i).embryoID*1000 + cells(i).cellID;
+            end
+        end
+        
+        function cells = rename_embryoID(cells,embryoID)
+            old_embryoID = cells(1).embryoID;
+            [cells.embryoID] = deal(embryoID);
+            cells = cells.rename_stackID;
+            for i = 1:numel(cells)
+                fIDs = cells(i).fitID;
+                tIDs = cells(i).trackID;
+                base = 10.^floor(log10(fIDs));
+                fIDs = fIDs - old_embryoID*base + embryoID*base;
+                base = 10.^floor(log10(tIDs));
+                tIDs = tIDs - old_embryoID*base + embryoID*base;
+                cells(i).fitID = fIDs;
+                cells(i).trackID = tIDs;
+                
+            end
+        end
         
    end % End methods 
 end

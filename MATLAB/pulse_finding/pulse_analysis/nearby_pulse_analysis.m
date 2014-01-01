@@ -1,8 +1,8 @@
 %% Nearby pulse analysis
 
-fitsOI = fits_wt;
+fitsOI = fits_twist;
 
-name = 'wt';
+name = 'twist';
 
 %%
 
@@ -13,7 +13,7 @@ neighb_str = 'pmcenter';
 neighbor_defition = @(central, neighbors, tau) ...
     abs( [neighbors.center] - central.center ) < tau ... %within time window
     & ~( neighbors == central ); ... % not the same time
-%     & ([neighbors.center] - central.center) < 0; %
+%     & ([neighbors.center] - central.center) >= 0; %
 
 fitsOI = fitsOI.find_near_fits(cells,time_windows,neighbor_defition);
 
@@ -28,22 +28,22 @@ num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
 
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
-o.Nboot = 25;
+o.Nboot = 50;
 o.timewindows = time_windows;
 o.savepath = ['~/Desktop/mc_stackID_' ...
-    name, neighb_str '_Nboot', num2str(o.Nboot) '_k' num2str(num_clusters)];
+    name, '_', neighb_str '_Nboot', num2str(o.Nboot) '_k' num2str(num_clusters)];
 o.neighbor_def = neighbor_defition;
-MC_wt_pmcenter = monte_carlo_pulse_location(fitsOI,cells,neighborID, o);
+MC_twist_pmcenter = monte_carlo_pulse_location(fitsOI,cells,neighborID, o);
 
 %% Select correct timing
 
 % select dataset
-MC = MC;
+MC = MC_wt_pmcenter;
 
 window = 3; % neighborhood time window
 clear temporal_bins
-temporal_bins(1,:) = [-Inf, -Inf 0];
-temporal_bins(2,:) = [Inf,   0  Inf];
+temporal_bins(1,:) = [-Inf];
+temporal_bins(2,:) = [Inf];
 
 opt.breakdown = 'off';
 

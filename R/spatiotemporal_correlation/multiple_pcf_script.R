@@ -1,9 +1,9 @@
-# TODO: Simulated pulsing
+# TODO: Handle interruptible flow?
 # 
 # Author: xies
 ###############################################################################
 
-eIDs = c(6:8)
+eIDs = c(1)
 num_embryo = length(eIDs)
 u = seq(1,30)
 v = seq(1,100)

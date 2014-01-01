@@ -42,7 +42,7 @@ for K = 1:nbins
     
     num_pulse = num_pulse( filter(random_pulse(1)),:,: );
     labels_pulse = labels_pulse( filter(random_pulse(1)) );
-    target_pulse = target_pulse( filter(random_cell(1)),:,: );
+    target_pulse = target_pulse( filter(random_pulse(1)),:,: );
     
     for i = 1:5
         

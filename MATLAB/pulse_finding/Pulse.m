@@ -46,6 +46,7 @@ classdef Pulse
     %   .cat - concatenate two Pulse objects (for example from different
     %       embryos)
 	% --- Manual editing methods ---
+    %   rename_embryoID - consistently renames the embryoID
 	%	search_catID - given a tracked or fit from a PULSE object, find the index
 	%		of that object within its current .cagetory
 	%	removePulse - remove a track/fit and update the mapping
@@ -324,6 +325,11 @@ classdef Pulse
         
 %--------------------- edit pulse/tracks ----------------------------------
         
+        function pulse = rename_embryoID(pulse,embryoID)
+            pulse.fits = pulse.fits.rename_embryoID(embryoID);
+            pulse.cells = pulse.cells.rename_embryoID(embryoID);
+        end
+
         function pulse = removePulse(pulse,type,pulseID)
             %@Pulse.removePulse Remove pulse from track-fit mapping, as well as
             % the respective pulse object array.
