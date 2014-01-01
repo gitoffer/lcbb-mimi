@@ -1,10 +1,4 @@
-# TODO: Add comment
-# 
-# Author: Imagestation
-###############################################################################
-
-
-# TODO: Simulated pulsing
+# TODO: Merge with main script
 # 
 # Author: xies
 ###############################################################################

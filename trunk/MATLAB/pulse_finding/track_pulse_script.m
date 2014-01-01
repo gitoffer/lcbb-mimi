@@ -29,8 +29,9 @@ for i = 8
     pulse(i) = pulse(i).categorize_mapping;
     
     pulse(i).embryoID = embryoID(i);
+    display(['EmbryoID: ' num2str(i)]);
+    display(mdf_file{i});
     display(pulse(i));
-    i
 
 end 
 

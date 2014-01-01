@@ -31,10 +31,10 @@ prob_mass = sum(counts);
 counts = bsxfun(@rdivide,counts,prob_mass);
 bar(bins,counts);
 
-h = findobj(gca,'Type','patch');
-if nargin > 2
-    set(h,varargin{:});
-end
+% h = findobj(gca,'Type','patch');
+% if nargin > 2
+%     set(h,varargin{:});
+% end
 
 % for i = 1:num_var
 %     [counts] = hist(observations(:,i),edges);

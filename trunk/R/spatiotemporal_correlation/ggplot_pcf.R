@@ -1,4 +1,4 @@
-# TODO: Add comment
+# Uses ggplot2 to visualze PCFs as returned by STPP
 # 
 # Author: xies
 ###############################################################################
