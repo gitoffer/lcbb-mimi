@@ -5,6 +5,7 @@ function [counts,bins,h] = plot_pdf(observations,nbins,varargin)
 % of the variable.
 %
 % SYNOPSIS: [counts,h] = plot_pdf(x,nbins,patch_options)
+%           [counts,h] = plot_pdf(x,patch_options)
 % INPUT: x - observed variable
 %        nbins - number of bins (default = 30)
 %        patch_options - e.g. 'facecolor','red'
@@ -20,16 +21,23 @@ switch nargin
         error('Need at least 1 input!');
     case 1
         nbins = 30;
+        patch_opt = {};
 end
 
-if isrow(observations)
-    observations = observations';
+% check if second opt is number or string
+if ischar(nbins)
+    patch_opt = {nbins varargin{:}};
+    nbins = 30;
+else
+    patch_opt = varargin;
 end
+
+observations = ensure_column(observations);
 
 [counts,bins] = hist(observations,nbins);
 prob_mass = sum(counts);
 counts = bsxfun(@rdivide,counts,prob_mass);
-bar(bins,counts);
+bar(bins,counts,patch_opt{:});
 
 % h = findobj(gca,'Type','patch');
 % if nargin > 2
