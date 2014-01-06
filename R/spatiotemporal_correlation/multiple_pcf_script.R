@@ -37,12 +37,19 @@ s.region = matrix(
 t.region = c(min(t)-1,max(t)+1)
 detach(f)
 
+### Get all eta,tau pairs and plot them first
+dx = pairwise_difference(f$x)
+dy = pairwise_difference(f$y)
+d = sqrt(dx^2 + dy^2)
+dt = pairwise_difference(f$t)
+plot(d,dt)
+
 ### Estimate overall PCF from all embryos
 
 dyn.load('~/Desktop/Code Library/Fortran/PCF/kernel_pcf_embryos.so')
 dyn.load('~/Desktop/Code Library/Fortran/PCF/kernel_pcf_embryos_labels.so')
 
-h_values = 2.5
+h_values = 3.5
 
 g = get_PCFhat_stpp(
 		xyt = as.matrix(f[c('x','y','t')]),
@@ -73,6 +80,13 @@ for (n in 1:Nboot) {
 	}
 }
 
+### Get all eta,tau pairs and plot them first
+dx = pairwise_difference(fbs$x)
+dy = pairwise_difference(fbs$y)
+d = sqrt(dx^2 + dy^2)
+dt = pairwise_difference(f$t)
+plot(d,dt)
+
 ###### Get bootstrapped PCF ######
 
 gbs <- vector('list',Nboot)
@@ -93,8 +107,8 @@ for (n in 1:Nboot) {
 	
 }
 
-postscript('~/Desktop/embryo1.eps',horizontal=FALSE,height=11,width=8.5)
+postscript( paste('~/Desktop/embryo',eIDs,'.eps'),horizontal=FALSE,height=11,width=8.5)
 par(mfrow=c(2,1))
 image.plot(u,v,g$pcf)
-image.plot(u,v,Reduce('+',pcfbs)/Nboot,zlim=c(0,max(g$pcf)))
+image.plot(u,v,Reduce('+',pcfbs)/Nboot)
 dev.off()
