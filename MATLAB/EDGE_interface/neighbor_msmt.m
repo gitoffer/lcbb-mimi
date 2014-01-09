@@ -1,4 +1,5 @@
 function [meas_n,ind] = neighbor_msmt(meas,neighborID,t)
+% TO DO:  Needs update for working with multiple embryos.
 %NEIGHBOR_MSMT Given a measurement matrix (time x cells) and a cell-array
 % of the cellIDs of neighbors of each focal cells, return a cell-array of
 % the neighbor-measurements arranged by the focal cells.
@@ -22,9 +23,10 @@ meas_n = cell(1,num_cells);
 ind = [];
 
 for i = 1:num_cells
-    if ~isnan(neighborID{1,i})
+    nIDs = neighborID{1,i};
+    if ~isnan(nIDs)
         % if there are neighbors, put them into matrix
-        meas_n{i} = meas(:,neighborID{t,i});
+        meas_n{i} = meas(:,nIDs(nIDs > 0));
         % 
         ind = [ind i];
     else
