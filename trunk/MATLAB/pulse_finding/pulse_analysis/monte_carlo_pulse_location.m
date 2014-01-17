@@ -1,4 +1,4 @@
-function MC = monte_carlo_pulse_location(fits,cells,neighborID,opt)
+function MC = monte_carlo_pulse_location(fits,cells,opt)
 %MONTE_CARLO_PULSE_LOCATION Generate spatially random pulse patterns by
 % permutation analysis
 % 
