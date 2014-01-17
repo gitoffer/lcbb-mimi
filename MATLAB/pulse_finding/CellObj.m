@@ -520,7 +520,10 @@ classdef CellObj
             % GET_PULSING_TRAJECTORIES Construct a graph showing the
             % trajectory of a cell through pulse cluster-identity space
             % USAGE: [adj,nodes] =
-            %        cells.get_pulsing_trajectories(fits,revorder);
+            %        cells.get_pulsing_trajectories(fits);
+            %
+            % To visualize: wgPlot(adj,nodes)
+            % Updated: xies@mit Jan 2014
             max_fits = nanmax( [cells.num_fits] );
             num_clusters = numel(unique([fits.cluster_label]));
             adj = zeros(num_clusters*max_fits + 2);
@@ -577,6 +580,8 @@ classdef CellObj
         function W = get_pulse_transition_matrix(cells,fits)
             %GET_PULSE_TRANSITION_MATRIX Constructs a matrix of the transition
             % rates of different types of pulses (pooled across time).
+            %
+            %
             
             num_behavior = numel(unique([fits.cluster_label]));
             
