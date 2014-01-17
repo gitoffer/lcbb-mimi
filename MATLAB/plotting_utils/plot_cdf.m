@@ -37,9 +37,8 @@ if isempty(bins)
     bins = linspace(nanmin(observations(:)),nanmax(observations(:)),30);
 end
 
-if isrow(observations)
-    observations = observations';
-end
+observations = ensure_row(observations);
+bins = ensure_row(bins);
 
 counts = histc(observations,bins);
 cdf = cumsum(counts);
