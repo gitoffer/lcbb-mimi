@@ -8,12 +8,12 @@ name = 'twist';
 
 time_windows = 10:10:100; % seconds
 
-neighb_str = 'pmcenter';
+neighb_str = 'pcenter';
 
 neighbor_defition = @(central, neighbors, tau) ...
     abs( [neighbors.center] - central.center ) < tau ... %within time window
-    & ~( neighbors == central ); ... % not the same time
-%     & ([neighbors.center] - central.center) >= 0; %
+    & ~( neighbors == central ) ... % not the same time
+    & ([neighbors.center] - central.center) >= 0; %
 
 fitsOI = fitsOI.find_near_fits(cells,time_windows,neighbor_defition);
 
@@ -28,26 +28,55 @@ num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
 
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
-o.Nboot = 50;
+o.Nboot = 100;
 o.timewindows = time_windows;
 o.savepath = ['~/Desktop/mc_stackID_' ...
     name, '_', neighb_str '_Nboot', num2str(o.Nboot) '_k' num2str(num_clusters)];
 o.neighbor_def = neighbor_defition;
-MC_twist_pmcenter = monte_carlo_pulse_location(fitsOI,cells,neighborID, o);
+
+MC_wt_pmcenter = monte_carlo_pulse_location(fitsOI,cells, o);
 
 %% Select correct timing
 
 % select dataset
-MC = MC_wt_pmcenter;
+MC = MC_wt_pcenter;
 
-window = 3; % neighborhood time window
+window = 6; % neighborhood time window
 clear temporal_bins
 temporal_bins(1,:) = [-Inf];
 temporal_bins(2,:) = [Inf];
 
 opt.breakdown = 'off';
 
-plot_mc_results(MC,window,temporal_bins,opt)
+plot_mc_results(MC,window,temporal_bins,opt);
+
+%%
+
+bins = 0:20;
+idx = MC.random_cell(1).origin_labels';
+RC_num_near = cat(3,MC.random_cell.num_near);
+figure,
+
+for i = 1:5
+    
+    subplot(1,5,i);
+    
+    Nrc = hist(flat(RC_num_near(idx == i,window,:)),bins);
+    Nemp = hist(MC.empirical.num_near(idx == i,window),bins);
+    plot(bins,cat(1,(Nrc)/sum(Nrc),(Nemp)/sum(Nemp))')
+    xlim([-1 9])
+    title(behaviors{i})
+    
+end
+
+xlabel('Number of neighbors')
+ylabel('Probability')
+
+Nemp = hist(MC.empirical.num_near(:,window),bins);
+Nrc = hist(RC_num_near(:,window),bins);
+figure,
+plot(bins,cat(1,Nrc/sum(Nrc),Nemp/sum(Nemp))');
+xlim([-1 15])
 
 %% Cross-validation Variance testing
 

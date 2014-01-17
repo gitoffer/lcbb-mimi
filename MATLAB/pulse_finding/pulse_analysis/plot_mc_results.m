@@ -1,4 +1,4 @@
-function plot_mc_results(MC,window,temporal_bin,opt)
+function zscores = plot_mc_results(MC,window,temporal_bin,opt)
 %PLOT_MC_RESULTS Generates visualization of how resampled data compares
 % with empirical counts
 % xies@mit Oct 2013
@@ -66,7 +66,7 @@ for K = 1:nbins
         set(h(1),'FaceColor','red');
         set(h(2),'FaceColor',[0 100/255 0]);
         vline(mean_of_emp,'b');
-        xlim([0 3]);
+        xlim([2 4.5]);
         
         if i == 1
             xlabel('Average number of neighbors');
@@ -121,6 +121,10 @@ for K = 1:nbins
     
     linkaxes(H,'x');
     
+    
 end
+
+zscores.random_cell = zscores_cell;
+zscores.random_pulse = zscores_pulse;
 
 end

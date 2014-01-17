@@ -70,7 +70,11 @@ for i = 1:num_clusters+1
 
 end
 
-entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
+entries = {'Ratcheted (stereotyped)', ...
+    'Ratcheted (early)', ...
+    'Ratcheted (delayed)',...
+    'Un-ratcheted', ...
+    'Stretched'};
 colors = {'b','c','g','r','m','k'};
 
 %%
@@ -149,6 +153,6 @@ end
 
 bar(bsxfun(@rdivide, N, sum(N))' ,'stacked' );
 xlim([0 3])
-set(gca,'XTickLabels',{'WT','twist',''});
+set(gca,'XTickLabel',{'WT','twist',''});
 % xlabel('EmbryoID')
 legend(entries{:},'N/A');
