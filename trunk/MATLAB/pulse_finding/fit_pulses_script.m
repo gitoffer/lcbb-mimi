@@ -4,7 +4,7 @@ clear fit_opts
 [fit_opts(1:num_embryos).to_fit] = deal('myosin_intensity');
 [fit_opts(1:num_embryos).bg] = deal('on');
 
-[fit_opts(1:num_embryos).left_margin] = deal(6);
+[fit_opts(1:num_embryos).left_margin] = deal(8);
 [fit_opts(1:num_embryos).right_margin] = deal(8);
 [fit_opts(1:num_embryos).nan_thresh] = deal(30);
 [fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
@@ -49,7 +49,7 @@ aligned_myosin = cat(1,fits.myosin);
 
 % Mean-center pulses responses
 aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
-aligned_myosin = bsxfun(@minus,aligned_myosin,nanmean(aligned_myosin,2));
+% aligned_myosin = bsxfun(@minus,aligned_myosin,nanmean(aligned_myosin,2));
 % aligned_measurement = bsxfun(@minus,aligned_measurement,nanmean(aligned_measurement,2));
 fits = assign_datafield(fits,aligned_area_norm,'area_norm');
 fits = assign_datafield(fits,aligned_myosin,'myosin');
