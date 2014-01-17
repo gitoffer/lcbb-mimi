@@ -15,7 +15,7 @@ physical_distance = delete_off_embryo_interaction(physical_distance,IDs);
 
 %% Generate the adjacency matrix
 
-adj = adjacency_matrix(neighborID(:,1:474),1);
+adj = adjacency_matrix(neighborID(:,[IDs.which] == 6),1);
 % angles = rad_flip_quadrant(get_neighbor_angle(centroids_x,centroids_y,1));
 % horizontal_adj = adj; horizontal_adj(abs(angles) > pi/6) = NaN;
 % vertical_adj = adj; vertical_adj(abs(angles) < pi/6) = NaN;
@@ -23,7 +23,7 @@ adj = adjacency_matrix(neighborID(:,1:474),1);
 %% Myosin correlation distance
 
 Dm = squareform(pdist( ...
-    bs(1:end,1:sum(num_cells(1:5)))',@(x,y) nan_pearsoncorr(x,y,4)));
+    myosin(1:end,1:sum(num_cells(1:5)))',@(x,y) nan_pearsoncorr(x,y,4)));
 
 %% Dm - lower triangular matrix; mcorr_dist - lower triangular matrix without
 % neighbor_map terms

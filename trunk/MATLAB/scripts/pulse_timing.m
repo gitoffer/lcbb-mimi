@@ -1,13 +1,13 @@
 % Pulse timing 
 
-fitsOI = fits_wt;
+fitsOI = fits_twist.get_embryoID(8);
 bins = linspace(-300,300,30);
 
 %% by bin
 
 colors = pmkmp(10);
 
-N = zeros(10,numel(bins));
+% N = zeros(10,numel(bins));
 for i = 1:10
     hold on;
 %     N = hist([fitsOI([fitsOI.bin] == i).center],bins);
@@ -17,7 +17,7 @@ for i = 1:10
 end
 
 % imagesc(bins,5:10:95,N);
-ylabel('Strength %-tile')
+ylabel('Probability')
 xlabel('Developmental time (sec)');
 
 %% by behavior in CDF
@@ -29,7 +29,7 @@ for i = 1:num_clusters
     xlim([-300 300])
 end
 xlabel('Developmental time (sec)')
-ylabel('CDF')
+ylabel('Probability')
 legend(entries{:})
 
 %% behavior in count/PDF
