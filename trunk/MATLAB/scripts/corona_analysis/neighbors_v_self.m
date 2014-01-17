@@ -1,11 +1,11 @@
 %%
-tobe_correlated = areas_sm;
+tobe_correlated = myosins_sm(:,[IDs.which] == 6);
 
 tobe_measured = areas_sm(1:end,:);
 [num_frames,num_cells] = size(tobe_measured);
-meas_name = 'constriction rate';
+meas_name = 'Myosin';
 
-[meas_n,cells_w_neighb] = neighbor_msmt(tobe_measured,neighborID(tref,:));
+[meas_n,cells_w_neighb] = neighbor_msmt(tobe_measured,neighborID(1,[IDs.which]== 6));
 num_foci = numel(cells_w_neighb);
 
 %% Plot average dynamic correlation between focall cell and its neighbors
@@ -25,7 +25,7 @@ mean_dynamic_corr = cell(1,num_foci);
 for j = 1:numel(cells_w_neighb)
     cellID = cells_w_neighb(j);
     % get dynamic corr for all neighbors
-    num_neighbors = numel(neighborID{1,cellID});
+    num_neighbors = size(meas_n{cellID},2);
     this_corr = zeros(num_neighbors,2*wt+1);
     %     keyboard
     for i = 1:num_neighbors
