@@ -10,6 +10,7 @@ fits_incell = cellfun(@fits.get_fitID, ...
 fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));
 centers = cell(1,numel(fits_incell));
+nnear = cell(1,numel(fits_incell));
 
 for i = 1:numel(fits_incell)
     fits_incell{i} = fits_incell{i}.sort('center');
@@ -18,12 +19,18 @@ for i = 1:numel(fits_incell)
     fits_label_incell{i} = foo(1:end-1);
     foo = [fits_incell{i}.center];
     centers{i} = foo(1:end-1);
+    foo = cat(1,fits_incell{i}.nearIDs);
+    if ~isempty(foo)
+        foo = cellfun(@numel,foo(:,6));
+        nnear{i} = foo(1:end-1)';
+    end
 end
 
 freq_wt = cellfun(@diff, fits_center_incell,'UniformOutput',0);
 % "center" of a pulse pair
 center = cellfun(@sort_pair_mean, fits_center_incell,'UniformOutput',0);
 
+figure
 [N_wt,bins] = hist( [freq_wt{:}], bins);
 bar( bins, N_wt/sum(N_wt) );
 xlim([0 300])
@@ -39,11 +46,13 @@ title('Wild-type')
 
 %% twist
 
-fits_incell = cellfun(@fits.get_fitID,{cells.get_embryoID(6:8).fitID},'UniformOutput',0);
+fits_incell = cellfun(@fitsOI.get_fitID,...
+    {cells.get_embryoID(6:8).fitID},'UniformOutput',0);
 
 fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));
 centers = cell(1,numel(fits_incell));
+nnear = cell(1,numel(fits_incell));
 
 for i = 1:numel(fits_incell)
     fits_incell{i} = fits_incell{i}.sort('center');
@@ -52,6 +61,11 @@ for i = 1:numel(fits_incell)
     fits_label_incell{i} = foo(1:end-1);
     foo = [fits_incell{i}.center];
     centers{i} = foo(1:end-1);
+    foo = cat(1,fits_incell{i}.nearIDs);
+    if ~isempty(foo)
+        foo = cellfun(@numel,foo(:,6));
+        nnear{i} = foo(1:end-1)';
+    end
 end
 
 freq_twist = cellfun(@(x) diff(sort(x)), fits_center_incell, 'UniformOutput',0);
