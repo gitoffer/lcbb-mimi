@@ -107,7 +107,6 @@ legend(entries{:});
 %% summary of clusters
 
 figure
-
 for i = 1:num_clusters
     
     eval(['this_cluster = cluster' num2str(i) '_wt.sort(''cluster_weight'');']);
