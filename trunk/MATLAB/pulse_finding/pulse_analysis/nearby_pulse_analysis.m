@@ -1,8 +1,8 @@
 %% Nearby pulse analysis
 
-fitsOI = fits_twist;
+fitsOI = fits_wt;
 
-name = 'twist';
+name = 'wt';
 
 %%
 
@@ -20,6 +20,7 @@ fitsOI = fitsOI.find_near_fits(cells,time_windows,neighbor_defition);
 %%
 
 nearIDs = cat(1,fitsOI.nearIDs);
+near_angles = cat(1,fitsOI.near_angles);
 
 % Convert to number of pulses
 num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
@@ -34,7 +35,7 @@ o.savepath = ['~/Desktop/mc_stackID_' ...
     name, '_', neighb_str '_Nboot', num2str(o.Nboot) '_k' num2str(num_clusters)];
 o.neighbor_def = neighbor_defition;
 
-MC_wt_pmcenter = monte_carlo_pulse_location(fitsOI,cells, o);
+MC_wt_pcenter = monte_carlo_pulse_location(fitsOI,cells, o);
 
 %% Select correct timing
 
