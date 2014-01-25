@@ -61,6 +61,9 @@ classdef CellObj
 	%		movie - makes movie of cell
     %   --- Analysis ---
     %       get_pulsing_trajectories
+    %       get_pulsing_transition_matrix
+    %       get_pulsing_transition_graph
+    %       get_neighbor_angle
     %       bootstrap_stackID
     %       make_binary_sequence
 	%
@@ -638,6 +641,34 @@ classdef CellObj
             
         end
         
+        function angles = get_neighbor_angle(cellx,celly,frame)
+            %GET_NEIGHBOR_ANGLE
+            % Given a pair of cells, get the angle between their centroids (y wrt x,
+            % along x-axis).
+            %
+            % Will flip all angles to lie within quadrant I. (i.e. use the
+            % leftmost cell as a reference). Will return degrees.
+            %
+            % Optionally, will return a angle at a specific frame, if
+            % supplied
+            %
+            % SYNOPSIS: angles = get_neighbor_angle(cell1,cell2);
+            %           angle = get_neighbor_angle(cell1,cell2,frame);
+            %
+            % xies@mit March 2012
+            
+            % check that they're in the same embryo
+            if cellx.embryoID ~= celly.embryoID, error('Cells not in same embryo!'); end
+            
+            angles = rad2deg(rad_flip_quadrant(atan2(...
+                bsxfun(@minus,celly.centroid_y,cellx.centroid_y), ...
+                bsxfun(@minus,celly.centroid_x,cellx.centroid_x) ) ) );
+            
+            if nargin > 2, angles = angles(frame); end
+            if angles < -90 || angles > 90, keyboard; end
+            
+        end
+        
         function [fits,cells] = bootstrap_stackID(cells,fits)
             %BOOTSTRAP_STACKID Randomly exchanges CellObj stackID with each
             % other (only fitted + tracked cells). Will also do same for
@@ -706,23 +737,24 @@ classdef CellObj
             
         end % make_binary_sequence
         
-        function cells = rename_stackID(cells)
-            for i = 1:numel(cells)
-                cells(i).stackID = cells(i).embryoID*1000 + cells(i).cellID;
-            end
-        end
         
         function cells = rename_embryoID(cells,embryoID)
+            % Rename all cells into a new embryoID
+            % Please use from PULSE only to ensure FIT objects are
+            % similarly renamed
+            
             old_embryoID = cells(1).embryoID;
             [cells.embryoID] = deal(embryoID);
-            cells = cells.rename_stackID;
+            
             for i = 1:numel(cells)
                 fIDs = cells(i).fitID;
                 tIDs = cells(i).trackID;
-                base = 10.^floor(log10(fIDs));
+                % regular fits are base 1000 while manual ones are base
+                % 10000
+                base = 10.^floor(log10(fIDs) - log10(old_embryoID));
                 fIDs = fIDs - old_embryoID*base + embryoID*base;
-                base = 10.^floor(log10(tIDs));
-                tIDs = tIDs - old_embryoID*base + embryoID*base;
+                base = 10.^floor(log10(tIDs) - log10(old_embryoID));
+                tIDs = tIDs - old_embryoID*(base-base_corr) + embryoID*base;
                 cells(i).fitID = fIDs;
                 cells(i).trackID = tIDs;
                 

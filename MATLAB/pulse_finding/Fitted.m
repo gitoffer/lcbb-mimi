@@ -48,6 +48,8 @@ classdef Fitted
 	%	
 	%		time_windows - neighborhood time-windows
 	%		nearIDs - fitIDs of nearby fits, ordered WRT time_windows
+    %		near_angles - angles b/w the fit and its neighbor listed in
+    %   		nearIDs
 	%		nearest_neighbor - fitID of nearest fit
 	%		
 	%		cluster_label - should be in order
@@ -68,6 +70,7 @@ classdef Fitted
     %   get_stackID - get all FITs with a certain stackID
     %   get_fitID - get the fit with the given fitID
     %   get_embryoID - get fit with the given embryoID
+    %   get_cluster - get fit with the given behavior
     %   set_fitID - replace a fit in the array with a given fitID with a
     %       new_fit
     % --- Alignment ---
@@ -79,6 +82,8 @@ classdef Fitted
     %   adjust_centers - adjust Gaussian centers to tref
     %   get_corrected_measurement - temporarily puts given measurement and
     %      returns the aligned, interpolated .corrected_measurement
+    %   get_center_frame - gets the movie frame that corresponds to the
+    %         fit's center
     % --- Array operations ---
     %   sort - sort according to field (default: amplitude)
     %   bin_fits - bin each embryo by amplitude
@@ -154,6 +159,7 @@ classdef Fitted
         
         time_windows %
         nearIDs % fitIDs of 'nearby' fits, ordered w.r.t. time_windows
+        near_angles % angle b/w the two pulses SEE: get_neighbor_angle
 		nearest_neighbor % fitID of the nearest fit
         
         cluster_label
@@ -358,6 +364,11 @@ classdef Fitted
             fits( cellfun(@isempty,{fits.fitID}) ) = [];
         end %get_fitID
         
+        function fits = get_cluster(fits_array,label)
+            % Returns the cluster behavior
+            fits = fits_array( ismember([ fits_array.cluster_label ], label) );
+        end
+        
         function fits = set_field(fits,fitIDs, fieldname, fieldvalue)
             % find fits in an array with the given fitIDs and set the given
             % fieldnames to that fieldvalue
@@ -554,6 +565,19 @@ classdef Fitted
             M = cat(1,fits.corrected_measurement);
         end
         
+        function f = get_center_frame(this_fit,dev_time)
+            %GET_CENTER_FRAME Returns the movie frame nearest to the center
+            % of a given pulse. In case of a tie, will return the earlier
+            % frame.
+            % 
+            % USAGE: frame = fit.get_center_frame(dev_time)
+            %
+            
+            if numel(this_fit) > 1, error('Input is a single Fitted object.'); end
+            f = findnearest( this_fit.center, dev_time);
+            if numel(f) > 1, f = f(1); end
+        end
+        
 % --------------------- Array operations ----------------------------------
         
         function fits = bin_fits(fits,range)
@@ -742,6 +766,7 @@ classdef Fitted
                     ).fitID ]);
                 
                 fits(i).nearIDs = cell( 1, numel(time_windows ) );
+                fits(i).near_angles = cell( 1, numel(time_windows ) );
                 if ~isempty( neighbor_fits )
                     
                     % Collect fits within window
@@ -753,6 +778,18 @@ classdef Fitted
                         if sum(within_window) > 0
                             nearby_fits = neighbor_fits(within_window);
                             fits(i).nearIDs(k) = {[nearby_fits.fitID]};
+                            
+                            % Obtain angles
+                            a = zeros(1,numel(nearby_fits));
+                            for j = 1:numel(nearby_fits)
+                                focal = cells.get_stackID(fits(i).stackID);
+                                neighboring = cells.get_stackID(nearby_fits(j).stackID);
+                                a(j) = focal.get_neighbor_angle( neighboring, ...
+                                    fits(i).get_center_frame(focal.dev_time));
+                            end
+                            
+                            fits(i).near_angles{k} = a;
+                            
 							% In last time-window iteration, take the nearest
 							% fit and record its fitID
 							if k == numel( time_windows )
@@ -763,6 +800,7 @@ classdef Fitted
                         else
                             fits(i).nearIDs(k) = {NaN};
 							fits(i).nearest_neighbor = NaN;
+                            fits(i).near_angles(k) = {NaN};
                         end
                         
                     end % loop over time window
@@ -1114,16 +1152,15 @@ classdef Fitted
                     cy(i) = y(find_earlierst_nonan(y));
                     
                 else
-                    ct = findnearest( this_fit.center, ...
+                    
+                    cframe = this_fit.get_center_frame( ...
                         cells.get_stackID(this_fit.stackID).dev_time);
 
-                    if numel(ct) > 1, ct = ct(1); end
-
-                    cx(i) = x( ct );
-                    cy(i) = y( ct );
+                    cx(i) = x( cframe );
+                    cy(i) = y( cframe );
 
                     if isnan(cx(i))
-                        I = find_nearest_nonan( x, ct );
+                        I = find_nearest_nonan( x, cframe );
                         cx(i) = x(I);
                         cy(i) = y(I);
                         if isnan(cx(i)), keyboard; end
@@ -1141,23 +1178,19 @@ classdef Fitted
             M = cat(1,fIDs,cx(order),cy(order),ct,l)';
             csvwrite(filename,M);
             
-        end
-    
-    function fits = rename_stackID(fits)
-        for i = 1:numel(fits)
-            fits(i).stackID = ...
-                fits(i).embryoID*1000 + fits(i).cellID;
-        end
-    end
+        end % export_xyt
     
     function fits = rename_embryoID(fits,embryoID)
+        % Rename all Fits into a new embryoID
+        % Please use from PULSE only to ensure CELL objects are
+        % similarly renamed
         old_embryoID = fits(1).embryoID;
         [fits.embryoID] = deal(embryoID);
         fits = fits.rename_stackID;
         for i = 1:numel(fits)
             
             fID = fits(i).fitID;
-            base = 10.^floor(log10(fID));
+            base = 10.^floor(log10(fID) - log10(old_embryoID));
             fID = fID - old_embryoID*base + embryoID*base;
             fits(i).fitID = fID;
             
