@@ -81,11 +81,11 @@ colors = {'b','c','g','r','m','k'};
 
 figure
 
-fits_cta = fits.get_embryoID( 8 );
-[N_const,bins] = hist(revorder([fits_cta( c8([fits_cta.cellID]) == 1 ).cluster_label]), ...
-    1:num_clusters);
-[N_exp,bins] = hist(revorder([fits_cta( c8([fits_cta.cellID]) == 2 ).cluster_label]), ...
-    1:num_clusters);
+% fits_cta = fits.get_embryoID( 8 );
+% [N_const,bins] = hist(revorder([fits_cta( c8([fits_cta.cellID]) == 1 ).cluster_label]), ...
+%     1:num_clusters);
+% [N_exp,bins] = hist(revorder([fits_cta( c8([fits_cta.cellID]) == 2 ).cluster_label]), ...
+%     1:num_clusters);
 
 [N_wt] = hist( [fits_wt.cluster_label], 1:num_clusters);
 [N_twist] = hist( [fits_twist.cluster_label], 1:num_clusters);
@@ -147,11 +147,11 @@ end
 
 clear N
 for i = 1:num_clusters + 1
-    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID] ,[0 5 9 11]);
+    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID] ,1:9);
 end
 
 bar(bsxfun(@rdivide, N, sum(N))' ,'stacked' );
-xlim([0 3])
-set(gca,'XTickLabel',{'WT','twist',''});
+xlim([0 10])
+% set(gca,'XTickLabel',{'WT','twist',''});
 % xlabel('EmbryoID')
 legend(entries{:},'N/A');

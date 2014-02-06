@@ -1,6 +1,6 @@
 % Pulse timing 
 
-fitsOI = fits_twist.get_embryoID(8);
+fitsOI = fits_twist;
 bins = linspace(-300,300,30);
 
 %% by bin
@@ -30,7 +30,7 @@ for i = 1:num_clusters
 end
 xlabel('Developmental time (sec)')
 ylabel('Probability')
-legend(entries{:})
+legend(behaviors{:})
 
 %% behavior in count/PDF
 

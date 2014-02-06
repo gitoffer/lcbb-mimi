@@ -11,3 +11,7 @@ third_quad = angles < 0 & angles < -pi/2;
 flipped = angles;
 flipped(second_quad) = angles(second_quad)-pi;
 flipped(third_quad) = pi+angles(third_quad);
+
+flipped(flipped < 0) = -flipped(flipped < 0);
+
+end

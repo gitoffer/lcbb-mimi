@@ -159,55 +159,87 @@ input(8).yref = 0;
 input(8).embryoID = 8;
 input(8).last_segmented = 50;
 
-% cta
-
-input(9).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
-input(9).zslice = 1;
+input(9).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/01-15-2014 twi RNAi SqhGap 7/Measurements';
+input(9).zslice = 2;
 input(9).actual_z = 5;
-input(9).tref = 40;
-input(9).t0 = 14;
+input(9).tref = 1;
+input(9).t0 = 0;
 input(9).ignore_list = [];
-input(9).dt = 6.804;
-input(9).um_per_px = 0.2125;
+input(9).dt = 6.961;
+input(9).um_per_px = 0.17484;
 input(9).X = 1000;
 input(9).Y = 400;
-input(9).T = 100;
+input(9).T = 85;
 input(9).yref = 0; %um
 input(9).embryoID = 9;
 input(9).fixed = 0;
-input(9).last_segmented = 95;
+input(9).last_segmented = 80;
 
-input(10).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_29_13_3/Measurements';
+input(10).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/01-24-2014 twi RNAi SqhGap 5/Measurements';
 input(10).zslice = 1;
-input(10).actual_z = 6;
-input(10).tref = 15;
+input(10).actual_z = 8;
+input(10).tref = 1;
 input(10).t0 = 0;
 input(10).ignore_list = [];
-input(10).dt = 7.5;
-input(10).um_per_px = 0.1812;
+input(10).dt = 7.56;
+input(10).um_per_px = 0.1844619;
 input(10).X = 1000;
 input(10).Y = 400;
-input(10).T = 45;
+input(10).T = 100;
 input(10).yref = 0; %um
 input(10).embryoID = 10;
 input(10).fixed = 0;
-input(10).last_segmented = 45;
+input(10).last_segmented = 95;
 
-input(11).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_31_13_3/Measurements';
+% cta
+
+input(11).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
 input(11).zslice = 1;
 input(11).actual_z = 5;
-input(11).tref = 50;
+input(11).tref = 40;
 input(11).t0 = 14;
 input(11).ignore_list = [];
-input(11).dt = 8;
-input(11).um_per_px = 0.213;
+input(11).dt = 6.804;
+input(11).um_per_px = 0.2125;
 input(11).X = 1000;
 input(11).Y = 400;
-input(11).T = 85;
+input(11).T = 100;
 input(11).yref = 0; %um
 input(11).embryoID = 11;
 input(11).fixed = 0;
-input(11).last_segmented = 80;
+input(11).last_segmented = 95;
+
+input(12).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_29_13_3/Measurements';
+input(12).zslice = 1;
+input(12).actual_z = 6;
+input(12).tref = 15;
+input(12).t0 = 0;
+input(12).ignore_list = [];
+input(12).dt = 7.5;
+input(12).um_per_px = 0.1812;
+input(12).X = 1000;
+input(12).Y = 400;
+input(12).T = 45;
+input(12).yref = 0; %um
+input(12).embryoID = 12;
+input(12).fixed = 0;
+input(12).last_segmented = 45;
+
+input(13).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_31_13_3/Measurements';
+input(13).zslice = 1;
+input(13).actual_z = 5;
+input(13).tref = 50;
+input(13).t0 = 14;
+input(13).ignore_list = [];
+input(13).dt = 8;
+input(13).um_per_px = 0.213;
+input(13).X = 1000;
+input(13).Y = 400;
+input(13).T = 85;
+input(13).yref = 0; %um
+input(13).embryoID = 13;
+input(13).fixed = 0;
+input(13).last_segmented = 80;
 
 % princeton dataset
 input_princeton(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
