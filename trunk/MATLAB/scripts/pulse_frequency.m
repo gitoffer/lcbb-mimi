@@ -46,8 +46,8 @@ title('Wild-type')
 
 %% twist
 
-fits_incell = cellfun(@fitsOI.get_fitID,...
-    {cells.get_embryoID(6:8).fitID},'UniformOutput',0);
+fits_incell = cellfun(@fits.get_fitID,...
+    {cells.get_embryoID(10).fitID},'UniformOutput',0);
 
 fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));

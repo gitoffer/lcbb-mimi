@@ -5,7 +5,7 @@ clear fit_opts
 [fit_opts(1:num_embryos).bg] = deal('on');
 
 [fit_opts(1:num_embryos).left_margin] = deal(6);
-[fit_opts(1:num_embryos).right_margin] = deal(8);
+[fit_opts(1:num_embryos).right_margin] = deal(10);
 [fit_opts(1:num_embryos).nan_thresh] = deal(30);
 [fit_opts(1:num_embryos).nan_consec_thresh] = deal(5);
 [fit_opts(1:num_embryos).end_tol] = deal(30);
@@ -75,5 +75,5 @@ corrected_area_norm = cat(1, fits.corrected_area_norm);
 corrected_myosin = cat(1, fits.corrected_myosin);
 
 fits_wt = fits([fits.embryoID] < 6);
-fits_twist = fits([fits.embryoID] > 5 & [fits.embryoID] < 9);
-fits_cta = fits([fits.embryoID] > 8);
+fits_twist = fits([fits.embryoID] > 5 & [fits.embryoID] < 10);
+fits_cta = fits([fits.embryoID] > 9);
