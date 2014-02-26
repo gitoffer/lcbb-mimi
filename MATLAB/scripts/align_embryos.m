@@ -5,18 +5,18 @@
 split_img_frame = zeros(num_embryos,2); % raw image index
 split_dev_frame = zeros(num_embryos,2); % EDGE index
 
-for embryoID = 1:1
+for embryoID = 10
 
     % Fit PCCL
     [split_dev_frame(embryoID,:),split_img_frame(embryoID,:),xdata,models,p] = ...
-        fit_PCCL(embryo_stack(embryoID),{'area','rok_th_intensity'});
+        fit_PCCL(embryo_stack(embryoID),{'area','myosin_intensity'});
     
     figure % Plots both area, myosin, as well as respective PCCL models
     ax = plotyy( ...
         dev_time(embryoID,:),...
         nanmean(embryo_stack(embryoID).area,2), ...
         dev_time(embryoID,:),...
-        nanmean(embryo_stack(embryoID).rok_intensity,2) ...
+        nanmean(embryo_stack(embryoID).myosin_intensity,2) ...
         );
     % hold both axes
     set(ax,'NextPlot','add')
@@ -41,7 +41,7 @@ end
 name2plot = 'area_sm';
 
 figure, clear H
-embryoID_OI = 1:2;
+embryoID_OI = 6:10;
 color = hsv(numel(embryoID_OI));
 for i = 1:numel( embryoID_OI )
     

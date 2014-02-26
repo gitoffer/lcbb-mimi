@@ -1,11 +1,11 @@
 
 Nboot = 50;
 
-fitsOI = [fits8];
-cellsOI = [cells8];
-freqOI = freq_twist8;
+fitsOI = fits_twist;
+cellsOI = cells_twist;
+freqOI = freq_twist;
 
-traceback = 'on';
+traceback = 'off';
 
 %%
 

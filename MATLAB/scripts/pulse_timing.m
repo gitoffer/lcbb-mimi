@@ -1,7 +1,8 @@
 % Pulse timing 
 
-fitsOI = fits_twist;
-bins = linspace(-300,300,30);
+fitsOI = fits.get_embryoID(8);
+bins = linspace(0,500,50);
+x_limits = [0 500];
 
 %% by bin
 
@@ -12,8 +13,9 @@ for i = 1:10
     hold on;
 %     N = hist([fitsOI([fitsOI.bin] == i).center],bins);
 %     plot(bins,N,'Color',colors(i,:));
+    fitsOI = fitsOI.bin_fits;
     plot_cdf([fitsOI([fitsOI.bin] == i).center],bins,'Color',colors(i,:));
-    xlim([-250 300]);
+    xlim(x_limits);
 end
 
 % imagesc(bins,5:10:95,N);
@@ -26,7 +28,7 @@ colors = {'b-','c-','g-','m-','r-'};
 for i = 1:num_clusters
     hold on
     plot_cdf([fitsOI([fitsOI.cluster_label]==i).center],bins,colors{i});
-    xlim([-300 300])
+    xlim(x_limits)
 end
 xlabel('Developmental time (sec)')
 ylabel('Probability')
@@ -49,7 +51,7 @@ end
 legend(entries{:})
 xlabel('Developmental time (sec)')
 ylabel('Probability')
-xlim([-300 300])
+xlim(x_limits)
 
 %% behavior by temporal bins
 

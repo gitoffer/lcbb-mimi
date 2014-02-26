@@ -1,15 +1,14 @@
 %% Scripts to test some statistical properties of empirical v. simulated stiributions
 
-MC = MC_wt_pcenter;
+MC = MC_twist_pcenter;
 RC_num_near = cat(3,MC.random_cell.num_near);
-RP_num_near = cat(3,MC.random_pulse.num_near);
 
 bins = 0:20;
 
 l = 5;
 
-idx = [MC.empirical.origin_labels] == l;
-subplot(1,5,l);
+idx = [MC.empirical.origin_labels] > 0;
+% subplot(1,5,l);
 window = 10;
 
 %%
@@ -20,7 +19,7 @@ X1 = squeeze(MC.empirical.num_near(idx,window));
 X2 = squeeze(RC_num_near(idx,window,:));
 
 [~,p] = kstest2(flat(X1),flat(X2),.05);
-display(['Two-sample two-sided KS test: p = ' nuclose allm2str(p)])
+display(['Two-sample two-sided KS test: p = ' num2str(p)])
 
 [~,p] = kstest2(flat(X1),flat(X2),.05,'smaller');
 display(['Two-sample right-sided KS test: p = ' num2str(p)])

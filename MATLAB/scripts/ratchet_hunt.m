@@ -1,15 +1,15 @@
-ratcheted = [cluster1_wt cluster2_wt cluster3_wt];
-unratcheted = cluster4_wt;
+ratcheted = fitsOI2.get_cluster([1 2 3]);
+unratcheted = fitsOI2.get_cluster(4);
 
 N = 2; colors = {'b','r'};
 
 % measurements to plot (up to four)
-measurements = {myosin_ring1+myosin_ring2,myosin_ring3+myosin_inside, ...
-    myosin_fraction,myosin_inertia};
+measurements = {myosin};
 names = {'Junctional myosin','Medial myosin','Fraction','Myosin inertia'};
 ytitles = {'Intensity (a.u.)','Pixels','',''};
 ylimits = {[0 .8e4],[0 .8e4],[0 1],[0 .5]};
 which = 1;
+
 % rearrange order so that [which] comes first
 measurements = [measurements(which) measurements(setdiff(1:4,which))];
 names = [names(which) names(setdiff(1:4,which))];
