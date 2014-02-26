@@ -4,7 +4,7 @@ o = [2 100 1e-5 0];
 
 for k = 2:10
     
-    X = cat(1,fits.corrected_area_norm);
+    X = cat(1,fits.get_embryoID([1:7 10]).corrected_area_norm);
     X( isnan(X) ) = 0;
     
     % X = standardize_matrix(X, 2);
@@ -53,12 +53,12 @@ fits = fits.fcm_cluster(num_clusters,'corrected_area_norm',3);
 %%
 
 fits_wt = fits.get_embryoID( 1:5 );
-fits_twist = fits.get_embryoID( 6:7 );
-fits_cta = fits.get_embryoID( 8:10 );
+fits_twist = fits.get_embryoID( 6:10 );
+% fits_cta = fits.get_embryoID( 8:10 );
 
 clear cluster*
 
-for i = 1:num_clusters+1
+for i = 1:num_clusters
     
     eval(['cluster' num2str(i) ' = fits([fits.cluster_label] == ' num2str(i) ');']);
     
@@ -66,7 +66,7 @@ for i = 1:num_clusters+1
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(i) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(i) ');']);
     
-    eval(['cluster' num2str(i) '_wt.plot_heatmap']);
+    eval(['cluster' num2str(i) '.plot_heatmap']);
 
 end
 
@@ -103,13 +103,12 @@ set(gca,'XTickLabel',{'Wild-type','twist','cta'});
 ylabel('Probability')
 legend(entries{:});
 
-
 %% summary of clusters
 
 figure
 for i = 1:num_clusters
     
-    eval(['this_cluster = cluster' num2str(i) '_wt.sort(''cluster_weight'');']);
+    eval(['this_cluster = cluster' num2str(i) '_twist.sort(''cluster_weight'');']);
     cluster_area = cat(1,this_cluster.corrected_area_norm);
     
     subplot(2,num_clusters,i);
@@ -129,29 +128,29 @@ for i = 1:num_clusters
     
 end
 
-figure
-% 2D histogram heatmap view
-for i = 1:num_clusters
-    subplot(1,num_clusters,i);
-    eval(['A = cat(1,cluster' num2str(i) '_wt.corrected_area_norm);']);
-    bins = -5:.1:5;
-    N = hist(A,bins);
-    imagesc(fits(1).corrected_time,bins,bsxfun(@rdivide,N,sum(N)));
-    axis square xy;
-    colormap hot;
-    colorbar;
-    xlabel('Pulse time (sec)')
-end
+% figure
+% % 2D histogram heatmap view
+% for i = 1:num_clusters
+%     subplot(1,num_clusters,i);
+%     eval(['A = cat(1,cluster' num2str(i) '_wt.corrected_area_norm);']);
+%     bins = -5:.1:5;
+%     N = hist(A,bins);
+%     imagesc(fits(1).corrected_time,bins,bsxfun(@rdivide,N,sum(N)));
+%     axis square xy;
+%     colormap hot;
+%     colorbar;
+%     xlabel('Pulse time (sec)')
+% end
 
 %% Breakdown behavior by embryoID
 
 clear N
 for i = 1:num_clusters + 1
-    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID] ,1:9);
+    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID], 1:11);
 end
 
 bar(bsxfun(@rdivide, N, sum(N))' ,'stacked' );
-xlim([0 10])
-% set(gca,'XTickLabel',{'WT','twist',''});
+xlim([0 12])
+% set(gca,'XTick',[3 12],'XTickLabel',{'WT','twist',''});
 % xlabel('EmbryoID')
-legend(entries{:},'N/A');
+legend(behaviors{:},'N/A');

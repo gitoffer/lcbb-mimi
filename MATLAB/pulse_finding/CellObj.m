@@ -55,6 +55,7 @@ classdef CellObj
     %       get_embryoID - only return embryos of given embryoID
 	%		get_embryoID_cellID - search using embryoID + cellID (useful
     %           coming from EDGE)
+    %       get_nearby - get cells nearbyw within a given radius
 	%	--- Visualization/display ---
 	%		make_mask - returns a binary BW image of the cell
 	%		visualize - plots myosin + area v. time
@@ -131,6 +132,10 @@ classdef CellObj
 			obj.flag_tracked = 0;
             obj.num_tracks = 0;
         end % Constructor
+        
+        function obj = edit_field(obj,name,value)
+            obj.(name) = value;
+        end
         
         function [new_cells,fit] = fit_gaussians(cells,opts)
             %FIT_GAUSSIANS Fit multiple-Gaussians with a F-test stop
@@ -339,6 +344,36 @@ classdef CellObj
             obj = obj_array([obj_array.flag_tracked] == 1 & ...
                 [obj_array.flag_fitted] == 1);
         end
+        
+        function nearby_cells = get_nearby(obj_array,stackID,radius,reference_frame)
+            %@CellObj.GET_NEARBY Returns cells within radius r of a given
+            % cell.
+            %
+            % SYNOPSIS: nearby_cells = cells.get_nearby(stackID,radius,ref_frame)
+            %
+            % INPUT: stackID - the central cell
+            %        radius - the radius cutoff
+            %        ref_frame - the reference frame in the movie to use
+            %
+            % OUTPUT: nearby_cells
+            % xies@mit Feb 2014
+            
+            central_cell = obj_array.get_stackID(stackID);
+            % Find all cells in the same embryo that's not the central cell
+            same_embryo = obj_array.get_embryoID( central_cell.embryoID);
+            same_embryo = same_embryo([same_embryo.stackID] ~= central_cell.stackID);
+            
+            cx = [same_embryo.centroid_x]; cx = cx(reference_frame,:);
+            cy = [same_embryo.centroid_y]; cy = cy(reference_frame,:);
+            
+            d = sqrt( ...
+                (cx - central_cell.centroid_x(reference_frame)).^2 ...
+                + (cy - central_cell.centroid_y(reference_frame)).^2);
+            
+            nearby_cells = same_embryo( d <= radius );
+        
+        end
+        
 %---------------------- Visualization/display -----------------------------
 
 		function mask = make_mask(obj_array, frames, input)
@@ -496,21 +531,21 @@ classdef CellObj
             h.vx = this_embryo.vertex_x;
             h.vy = this_embryo.vertex_y;
             
-            h.border = 'on';
+            h.border = 'off';
             h.frames2load = find(~isnan(this_cell.dev_time));
             
             % check that there are the measurements you're looking for...
             if ~isempty(this_cell.myosin_sm)
-                h.channels = {'Membranes','Myosin'};
+                h.channels = {'Membranes','Myosin','Membranes'};
             else
                 h.channels = {'Membranes','Rho Kinase thresholded'};
             end
-            
-            if this_cell.flag_fitted
-                h.measurement = nan(numel(h.frames2load),3);
-                I = find( ismember(this_cell.fit_time, this_cell.dev_time) );
-                h.measurement(I,:) = this_cell.fit_colorized;
-            end
+%             
+%             if this_cell.flag_fitted
+%                 h.measurement = nan(numel(h.frames2load),3);
+%                 I = find( ismember(this_cell.fit_time, this_cell.dev_time) );
+%                 h.measurement(I,:) = this_cell.fit_colorized;
+%             end
             
             F = make_cell_img(h);
             
@@ -728,8 +763,8 @@ classdef CellObj
                 if ~isempty(this_cell_fits)
                     for j = 1:numel( this_cell_fits )
                         binary( this_cell_fits(j).width_frames, cells(i).cellID ) = ...
-                            binary( this_cell_fits(j).width_frames, cells(i).cellID ) + ...
-                            this_cell_fits(j).cluster_label;
+                            binary( this_cell_fits(j).width_frames, cells(i).cellID ) + 1;
+%                             this_cell_fits(j).cluster_label;
                     end
                 end
 

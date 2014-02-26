@@ -44,7 +44,7 @@ for K = 1:nbins
         mean_of_cell = mean( this_count_cell,1 );
         mean_of_emp = mean( this_count_emp );
         
-        [Nmean_cell,bins] = hist(mean_of_cell,bins);
+        [Nmean_cell,bins] = hist(mean_of_cell);
         
         figure(1)
         H(i) = subplot(5,1,i);
@@ -55,12 +55,12 @@ for K = 1:nbins
         
         set(h(1),'FaceColor','red');
         vline(mean_of_emp,'b');
-        xlim([2 4.5]);
+        xlim(opt.xlim);
         
         if i == 1
             xlabel('Average number of neighbors');
             ylabel('Frequency');
-            legend('Random-cell','Empirical');
+%             legend('Random-cell','Empirical');
         end
         
         zscores_cell(K,i) = ...

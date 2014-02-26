@@ -15,7 +15,7 @@ movie = nan(Y,X,num_frames);
 for i = 1:num_frames
     this_frame = nan(Y,X);
     for j = 1:num_cells
-        mask = bwperim(make_cell_mask(cells(j),i,input));
+        mask = make_cell_mask(cells(j),i,input);
         this_frame(mask) = measurement(i,j);
     end
     movie(:,:,i) = this_frame;

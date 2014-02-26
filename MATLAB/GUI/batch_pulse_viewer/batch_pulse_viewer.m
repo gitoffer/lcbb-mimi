@@ -143,7 +143,7 @@ frames = this_fit.corrected_time;
 % plot myosin + area
 ax = plotyy(handles.plot_axes, ...
    frames, this_fit.corrected_area_norm, ...
-   frames, this_fit.corrected_measurement);
+   frames, this_fit.corrected_myosin);
 hold(ax(2),'on')
 % draw vertical bar at movie frame selected
 hold( handles.plot_axes,'on' );
