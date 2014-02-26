@@ -726,8 +726,13 @@ classdef Fitted
             %           fits.find_near_fits(time_windows,neighborID,neighbor_def)
             % INPUT: time_windows - 1xN time windows
             %        neighborID - cell-neighborhood (from EDGE)
-            %        neighbor_def (opt) - definition of neighborhood of
-            %           pulses. Default (ta - tb) > 0.
+            %        neighbor_def -
+            %           Fcn handle definition of neighborhood of pulses.
+            %           Default (ta - tb) > 0.
+            %           Optionally, can input as a struct with fields:
+            %               .temporal - temporal window
+            %               .spatial - spatial window (uses centroid
+            %               distance instead of graph structure from EDGE)
             %
             % Note that neighborID returns original EDGE IDs (cellID) and
             % not stackIDs.
@@ -735,8 +740,9 @@ classdef Fitted
             % xies@mit
             
             num_fits = numel(fits);
-            %             nearby_fits = cell(1,num_fits);
-            %             nearIDs = cell(1,num_fits);
+            
+            % If neighbor_def is not given, use default definition, which
+            % is any pulse after central pulse within window
             if nargin < 4
                 neighbor_def = @(central,neighbor,tau) ...
                     abs([neighbor.center] - central.center) < tau ...
@@ -744,26 +750,51 @@ classdef Fitted
                     & ([neighbor.center] - central.center) >= 0 ;
             end
             
+            % Check to see if neighbor_def is actually a struct, in which
+            % case we do not use neighborID but spatial distance to call
+            % neighbors
+            if isstruct( neighbor_def ) && isfield( neighbor_def, 'spatial' )
+                spatial_def = neighbor_def.spatial;
+                neighbor_def = neighbor_def.temporal;
+                SPATIAL_WINDOWING = 1;
+            else
+                SPATIAL_WINDOWING = 0;
+            end
+            
             for i = 1:num_fits
                 
-                
                 this_fit = fits(i);
+                
+                fits(i).time_windows = time_windows;
+                
                 % Get fits in the same embryo
                 same_embryo = fits( [fits.embryoID] == this_fit.embryoID );
                 % Get the center frame of this pulse
                 center_frame = fix( mean(this_fit.margin_frames) );
-                % Get all neighboring cells
-                neighbor_cells = ...
-                    cells.get_stackID(this_fit.stackID).identity_of_neighbors_all...
-                    { center_frame };
                 
-                fits(i).time_windows = time_windows;
+                if SPATIAL_WINDOWING
+                    % Get cells within a spatial window
+                    neighbor_cells = [cells.get_nearby( ...
+                        this_fit.stackID,spatial_def, ...
+                        center_frame ).stackID];
+                    
+                    % Find all neighboring cell fits
+                    neighbor_fits = fits.get_fitID(...
+                        [same_embryo( ...
+                        ismember([same_embryo.stackID], neighbor_cells)).fitID] );
+                else
+                    % Get all neighboring cells
+                    neighbor_cells = ...
+                        cells.get_stackID(this_fit.stackID).identity_of_neighbors_all...
+                        { center_frame };
+                    
+                    % Find all neighboring fits
+                    neighbor_fits = fits.get_fitID([ ...
+                        same_embryo( ...
+                        ismember([same_embryo.cellID], neighbor_cells) ...
+                        ).fitID ]);
+                end
                 
-                % Find all neighboring fits
-                neighbor_fits = fits.get_fitID([ ...
-                    same_embryo( ...
-                    ismember([same_embryo.cellID], neighbor_cells) ...
-                    ).fitID ]);
                 
                 fits(i).nearIDs = cell( 1, numel(time_windows ) );
                 fits(i).near_angles = cell( 1, numel(time_windows ) );

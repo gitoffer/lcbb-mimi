@@ -42,7 +42,7 @@ end
 
 % Check for number of channels. If > 3, then cannot use RGB.
 if numel(channels) > 3, error('Cannot display more than 3 channels');
-elseif numel(channels) == 3 && ~isempty(varargin)
+elseif numel(channels) == 3 && isfield(h,'measurement')
     error('Cannot display the 3 specified channels as well as an additional measurement.');
 end
 
