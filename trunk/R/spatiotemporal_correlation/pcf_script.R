@@ -3,7 +3,7 @@
 # Author: xies
 ###############################################################################
 
-eIDs = c(1)
+eIDs = c(1:5)
 num_embryo = length(eIDs)
 u = seq(1,30)
 v = seq(1,100)
@@ -40,9 +40,9 @@ detach(f)
 ### Get all eta,tau pairs and plot them first
 dx = pairwise_difference(f$x)
 dy = pairwise_difference(f$y)
-d = sqrt(dx^2 + dy^2)
+ds = sqrt(dx^2 + dy^2)
 dt = pairwise_difference(f$t)
-plot(d,dt)
+plot(ds,dt,cex=0.1,xlim=c(0,30),ylim=c(0,100))
 
 ### Estimate overall PCF from all embryos
 
@@ -59,8 +59,9 @@ g = get_PCFhat_stpp(
 
 ###### Load bootstrapped pulses ######
 
-Nboot = 5
-fbs <- vector('list', Nboot)
+Nboot = 50
+fbs <- NULL
+
 for (n in 1:Nboot) {
 	
 	for (embryoID in eIDs) {
@@ -69,23 +70,25 @@ for (n in 1:Nboot) {
 		raw = as.matrix(read.csv(bs_filepath(embryoID,n)))
 		
 		thisf = data.frame( fitID = raw[,1],
-				x = raw[,2], y = raw[,3], t = raw[,4]
+				x = raw[,2], y = raw[,3], t = raw[,4],
+				bootID = n
 		)
 		
 #		thisf$behavior = raw[,5]
-		
-		if (embryoID > eIDs[1]) { fbs[[n]] = rbind(fbs[[n]],thisf) }
-		else {fbs[[n]] = thisf}
+
+		if (embryoID == eIDs[1] && n == 1) { fbs = thisf }
+		else {fbs = rbind(fbs,thisf)}
 		
 	}
+	
 }
 
 ### Get all eta,tau pairs and plot them first
-dx = pairwise_difference(fbs$x)
-dy = pairwise_difference(fbs$y)
-d = sqrt(dx^2 + dy^2)
-dt = pairwise_difference(f$t)
-plot(d,dt)
+dx = pairwise_difference(fbs[fbs$bootID == 4,]$x)
+dy = pairwise_difference(fbs[fbs$bootID == 4,]$y)
+ds = sqrt(dx^2 + dy^2)
+dt = pairwise_difference(fbs[fbs$bootID == 4,]$t)
+plot(ds,dt,cex=0.1,xlim=c(0,30),ylim=c(0,100))
 
 ###### Get bootstrapped PCF ######
 
@@ -95,10 +98,10 @@ for (n in 1:Nboot) {
 	
 	gbs[[n]] = get_PCFhat_stpp(
 			
-			xyt = as.matrix(fbs[[n]][c('x','y','t')]),
+			xyt = as.matrix(fbs[fbs$bootID == n,][c('x','y','t')]),
 			s.region = s.region, t.region = t.region,
 			u=u, v=v, h = h_values,
-			embryoID = as.numeric(get_embryoID(fbs[[n]]$fitID))
+			embryoID = as.numeric(get_embryoID(fbs[fbs$bootID == n,]$fitID))
 	)
 	
 	pcfbs[[n]] = gbs[[n]]$pcf
@@ -109,6 +112,6 @@ for (n in 1:Nboot) {
 
 postscript( paste('~/Desktop/embryo',eIDs,'.eps'),horizontal=FALSE,height=11,width=8.5)
 par(mfrow=c(2,1))
-image.plot(u,v,g$pcf)
-image.plot(u,v,Reduce('+',pcfbs)/Nboot)
+image.plot(u,v,g$pcf,zlim=c(0,1))
+image.plot(u,v,Reduce('+',pcfbs)/Nboot,zlim=c(0,1))
 dev.off()

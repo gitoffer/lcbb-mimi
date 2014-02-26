@@ -67,7 +67,9 @@ dev.off()
 
 ############### Pick a single spatial lag and find temporal correlation enveolope
 
-get_matcol <- function(x) {return(x[6,])}
+tau = 9
+
+get_matcol <- function(x) {return(x[tau,])}
 ctau_bs = do.call( rbind, lapply( pcfbs, get_matcol))
 quantile_bs = apply( ctau_bs, 2, quantile, probs = c(0.05, 0.95))
 mean_bs = apply(ctau_bs, 2, mean)
@@ -75,7 +77,7 @@ mean_bs = apply(ctau_bs, 2, mean)
 bsStats = data.frame(timelag = v, mean_bs)
 bsStats$lb = quantile_bs[1,]
 bsStats$ub = quantile_bs[2,]
-bsStats$emp = g$pcf[6,]
+bsStats$emp = g$pcf[tau,]
 
 p = ggplot(bsStats, aes(timelag))
 p = p + labs( title = 
@@ -85,4 +87,4 @@ p = p + labs( y = "Pair correlation function")
 #p = p + geom_line( aes(y = mean_bs), color = 'red', size = 2)
 p = p + geom_line( aes(y = emp), color = 'blue', size = 2)
 p = p + geom_ribbon( aes(ymin = lb, ymax = ub), alpha = 0.2)
-
+p
