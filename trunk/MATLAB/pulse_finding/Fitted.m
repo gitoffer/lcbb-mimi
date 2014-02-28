@@ -13,6 +13,8 @@ classdef Fitted
 	%		center - develpmental time corresponding to the maximum of the pulse
 	%		width - sigma of the pulse
 	%
+    %       center_frame - the movie frame corresponding to the Gaussian
+    %                  center
 	%		margin_frames - standard margin of sub-frames set by fit_opt
 	%		width_frames - sub-frames set by 1 sigma before and after center
 	%		dev_time - developmental time corresponding to width_frames
@@ -394,7 +396,9 @@ classdef Fitted
             % Will return also a given measurement aligned according to the
             % maxima. Updates the FITTED structure.
             %
-            % SYNOPSIS: [fits,time] = align_peaks(fitss,cells,opt);
+            % SYNOPSIS: fits = align_fits(fitss,cells,name);
+            %           fits = align_fits(fits,measurement,name);
+            %
             
             num_fits = numel(fits);
             durations = cellfun(@numel, {fits.margin_frames} );
@@ -408,22 +412,28 @@ classdef Fitted
                     cell_name = name;
             end
             
+            %
+            
             for i = 1:num_fits
                 
-                frames = fits(i).margin_frames;
-                opt = fits(i).opt;
+                this_fit = fits(i);
+                
+                frames = this_fit.margin_frames;
+                opt = this_fit.opt;
                 l = opt.left_margin; r = opt.right_margin;
+                % center_idx indicates the index of the aligned matrix, not
+                % the frame corresponding to the Gaussian center
                 center_idx = l + 1;
                 
-                fitted_y = fits(i).fit;
+                fitted_y = this_fit.fit;
                 [max_val,max_idx] = max( fitted_y );
-                if numel( fitted_y( fitted_y == max_val ) ) > 1
-                    maxes = find( fitted_y == max_val );
-                    theoretical_middle = ceil(max(durations)/2);
-                    which = findnearest(maxes,theoretical_middle);
-                    max_idx = maxes(which);
-                end
-                
+%                 if numel( fitted_y( fitted_y == max_val ) ) > 1
+%                     maxes = find( fitted_y == max_val );
+%                     theoretical_middle = ceil(max(durations)/2);
+%                     which = findnearest(maxes,theoretical_middle);
+%                     max_idx = maxes(which);
+%                 end
+                if max_idx ~= center_idx, keyboard; end
                 left_len = max_idx - 1;
                 
                 m = nan(1, l + r + 1); % Make the padded vector
