@@ -57,6 +57,8 @@ classdef Pulse
 	%	reassignFit - re-assign a FITTED to a TRACK, will only work if neither have
 	% 		prior assignments
 	%	read_changes - given a .change structure, edit current Pulse object
+    %   adjust_centers - adjust the reference time used to construct
+    %       dev_time
     %
     % --- Saving methods ---
     %   export_manual_fits - writes manually fitted parameters into a CSV
@@ -79,7 +81,7 @@ classdef Pulse
         tracks 		% Set of TRACK pulses for this embryo
         tracks_mdf_file % The filename of the MDF file from which .tracks was loaded
         cells 		% An array of CELL of cells in this embryo (Contains the raw data)
-        inputs      % input array with info about identifiy of each embryo
+        input      % input array with info about identifiy of each embryo
         next_fitID  % bookkeeping
         
         map			% The two-way mapping between Track and Fit
@@ -95,11 +97,11 @@ classdef Pulse
     end
     methods % Dynamic methods
 % --------------------------- Constructor -------------------
-        function pulse = Pulse(tracks,filename,fits,opts,cells)
+        function pulse = Pulse(tracks,filename,fits,opts,cells,input)
 			%PULSE Constructor for the Pulse object (see main documentation)
 			% Will not generate the .map property.
 			%
-			% USAGE: pulse = Pulse(tracks,mdf_filename,fits,fit_opt,cells);
+			% USAGE: pulse = Pulse(tracks,mdf_filename,fits,fit_opt,cells,input);
             
             if nargin > 0 % empty case (for object arrays)
 
@@ -120,6 +122,7 @@ classdef Pulse
                     ismember( [fits.stackID], [tracks.stackID] )).fitID];
                 
                 pulse.tracks_mdf_file = filename;
+                pulse.input = input;
                 pulse.fitsOI_ID = fitsOI_ID;
                 pulse.next_fitID = fits.get_fitID(fitsOI_ID(1)).embryoID*100000;
                 pulse.fit_opt = opts( fits.get_fitID(fitsOI_ID(1)).embryoID );
@@ -586,6 +589,15 @@ classdef Pulse
             save( [fileparts(pulse.tracks_mdf_file), '/', 'pulse_curated.mat'], 'pulse');
 			
 		end % read_changes
+        
+        function pulse = adjust_centers(pulse,old_tref,new_tref,dt)
+            if numel(pulse) > 1
+                error('Only one embryo please.')
+            end
+            pulse.cells = pulse.cells.adjust_centers(old_tref,new_tref,dt);
+            pulse.fits = pulse.fits.adjust_centers(old_tref,new_tref,dt);
+            
+        end
         
 % ----------------------- saving ------------------------------------------
 

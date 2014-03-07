@@ -84,8 +84,6 @@ classdef Fitted
     %   adjust_centers - adjust Gaussian centers to tref
     %   get_corrected_measurement - temporarily puts given measurement and
     %      returns the aligned, interpolated .corrected_measurement
-    %   get_center_frame - gets the movie frame that corresponds to the
-    %         fit's center
     % --- Array operations ---
     %   sort - sort according to field (default: amplitude)
     %   bin_fits - bin each embryo by amplitude
@@ -122,6 +120,7 @@ classdef Fitted
         amplitude
         center
         width
+        center_frame
         margin_frames
         width_frames
         dev_time
@@ -200,6 +199,8 @@ classdef Fitted
                 if numel(center_frame) > 1
                     center_frame = center_frame(1);
                 end
+                % Store center_frame
+                this_fit.center_frame = center_frame;
                 
                 % Get pulse margin-time frame
                 [left_margin,pad_l] = max([ center_frame - opt.left_margin , 1]);
@@ -390,14 +391,14 @@ classdef Fitted
         
 % --------------------- Alignment functions -------------------------------
         
-        function [fits] = align_fits(fits,cells,name)
+        function [fits] = align_fits(fits,cells,name,measurement)
             %ALIGN_PEAKS Aligns the global maxima of a given array of
             %FITTED objects
             % Will return also a given measurement aligned according to the
             % maxima. Updates the FITTED structure.
             %
-            % SYNOPSIS: fits = align_fits(fitss,cells,name);
-            %           fits = align_fits(fits,measurement,name);
+            % SYNOPSIS: fits = align_fits(fits,cells,name);
+            %           fits = align_fits(fits,cells,name,measurement);
             %
             
             num_fits = numel(fits);
@@ -425,23 +426,26 @@ classdef Fitted
                 % the frame corresponding to the Gaussian center
                 center_idx = l + 1;
                 
-                fitted_y = this_fit.fit;
-                [max_val,max_idx] = max( fitted_y );
-%                 if numel( fitted_y( fitted_y == max_val ) ) > 1
-%                     maxes = find( fitted_y == max_val );
-%                     theoretical_middle = ceil(max(durations)/2);
-%                     which = findnearest(maxes,theoretical_middle);
-%                     max_idx = maxes(which);
-%                 end
-                if max_idx ~= center_idx, keyboard; end
+                % If there is a tie, returns the first
+                [~,max_idx] = max(this_fit.fit);
                 left_len = max_idx - 1;
                 
                 m = nan(1, l + r + 1); % Make the padded vector
                 lb = center_idx - left_len;
                 ub = min(center_idx - left_len + durations(i) - 1, max(durations) );
                 
-                m( lb: ub) = ensure_row( ...
-                    cells.get_stackID(fits(i).stackID).(cell_name)(fits(i).margin_frames ));
+                if numel(frames) - numel(lb:ub) == 1,
+                    frames = frames(1:end-1);
+                end
+                
+                if nargin == 3
+                    m( lb: ub) = ensure_row( ...
+                        cells.get_stackID(this_fit.stackID).(cell_name)( frames ));
+                else
+                    m( lb:ub ) = ensure_row( ...
+                        measurement( frames, ...
+                        find( [cells.stackID] == this_fit.stackID) ) );
+                end
                 
                 fits(i).(name) = m;
                 
@@ -558,34 +562,32 @@ classdef Fitted
             
         end %retrace
         
-        function fits = adjust_centers(fits, embryoID, old_tref, new_tref)
-            %ADJUST_CENTERS Re-center
-            fits_embryoID = fits.get_embryoID( embryoID );
-            for i = 1:numel(fits_embryoID)
-                fitID = fits_embryoID(i);
-                this_fit = fits.get_fitID( fitID );
-                this_fit.center = old_tref + (new_tref - old_tref);
-                fits = fits.set_fitID(fitID, this_fit);
+        function fits = adjust_centers(fits, old_tref, new_tref, dt)
+            %ADJUST_CENTERS Recalculate dev_time according to 
+            % Properties that will be adjusted:
+            %   center
+            %   dev_time
+            
+            % Only one embryo
+            if numel(unique([fits.embryoID])) > 1
+                error('Fitted from only one embryo please.');
+            end
+            
+            for i = 1:numel(fits)
+                this_fit = fits(i);
+                
+                this_fit.center = this_fit.center - (new_tref - old_tref)*dt;
+                this_fit.dev_time = this_fit.dev_time ...
+                    - (new_tref - old_tref)*dt;
+                
+                fits(i) = this_fit;
             end
         end
         
         function M = get_corrected_measurement(fits,meas,input)
-            fits = fits.align_fits(meas,'measurement');
+            fits = fits.align_fits(c,'measurement',meas);
             fits = fits.resample_traces('measurement',[input.dt]);
             M = cat(1,fits.corrected_measurement);
-        end
-        
-        function f = get_center_frame(this_fit,dev_time)
-            %GET_CENTER_FRAME Returns the movie frame nearest to the center
-            % of a given pulse. In case of a tie, will return the earlier
-            % frame.
-            % 
-            % USAGE: frame = fit.get_center_frame(dev_time)
-            %
-            
-            if numel(this_fit) > 1, error('Input is a single Fitted object.'); end
-            f = findnearest( this_fit.center, dev_time);
-            if numel(f) > 1, f = f(1); end
         end
         
 % --------------------- Array operations ----------------------------------
@@ -657,7 +659,7 @@ classdef Fitted
         
 % --------------------- Analysis ------------------------------------------
         
-        function fits = fcm_cluster(fits,k,datafield,max_nan)
+        function [fits,X] = fcm_cluster(fits,k,datafield,max_nan)
             %FCM_CLUSTER Uses fuzzy c-means to cluster a given datafield in
             % the fit_array. In order to standardize the cluster naming
             % schematic, user needs to input an order vector.
@@ -826,7 +828,7 @@ classdef Fitted
                                 focal = cells.get_stackID(fits(i).stackID);
                                 neighboring = cells.get_stackID(nearby_fits(j).stackID);
                                 a(j) = focal.get_neighbor_angle( neighboring, ...
-                                    fits(i).get_center_frame(focal.dev_time));
+                                    fits(i).center_frame);
                             end
                             
                             fits(i).near_angles{k} = a;
@@ -1194,8 +1196,7 @@ classdef Fitted
                     
                 else
                     
-                    cframe = this_fit.get_center_frame( ...
-                        cells.get_stackID(this_fit.stackID).dev_time);
+                    cframe = this_fit.center_frame;
 
                     cx(i) = x( cframe );
                     cy(i) = y( cframe );
@@ -1237,12 +1238,7 @@ classdef Fitted
             
         end
     end
-        
+    
     end % Dynamic methods
-    
-    
-    methods (Static)
-        
-    end
     
 end

@@ -1,8 +1,8 @@
 %% Nearby pulse analysis
 
-fitsOI = fits.get_embryoID(6:10);
+fitsOI = fits.get_embryoID(11:12);
 
-name = 'twist';
+name = 'wt';
 
 %%
 
@@ -30,18 +30,18 @@ num_near = cellfun(@(x) numel(x(~isnan(x))), nearIDs);
 
 entries = {'Ratcheted (stereotyped)','Ratcheted (weak)','Ratcheted (delayed)','Un-ratcheted','Stretched'};
 
-o.Nboot = 200;
+o.Nboot = 50;
 o.timewindows = time_windows;
 o.savepath = ['~/Desktop/mc_stackID_' ...
     name, '_', neighb_str '_Nboot', num2str(o.Nboot) '_k' num2str(num_clusters)];
 o.neighbor_def = neighbor_defition;
 
-MC_twist_pcenter = monte_carlo_pulse_location(fitsOI,cells, o);
+MC_control_pcenter = monte_carlo_pulse_location(fitsOI,cells, o);
 
 %% Select correct timing
 
 % select dataset
-MC = MC_wt_pcenter;
+MC = MC_control_pcenter;
 
 window = 6; % neighborhood time window
 clear temporal_bins
@@ -49,7 +49,7 @@ temporal_bins(1,:) = [-Inf];
 temporal_bins(2,:) = [Inf];
 
 opt.breakdown = 'off';
-opt.xlim = [3. 5];
+opt.xlim = [3.5 6.5];
 
 plot_mc_results(MC,window,temporal_bins,opt);
 

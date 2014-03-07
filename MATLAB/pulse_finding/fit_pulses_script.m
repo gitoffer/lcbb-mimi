@@ -14,10 +14,12 @@ clear fit_opts
 [fit_opts(1:num_embryos).sigma_lb] = deal(10);
 [fit_opts(1:num_embryos).sigma_ub] = deal(30);
 
+[fit_opts(11).to_fit] = deal('myosin_intensity_fuzzy');
+
 %% Perform fitting
 
 % if ~exist('cells','var'), cells = embryo2cell(embryo_stack); end
-[cells_raw,fits_raw] = fit_gaussians(cells,fit_opts);
+[cells_raw,fits_raw] = fit_gaussians(cells_raw,fit_opts);
 save('~/Desktop/fits_raw.mat','fits_raw','cells_raw')
 
 %% sub-set of pulses
@@ -45,8 +47,8 @@ aligned_myosin = cat(1,fits.myosin);
 
 % Mean-center pulses responses
 aligned_area_norm = bsxfun(@minus,aligned_area,nanmean(aligned_area,2));
-aligned_myosin = bsxfun(@minus,aligned_myosin,nanmean(aligned_myosin,2));
-aligned_myosin = bsxfun(@rdivide,aligned_myosin,nanstd(aligned_myosin,[],2));
+% aligned_myosin = bsxfun(@minus,aligned_myosin,nanmean(aligned_myosin,2));
+% aligned_myosin = bsxfun(@rdivide,aligned_myosin,nanstd(aligned_myosin,[],2));
 % aligned_measurement = bsxfun(@minus,aligned_measurement,nanmean(aligned_measurement,2));
 fits = assign_datafield(fits,aligned_area_norm,'area_norm');
 fits = assign_datafield(fits,aligned_myosin,'myosin');

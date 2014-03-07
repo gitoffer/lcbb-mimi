@@ -4,10 +4,12 @@ o = [2 100 1e-5 0];
 
 for k = 2:10
     
-    X = cat(1,fits.get_embryoID([1:7 10]).corrected_area_norm);
+    filtered = fits( cellfun(@(x) numel(x(isnan(x))), {fits.corrected_area_norm}) < 1 );
+    
+    X = cat(1,filtered.get_embryoID([1:12]).corrected_area_norm);
     X( isnan(X) ) = 0;
     
-    % X = standardize_matrix(X, 2);
+    X = standardize_matrix(X, 2);
     
     Niter = 100;
     labels_all = nan( Niter, size(X,1) );
@@ -35,7 +37,14 @@ for k = 2:10
     display(['Done with k = ' num2str(k) ' clusters']);
     avgRI(k-1) = mean(RI(:));
     stdRI(k-1) = std(RI(:));
-
+    
+    [s,h] = silhouette(X,labels_all(1,:));
+    
+    for i = 1:k
+        meanS(i) = mean(s(labels_all(1,:) == i));
+    end
+    
+    sil{k-1} = meanS;
     avgRI_random(k-1) = mean(RI_random(:));
     stdRI_random(k-1) = std(RI_random(:));
     
@@ -46,9 +55,9 @@ hold on,errorbar(2:10,avgRI_random,stdRI_random,'r-')
 
 %%
 
-num_clusters = 5;
+num_clusters = 4;
 
-fits = fits.fcm_cluster(num_clusters,'corrected_area_norm',3);
+fits = fits.fcm_cluster(num_clusters,'corrected_area_norm',1);
 
 %%
 
@@ -146,11 +155,11 @@ end
 
 clear N
 for i = 1:num_clusters + 1
-    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID], 1:11);
+    N(i,:) = histc( [fits( [fits.cluster_label] == i).embryoID], 1:12);
 end
 
 bar(bsxfun(@rdivide, N, sum(N))' ,'stacked' );
-xlim([0 12])
+xlim([0 13])
 % set(gca,'XTick',[3 12],'XTickLabel',{'WT','twist',''});
 % xlabel('EmbryoID')
 legend(behaviors{:},'N/A');

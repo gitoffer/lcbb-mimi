@@ -55,7 +55,8 @@ classdef CellObj
     %       get_embryoID - only return embryos of given embryoID
 	%		get_embryoID_cellID - search using embryoID + cellID (useful
     %           coming from EDGE)
-    %       get_nearby - get cells nearbyw within a given radius
+    %       adjust_center - adjust dev_time to reflect new reference time
+    %       get_nearby - get cells nearby within a given radius
 	%	--- Visualization/display ---
 	%		make_mask - returns a binary BW image of the cell
 	%		visualize - plots myosin + area v. time
@@ -121,6 +122,7 @@ classdef CellObj
         trackID     % trackID of tracks found in cell
         
     end % Public properties - to do with track/fit
+    
     methods
         
         function obj = CellObj(this_cell)
@@ -340,6 +342,26 @@ classdef CellObj
                 );
         end % get_embryoID_cellID
         
+        function cells = adjust_centers(cells, old_tref, new_tref, dt)
+            %ADJUST_CENTERS Recalculate dev_time according to 
+            % Properties that will be adjusted:
+            %   dev_time
+            
+            % Only one embryo
+            if numel(unique([cells.embryoID])) > 1
+                error('Cells from only one embryo please.');
+            end
+            
+            for i = 1:numel(cells)
+                this_cell = cells(i);
+                this_cell.fit_time = this_cell.fit_time - ...
+                    (new_tref - old_tref)*dt;
+                this_cell.dev_time = this_cell.dev_time - ...
+                    (new_tref - old_tref)*dt;
+                cells(i) = this_cell;
+            end
+        end
+        
         function obj = get_curated(obj_array)
             obj = obj_array([obj_array.flag_tracked] == 1 & ...
                 [obj_array.flag_fitted] == 1);
@@ -416,6 +438,7 @@ classdef CellObj
                 end
             end
             mask = logical(mask);
+            
         end % make_mask
         
         function [x,y] = make_polygon(obj_array,t,input,filename)
@@ -797,4 +820,5 @@ classdef CellObj
         end
         
    end % End methods 
+   
 end
