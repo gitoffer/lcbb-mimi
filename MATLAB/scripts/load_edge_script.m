@@ -196,7 +196,7 @@ input(10).last_segmented = 90;
 input(11).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/02-12-2014 Control SqhGap 1/Measurements';
 input(11).zslice = 2;
 input(11).actual_z = 7;
-input(11).tref = 1;
+input(11).tref = 30;
 input(11).t0 = 0;
 input(11).ignore_list = [];
 input(11).dt = 7.56;
@@ -209,23 +209,39 @@ input(11).embryoID = 11;
 input(11).fixed = 0;
 input(11).last_segmented = 70;
 
+input(12).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/02-12-2014 Control SqhGap 4/Measurements';
+input(12).zslice = 2;
+input(12).actual_z = 7;
+input(12).tref = 15;
+input(12).t0 = 0;
+input(12).ignore_list = [];
+input(12).dt = 7.395;
+input(12).um_per_px = 0.19385;
+input(12).X = 1000;
+input(12).Y = 400;
+input(12).T = 59;
+input(12).yref = 0; %um
+input(12).embryoID = 12;
+input(12).fixed = 0;
+input(12).last_segmented = 59;
+
 % % cta
-% 
-% input(11).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
-% input(11).zslice = 1;
-% input(11).actual_z = 5;
-% input(11).tref = 40;
-% input(11).t0 = 14;
-% input(11).ignore_list = [];
-% input(11).dt = 6.804;
-% input(11).um_per_px = 0.2125;
-% input(11).X = 1000;
-% input(11).Y = 400;
-% input(11).T = 100;
-% input(11).yref = 0; %um
-% input(11).embryoID = 11;
-% input(11).fixed = 0;
-% input(11).last_segmented = 95;
+
+input(13).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
+input(13).zslice = 1;
+input(13).actual_z = 5;
+input(13).tref = 40;
+input(13).t0 = 14;
+input(13).ignore_list = [];
+input(13).dt = 6.804;
+input(13).um_per_px = 0.2125;
+input(13).X = 1000;
+input(13).Y = 400;
+input(13).T = 100;
+input(13).yref = 0; %um
+input(13).embryoID = 13;
+input(13).fixed = 0;
+input(13).last_segmented = 95;
 % 
 % input(12).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_29_13_3/Measurements';
 % input(12).zslice = 1;
@@ -329,24 +345,15 @@ msmts2make = {'membranes--basic_2d--area', ...
     'Membranes--vertices--Vertex-y-micron','Membranes--vertices--Vertex-x-micron',...
     'Membranes--basic_2d--Centroid-x','Membranes--basic_2d--Centroid-y',...
     'Membranes--vertices--Identity of neighbors-all', ...
-    'Membranes--ellipse_properties--Anisotropy',...
-    'Membranes--ellipse_properties--Major axis',...
-    'Membranes--ellipse_properties--Minor axis',...
     'Myosin--myosin_intensity--Myosin intensity',...
-    'Myosin--myosin_structure--Myosin spot size', ...
-    'Myosin--myosin_structure--Number of myosin spots', ...
-    'Myosin--myosin_structure--Fraction of cell area', ...
-    'Myosin--myosin_structure--Fraction of coronal area', ...
-    'Myosin--myosin_structure--# cells connected by myosin',...
-    'Myosin--myosin_structure--Span-x',...
-    'Myosin--myosin_structure--Span-y',...
+    'Myosin--myosin_intensity--Myosin intensity fuzzy',...
     'Myosin--myosin_radial--Ring 1',...
     'Myosin--myosin_radial--Ring 2',...
     'Myosin--myosin_radial--Ring 3',...
     'Myosin--myosin_radial--Inside',...
-    'Myosin--myosin_radial--Distance to border',...
-    'Myosin--myosin_radial--Deviation from centroid',...
-    'Myosin--myosin_radial--Moment of inertia'};
+    'Myosin--myosin_structure--fraction of cell area',...
+    'Myosin--myosin_structure--fraction of coronal area'
+    };
 
 msmts2make_rok = {'membranes--basic_2d--area', ...
     'Membranes--basic_2d--Centroid-x','Membranes--basic_2d--Centroid-y',...
@@ -431,19 +438,19 @@ myosins = extract_msmt_data(stack2load,'myosin intensity','on',in);
 % myosin_ring2 = -extract_msmt_data(stack2load,'ring 2','on',in);
 % myosin_ring3 = -extract_msmt_data(stack2load,'ring 3','on',in);
 % myosin_inside = extract_msmt_data(stack2load,'inside','on',in);
-% % myosin_dist2border = extract_msmt_data(stack2load,'distance to border','off',in);
-% % [myosin_dist2border{cellfun(@isempty,myosin_dist2border)}] = deal(NaN);
-% % myosin_dist2border = cellfun(@nanmean,myosin_dist2border);
-% % myosin_size = extract_msmt_data(stack2load,'myosin spot size','off',in);
-% % myosin_number = extract_msmt_data(stack2load,'number of myosin spots','off',in);
+% myosin_dist2border = extract_msmt_data(stack2load,'distance to border','off',in);
+% [myosin_dist2border{cellfun(@isempty,myosin_dist2border)}] = deal(NaN);
+% myosin_dist2border = cellfun(@nanmean,myosin_dist2border);
+% myosin_size = extract_msmt_data(stack2load,'myosin spot size','off',in);
+% myosin_number = extract_msmt_data(stack2load,'number of myosin spots','off',in);
 % myosin_fraction = extract_msmt_data(stack2load,'fraction of cell area','on',in);
-% % myosin_coronal_frac = extract_msmt_data(stack2load,'fraction of coronal area','on',in);
-% % myosin_connection = extract_msmt_data(stack2load,'# cells connected by myosin','on',in);
+% myosin_coronal_frac = extract_msmt_data(stack2load,'fraction of coronal area','on',in);
+% myosin_connection = extract_msmt_data(stack2load,'# cells connected by myosin','on',in);
 % myosin_inertia = extract_msmt_data(stack2load,'moment of inertia','on',in);
 % myosin_deviation = extract_msmt_data(stack2load,'deviation from centroid','on',in);
 % myosin_span_x = extract_msmt_data(stack2load,'span-x','on',in);
 % myosin_span_y = extract_msmt_data(stack2load,'span-y','on',in);
-coronal_myosins = get_corona_measurement(myosins,neighborID);
+% coronal_myosins = get_corona_measurement(myosins,neighborID);
 
 myosins_sm = smooth2a(squeeze(myosins),2,0);
 % myosins_fuzzy_sm = smooth2a(squeeze(myosins_fuzzy),1,0);
@@ -468,4 +475,4 @@ for i = 1:num_embryos
     embryo_stack(i).area_sm = areas_sm(:,[IDs.which] == i);
     embryo_stack(i).myosin_sm = myosins_sm(:,[IDs.which] == i);
 end
-cells = embryo2cell(embryo_stack);
+cells_raw = embryo2cell(embryo_stack);

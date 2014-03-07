@@ -1,9 +1,9 @@
 %BG_SUBTRACT_MYOSIN script to remove background level of myosin
 
 % Path to the raw myosin stack (TIF)
-path = '/Users/Imagestation/Desktop/Mimi/Data/02-12-2014/Buffer inj SqhGap/1/myosin_stack.tif';
-num_frames = 83;
-num_slices = 10;
+path = '/Users/Imagestation/Desktop/Mimi/Data/02-12-2014/Buffer inj SqhGap/2/myosin_stack.tif';
+num_frames = 82;
+num_slices = 9;
 
 %% Load images
 
@@ -14,11 +14,11 @@ raw_myo = permute(raw_myo,[1 2 4 5 3]);
 
 %% Crop images
 
-reference_z = 7;
+reference_z = 8;
 reference_t = 1;
 
 end_z = 9;
-end_t = 1;
+end_t = 10;
 
 [~,bg_box] = imcrop(raw_myo(:,:,reference_z,reference_t),[]);
 x0 = round(bg_box(1)); y0 = round(bg_box(2));

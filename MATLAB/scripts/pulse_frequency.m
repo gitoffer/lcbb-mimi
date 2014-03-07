@@ -4,7 +4,7 @@
 bins = linspace(0,200,30);
 
 fits_incell = cellfun(@fits.get_fitID, ...
-    {cells.get_embryoID(1:5).fitID}, ...
+    {cells.get_embryoID(12).fitID}, ...
     'UniformOutput',0);
 
 fits_label_incell = cell(1,numel(fits_incell));
@@ -47,7 +47,7 @@ title('Wild-type')
 %% twist
 
 fits_incell = cellfun(@fits.get_fitID,...
-    {cells.get_embryoID(8:10).fitID},'UniformOutput',0);
+    {cells.get_embryoID(6:10).fitID},'UniformOutput',0);
 
 fits_label_incell = cell(1,numel(fits_incell));
 fits_center_incell = cell(1,numel(fits_incell));
