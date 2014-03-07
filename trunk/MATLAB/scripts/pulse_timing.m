@@ -1,14 +1,13 @@
 % Pulse timing 
 
-fitsOI = fits.get_embryoID(8);
-bins = linspace(0,500,50);
-x_limits = [0 500];
+fitsOI = fits.get_embryoID(1:5);
+bins = linspace(-300,400,50);
+x_limits = [-300 400];
 
 %% by bin
 
 colors = pmkmp(10);
 
-% N = zeros(10,numel(bins));
 for i = 1:10
     hold on;
 %     N = hist([fitsOI([fitsOI.bin] == i).center],bins);
@@ -30,6 +29,7 @@ for i = 1:num_clusters
     plot_cdf([fitsOI([fitsOI.cluster_label]==i).center],bins,colors{i});
     xlim(x_limits)
 end
+
 xlabel('Developmental time (sec)')
 ylabel('Probability')
 legend(behaviors{:})
@@ -38,7 +38,7 @@ legend(behaviors{:})
 
 colors = {'b','c','g','m','r'};
 N = zeros(2,numel(bins));
-for i = 1:5
+for i = 1:num_clusters
     N(i,:) = hist([fitsOI([fitsOI.cluster_label]==i).center],bins);
 end
 
@@ -48,7 +48,7 @@ h = bar(bins,N','LineStyle','None');
 for i = [1 4]
     set(h(i),'FaceColor',colors{i});
 end
-legend(entries{:})
+legend(behaviors{:})
 xlabel('Developmental time (sec)')
 ylabel('Probability')
 xlim(x_limits)

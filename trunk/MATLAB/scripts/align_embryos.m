@@ -5,7 +5,7 @@
 split_img_frame = zeros(num_embryos,2); % raw image index
 split_dev_frame = zeros(num_embryos,2); % EDGE index
 
-for embryoID = 10
+for embryoID = 11:12
 
     % Fit PCCL
     [split_dev_frame(embryoID,:),split_img_frame(embryoID,:),xdata,models,p] = ...
@@ -41,7 +41,7 @@ end
 name2plot = 'area_sm';
 
 figure, clear H
-embryoID_OI = 6:10;
+embryoID_OI = [11:12];
 color = hsv(numel(embryoID_OI));
 for i = 1:numel( embryoID_OI )
     
