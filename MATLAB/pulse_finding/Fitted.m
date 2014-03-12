@@ -373,14 +373,26 @@ classdef Fitted
         end
         
         function fits = set_field(fits,fitIDs, fieldname, fieldvalue)
-            % find fits in an array with the given fitIDs and set the given
+            % Find fits in an array with the given fitIDs and set the given
             % fieldnames to that fieldvalue
+            % Will find the dimension of fieldvalue that corresponds to the
+            % size of the FITTED object array
             
             fitIDs = nonans(fitIDs);
+            
+            % deal with matrix-valued fieldvalues
+            if ndims(fieldvalue) > 1
+                
+                [N,M] = size(fieldvalue);
+                which_dim = find( [N,M] == numel(fitIDs) );
+                if which_dim == 2, fieldvalue = fieldvalue'; end
+                
+            end
+            
             for i = 1:numel(fitIDs)
                 hit = [fits.fitID] == fitIDs(i);
                 if any(hit)
-                    fits(hit).(fieldname) = fieldvalue(i);
+                    fits(hit).(fieldname) = fieldvalue(i,:);
                 else
                     warning(['FitID ' num2str(fitIDs(i)) ' not found']);
                     keyboard
@@ -690,12 +702,23 @@ classdef Fitted
             
             X(isnan(X)) = 0;
             
-            [~,U] = fcm(X,k); [max_prob, labels] = max(U);
+            [cluster_centroid,U] = fcm(X,k); [max_prob, labels] = max(U);
+            
+            for i = 1:k
+                subplot(k,1,i)
+                plot(cluster_centroid(i,:));
+            end
+            display('Enter the label order: 1-Stereotyped, 2-Early, 3-Delayed, 4-Unratcheted, 5-Stretched')
+            order = input(':');
+            revorder = reverse_index(order);
+            
+            labels = revorder(labels);
+            U = U(revorder,:);
             
             % store labels
             
             fits = set_field(fits,[filtered.fitID], 'cluster_label', labels);
-            fits = set_field(fits,[filtered.fitID], 'cluster_weight', max_prob);
+            fits = set_field(fits,[filtered.fitID], 'cluster_weight', U);
             %             for i = 1:numel(labels)
             %                 fits([fits.fitID] == filtered(i).fitID).cluster_label = ...
             %                     labels(i);
@@ -707,24 +730,14 @@ classdef Fitted
             [fits(cellfun(@isempty, {fits.cluster_label} )).cluster_label] = ...
                 deal(k+1);
             [fits(cellfun(@isempty, {fits.cluster_weight} )).cluster_weight] = ...
-                deal(NaN);
+                deal( nan(1,k) );
             
-            % User input for label shuffling
-            for i = 1:k
-                subplot(k,1,i)
-                pcolor(cat(1,fits([fits.cluster_label] == i).(datafield)));
-                caxis([-10 10]),colorbar
-                shading flat
-            end
-            display('Enter the label order: 1-Stereotyped, 2-Early, 3-Delayed, 4-Unratcheted, 5-Stretched 6-Not clustered')
-            order = input(':');
-            revorder = reverse_index(order);
-            for i = 1:k
-                [fits([fits.cluster_label] == i).cluster_label] = deal(revorder(i)*10);
-            end
-            for i = 10:10:k*10
-                [fits([fits.cluster_label] == i).cluster_label] = deal(i/10);
-            end
+%             for i = 1:k
+%                 [fits([fits.cluster_label] == i).cluster_label] = deal(revorder(i)*10);
+%             end
+%             for i = 10:10:k*10
+%                 [fits([fits.cluster_label] == i).cluster_label] = deal(i/10);
+%             end
             
         end % cluster
         
