@@ -1,9 +1,12 @@
 # TODO: Handle interruptible flow?
 # 
+# Script to load XYT 3D point data and generate pairwise correlation
+# function using spatial statistics package wrapper (get_PCFhat_stpp) 
+#
 # Author: xies
 ###############################################################################
 
-eIDs = c(1:5)
+eIDs = c(6:10)
 num_embryo = length(eIDs)
 u = seq(1,30)
 v = seq(1,100)

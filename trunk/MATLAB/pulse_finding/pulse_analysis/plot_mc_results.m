@@ -11,7 +11,9 @@ nbins = size(temporal_bin,2);
 left = temporal_bin(1,:);
 right = temporal_bin(2,:);
 
-zscores_cell = zeros(nbins,5);
+num_clusters = max(empirical.origin_labels) - 1;
+
+zscores_cell = zeros(nbins,num_clusters);
 
 for K = 1:nbins
     
@@ -35,7 +37,7 @@ for K = 1:nbins
     labels_cell = labels_cell( filter(random_cell(1)) );
     target_cell = target_cell( filter(random_cell(1)),:,: );
     
-    for i = 1:5
+    for i = 1:num_clusters
         
         % Distribution of means within a behavior
         this_count_cell = squeeze( num_cell( labels_cell == i,window,:) );
@@ -44,10 +46,10 @@ for K = 1:nbins
         mean_of_cell = mean( this_count_cell,1 );
         mean_of_emp = mean( this_count_emp );
         
-        [Nmean_cell,bins] = hist(mean_of_cell);
+        [Nmean_cell,bins] = hist(mean_of_cell,25);
         
         figure(1)
-        H(i) = subplot(5,1,i);
+        H(i) = subplot(num_clusters,1,i);
         
         h = bar(bins, ...
             Nmean_cell/sum(Nmean_cell), ...
@@ -81,7 +83,7 @@ for K = 1:nbins
                     (mean_of_emp - mean(mean_of_cell)) / std(mean_of_cell);
                 
                 figure(3)
-                subplot(1,5,(K-1)*5 + i);
+                subplot(1,num_clusters,(K-1)*num_clusters + i);
                 h = bar(1:6, z_target_pulse );
                 set(h(1),'FaceColor','red')
                 xlim([0 7])
@@ -95,7 +97,7 @@ for K = 1:nbins
     
     figure(2)
     subplot(nbins,1,K);
-    h = bar(1:5, zscores_cell(K,:) ,'LineStyle','None');
+    h = bar(1:num_clusters, zscores_cell(K,:) ,'LineStyle','None');
     set(h(1),'FaceColor','red');
     title([ num2str(left(K)) ' < center <= ' num2str(right(K)) ]);
     ylim([-3 3]);

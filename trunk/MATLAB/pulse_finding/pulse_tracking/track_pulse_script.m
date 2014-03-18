@@ -14,13 +14,14 @@ mdf_file{9} = '~/Desktop/Tracked pulses/01-15-2014-7/01-15-2014-7-mimi.mdf'; emb
 mdf_file{10} = '~/Desktop/Tracked pulses/01-24-2014-5/01-24-2014-5-z7.mdf'; embryoID(10) = 10;
 mdf_file{11} = '~/Desktop/Tracked pulses/02-12-2014-1 Control Inj/02-12-2014-1.mdf'; embryoID(11) = 11;
 mdf_file{12} = '~/Desktop/Tracked pulses/02-12-2014-4 Control Inj/02-12-2014-4-mimi.tif'; embryoID(12) = 12;
+mdf_file{13} = '~/Desktop/Tracked pulses/02-12-2014-2 Control Inj/02-12-2014-2.mdf'; embryoID(13) = 13;
 
 % mdf_file{1} = '~/Desktop/Tracked pulses/Twist injection series 006/twist_series_006_mimi.mdf'; embryoID(1) = 1;
 % mdf_file{2} = '~/Desktop/Tracked pulses/Twist injection series 022/twist_injection_022_mimi.mdf'; embryoID(2) = 2;
 % mdf_file{4} = '~/Desktop/Tracked pulses/Control Injection Series 002/control002.mdf'; embryoID(4) = 4;
 match_thresh = 1;
 
-for i = 11:12
+for i = 13
     
     % Load MDF into matrix
     mdf_mat = read_mdf(mdf_file{i});

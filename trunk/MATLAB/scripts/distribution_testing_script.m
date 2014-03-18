@@ -1,15 +1,15 @@
 %% Scripts to test some statistical properties of empirical v. simulated stiributions
 
-MC = MC_twist_pcenter;
+MC = MC_wt_pcenter;
 RC_num_near = cat(3,MC.random_cell.num_near);
 
 bins = 0:20;
 
-l = 5;
+for label = 1:4
 
-idx = [MC.empirical.origin_labels] > 0;
-% subplot(1,5,l);
-window = 10;
+idx = [MC.empirical.origin_labels] == label;
+subplot(1,4,label);
+window = 6;
 
 %%
 
@@ -41,29 +41,28 @@ display(['Z score of means: p = ' num2str(p)])
 
 KL = zeros(1,numel(MC.random_cell));
 
-X1 = hist(MC.empirical.num_near(idx,6),bins);
+X1 = hist(MC.empirical.num_near(idx,window),bins);
 X1 = X1 + eps;
 
 for i = 1:numel(MC.random_cell)
     
-    X2 = hist(MC.random_cell(i).num_near(idx,6),bins);
+    X2 = hist(MC.random_cell(i).num_near(idx,window),bins);
     X2 = X2 + eps;
     KL(i) = sqrt(kldiv(bins,X1/sum(X1),X2/sum(X2),'js'));
     
 end
 
 KL_perm = nan(numel(MC.random_cell));
-
 for i = 1:numel(MC.random_cell)
     
-    X1 = hist(MC.random_cell(i).num_near(idx,6),bins);
+    X1 = hist(MC.random_cell(i).num_near(idx,window),bins);
     X1 = X1 + eps;
     
     for j = 1:numel(MC.random_cell)
         
         if i > j
-        
-            X2 = hist(MC.random_cell(j).num_near(idx,6),bins);
+            
+            X2 = hist(MC.random_cell(j).num_near(idx,window),bins);
             X2 = X2 + eps;
             KL_perm(i,j) = sqrt(kldiv(bins,X1/sum(X1),X2/sum(X2),'js'));
             
@@ -80,4 +79,5 @@ plot_pdf(flat(KL));
 % legend('Intra-permutation','Empirical - permutation');
 title(behaviors{l});
 
+end
 %%

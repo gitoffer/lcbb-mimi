@@ -225,23 +225,40 @@ input(12).embryoID = 12;
 input(12).fixed = 0;
 input(12).last_segmented = 59;
 
-% % cta
-
-input(13).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
+input(13).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/02-12-2014 Control SqhGap 2/Measurements';
 input(13).zslice = 1;
-input(13).actual_z = 5;
-input(13).tref = 40;
-input(13).t0 = 14;
+input(13).actual_z = 8;
+input(13).tref = 15;
+input(13).t0 = 0;
 input(13).ignore_list = [];
-input(13).dt = 6.804;
-input(13).um_per_px = 0.2125;
+input(13).dt = 6.789;
+input(13).um_per_px = 0.19385;
 input(13).X = 1000;
 input(13).Y = 400;
-input(13).T = 100;
+input(13).T = 82;
 input(13).yref = 0; %um
 input(13).embryoID = 13;
 input(13).fixed = 0;
-input(13).last_segmented = 95;
+input(13).last_segmented = 80;
+
+
+% % cta
+
+input(14).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
+input(14).zslice = 1;
+input(14).actual_z = 5;
+input(14).tref = 40;
+input(14).t0 = 14;
+input(14).ignore_list = [];
+input(14).dt = 6.804;
+input(14).um_per_px = 0.2125;
+input(14).X = 1000;
+input(14).Y = 400;
+input(14).T = 100;
+input(14).yref = 0; %um
+input(14).embryoID = 14;
+input(14).fixed = 0;
+input(14).last_segmented = 95;
 % 
 % input(12).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_29_13_3/Measurements';
 % input(12).zslice = 1;
@@ -387,7 +404,7 @@ msmts2make_twi = { ...
 
 %% Load data (will beep when done)
 
-EDGEstack = load_edge_data({input.folder2load},msmts2make{:});
+EDGEstack = load_edge_data({input.folder2load},msmts2make_twi{:});
 % EDGEstack_cta = load_edge_data({input_cta.folder2load},msmts2make{:});
 % EDGEstack_princeton = load_edge_data({input_princeton.folder2load},msmts2make_princeton{:});
 % EDGEstack_twi = load_edge_data({input_twi.folder2load},msmts2make_twi{:});
