@@ -23,10 +23,10 @@ xlabel('Developmental time (sec)');
 
 %% by behavior in CDF
 
-colors = {'b-','c-','g-','m-','r-'};
+colors = {'b-','m-','r-'};
 for i = 1:num_clusters
     hold on
-    plot_cdf([fitsOI([fitsOI.cluster_label]==i).center],bins,colors{i});
+    plot_cdf([fitsOI.get_cluster(i).center],bins,colors{i});
     xlim(x_limits)
 end
 
@@ -36,7 +36,7 @@ legend(behaviors{:})
 
 %% behavior in count/PDF
 
-colors = {'b','c','g','m','r'};
+colors = {'b','m','r'};
 N = zeros(2,numel(bins));
 for i = 1:num_clusters
     N(i,:) = hist([fitsOI([fitsOI.cluster_label]==i).center],bins);
@@ -55,8 +55,8 @@ xlim(x_limits)
 
 %% behavior by temporal bins
 
-left = [-Inf    -Inf    0   60  120 180];
-right = [Inf    0       60  120 180 Inf];
+left = [-Inf	0];
+right = [0  Inf];
 N = zeros( numel(left), 6);
 for i = 1:numel(left)
     
@@ -64,9 +64,13 @@ for i = 1:numel(left)
     N(i,:) = hist( [fitsOI(filter(fitsOI)).cluster_label], 1:6);
     
 end
-h = bar(1:numel(left)-1, N(2:end,:),'LineStyle','none');
-for i = 1:5
+%filter out non-clustered pulses
+N(:,num_clusters+1) = [];
+
+h = bar(1:numel(left), bsxfun(@rdivide,N,sum(N,2)), 'stacked','LineStyle','none');
+
+for i = 1:2
     set(h(i),'FaceColor',colors{i});
 end
-legend([entries,'N/A']);
+legend([behaviors,'N/A']);
 ylabel('Count');

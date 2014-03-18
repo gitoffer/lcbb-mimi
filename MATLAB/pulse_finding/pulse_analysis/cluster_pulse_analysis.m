@@ -34,7 +34,7 @@ for k = 2:10
         end
     end
     
-    display(['Done with k = ' num2str(k) ' clusters']);
+    display(['Done with k = ' num2str(k) ' U clusters']);
     avgRI(k-1) = mean(RI(:));
     stdRI(k-1) = std(RI(:));
     
@@ -55,7 +55,7 @@ hold on,errorbar(2:10,avgRI_random,stdRI_random,'r-')
 
 %%
 
-num_clusters = 4;
+num_clusters = 3;
 
 fits = fits.fcm_cluster(num_clusters,'corrected_area_norm',1);
 
@@ -75,7 +75,7 @@ for i = 1:num_clusters
     eval(['cluster' num2str(i) '_cta = fits_cta([fits_cta.cluster_label] == ' num2str(i) ');']);
     eval(['cluster' num2str(i) '_twist = fits_twist([fits_twist.cluster_label] == ' num2str(i) ');']);
     
-    eval(['cluster' num2str(i) '.plot_heatmap']);
+    eval(['cluster' num2str(i) '_twist.plot_heatmap']);
 
 end
 
@@ -117,7 +117,7 @@ legend(entries{:});
 figure
 for i = 1:num_clusters
     
-    eval(['this_cluster = cluster' num2str(i) '_twist.sort(''cluster_weight'');']);
+    eval(['this_cluster = cluster' num2str(i) '_wt.sort(''cluster_weight'');']);
     cluster_area = cat(1,this_cluster.corrected_area_norm);
     
     subplot(2,num_clusters,i);
@@ -129,10 +129,11 @@ for i = 1:num_clusters
     
     subplot(2,num_clusters,i+num_clusters);
     weights = cat(1, this_cluster.cluster_weight);
+    weights = max(weights,[],2);
     shadedErrorBar( fits(1).corrected_time, ...
         nanwmean(cluster_area,weights), nanstd(cluster_area) , colors{i});
     xlabel('Pulse time (sec)')
-    ylim( [-5 5] );
+    ylim( [-6 6] );
     set(gca,'XTick',[-40 0 40]);
     
 end

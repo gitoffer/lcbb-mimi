@@ -41,7 +41,7 @@ end
 name2plot = 'area_sm';
 
 figure, clear H
-embryoID_OI = [11:12];
+embryoID_OI = [1:5];
 color = hsv(numel(embryoID_OI));
 for i = 1:numel( embryoID_OI )
     
@@ -59,18 +59,19 @@ for i = 1:numel( embryoID_OI )
     time = embryo_stack(embryoID).dev_time;
     data = embryo_stack(embryoID).(name2plot);
     
-    %     data = data(:,label == 1);
-    %     switch i
-    %         case 1
-    %             data(55:60,:) = NaN;
-    %         case 2
-    %             data(60:70,:) = NaN;
-    %         case 4
-    %             data(70:75,:) = NaN;
-    %         case 5
-    %             data(125:130,:) = NaN;
-    %             time = time + 60;
-    %     end
+%     data = bsxfun(@rdivide,data,nanmean(data));
+    
+        switch i
+            case 1
+                data(55:60,:) = NaN;
+            case 2
+                data(60:70,:) = NaN;
+            case 4
+                data(70:75,:) = NaN;
+            case 5
+                data(125:130,:) = NaN;
+                time = time + 60;
+        end
     
     H(i) = shadedErrorBar(time,...
         nanmean(data,2), nanstd(data,[],2), ...
