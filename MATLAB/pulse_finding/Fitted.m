@@ -664,7 +664,7 @@ classdef Fitted
         function fits = sort(fits,field)
             %SORT pulses by a given field, Default = amplitude (ascending)
             if nargin < 2, field = 'amplitude'; end
-            [~,order] = sort( nanmean( cat(1,fits.(field)), 2) );
+            [~,order] = sort( nanmax( cat(1,fits.(field)),[], 2));
             fits = fits(order);
             
         end % sort
