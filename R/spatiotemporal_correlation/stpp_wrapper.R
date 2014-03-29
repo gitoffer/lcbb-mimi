@@ -1,4 +1,5 @@
 # get_PCFhat_stpp - Wrapper for PCFhat functionality in STPP
+# author xies@mit.edu 2014
 
 get_PCFhat_stpp <- function( xyt, s.region=NULL, t.region=NULL, u, v,
 							h=hmsemin, embryoID, label=NULL) {
@@ -7,7 +8,7 @@ get_PCFhat_stpp <- function( xyt, s.region=NULL, t.region=NULL, u, v,
 	require("stpp")
 	
 	# parse inputs and/or default behavior
-	# Use powers of 2 for FFT kernel estimation
+	# Use powers of 2 for FFT kernel estimation (Defaults are 8- and 11-bit)
 	nt = 2^8
 	nx = 2^11
 	ny = 2^11
@@ -23,7 +24,7 @@ get_PCFhat_stpp <- function( xyt, s.region=NULL, t.region=NULL, u, v,
 	mut = Mt$y[ findInterval( t, Mt$x) ] * dim(xyt)[1]
 	
 	# Estimate 2d spatial kernel density
-	# Optimize t?e kernel bandwidth (h) by mean squared-error (MSE)
+	# Optimize the kernel bandwidth (h) by mean squared-error (MSE)
 	#	analysis at set h values to scan
 	#	Default: number of h-values: 50, max h-value: 4
 	
