@@ -45,7 +45,7 @@ end
 N = bsxfun(@rdivide, N, sum(N,2));
 
 h = bar(bins,N','LineStyle','None');
-for i = [1 4]
+for i = 1:num_clusters
     set(h(i),'FaceColor',colors{i});
 end
 legend(behaviors{:})
@@ -56,7 +56,7 @@ xlim(x_limits)
 %% behavior by temporal bins
 
 left = [-Inf	0];
-right = [0  Inf];
+right = [Inf  Inf];
 N = zeros( numel(left), 6);
 for i = 1:numel(left)
     

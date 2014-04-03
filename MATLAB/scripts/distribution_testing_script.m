@@ -5,10 +5,10 @@ RC_num_near = cat(3,MC.random_cell.num_near);
 
 bins = 0:20;
 
-for label = 1:4
+for label = 1:3
 
 idx = [MC.empirical.origin_labels] == label;
-subplot(1,4,label);
+subplot(1,3,label);
 window = 6;
 
 %%
@@ -77,7 +77,7 @@ plot_pdf(flat(KL));
 % xlabel('Sqrt of Jensen-Shannon divergence')
 % ylabel('Probability')
 % legend('Intra-permutation','Empirical - permutation');
-title(behaviors{l});
+title(behaviors{label});
 
 end
 %%

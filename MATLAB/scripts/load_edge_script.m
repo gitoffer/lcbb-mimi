@@ -1,6 +1,6 @@
 %LOAD_EDGE_SCRIPT
 %
-% Pipeline for loading data from the MATLAB/EDGE folder into various file
+% Pipeline for loading data from the MATLAB/EDGE-1.06 folder into various file
 % structures, including stand-alone arrays (e.g. areas, myosins), as well
 % as an array of embryo_structure containing the measurements as fields.
 %
@@ -28,7 +28,7 @@
 
 clear input*;
 
-input(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/01-30-2012 SqhGap 4/Measurements';
+input(1).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/01-30-2012 SqhGap 4/Measurements';
 input(1).zslice = 1;
 input(1).actual_z = 5;
 input(1).tref = 15;
@@ -44,7 +44,7 @@ input(1).last_segmented = 50;
 input(1).fixed = 0;
 input(1).ignore_list = [];
 
-input(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/01-30-2012 SqhGap 7/Measurements';
+input(2).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/01-30-2012 SqhGap 7/Measurements';
 input(2).zslice = 2;
 input(2).actual_z = 5;
 input(2).tref = 30;
@@ -60,7 +60,7 @@ input(2).last_segmented = 60;
 input(2).fixed = 0;
 input(2).ignore_list = [];
 
-input(3).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/10-15-2012 SqhGap 1/Measurements';
+input(3).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/10-15-2012 SqhGap 1/Measurements';
 input(3).zslice = 1;
 input(3).actual_z = 4;
 input(3).tref = 45;
@@ -77,7 +77,7 @@ input(3).last_segmented = 90;
 input(3).fixed = 0;
 input(3).ignore_list = [];
 
-input(4).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/10-25-2012 SqhGap 1/Measurements';
+input(4).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/10-25-2012 SqhGap 1/Measurements';
 input(4).zslice = 1;
 input(4).actual_z = 4;
 input(4).tref = 40;
@@ -93,7 +93,7 @@ input(4).embryoID = 4;
 input(4).fixed = 0;
 input(4).last_segmented = 65;
 
-input(5).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/11-07-2012 SqhGap 1/Measurements';
+input(5).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/11-07-2012 SqhGap 1/Measurements';
 input(5).zslice = 2;
 input(5).actual_z = 4;
 input(5).tref = 90;
@@ -111,7 +111,7 @@ input(5).last_segmented = 125;
 
 % twist
 
-input(6).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
+input(6).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/Twist RNAi Series006/Measurements';
 input(6).zslice = 1;
 input(6).actual_z = 7;
 input(6).tref = 50;
@@ -127,7 +127,7 @@ input(6).embryoID = 6;
 input(6).fixed = 0;
 input(6).last_segmented = 100;
 
-input(7).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series022/Measurements';
+input(7).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/Twist RNAi Series022/Measurements';
 input(7).zslice = 1;
 input(7).actual_z = 7;
 input(7).tref = 50;
@@ -143,7 +143,7 @@ input(7).embryoID = 7;
 input(7).fixed = 0;
 input(7).last_segmented = 70;
 
-input(8).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/12-04-2013 SqhGap twi RNAi/Measurements';
+input(8).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/12-04-2013 SqhGap twi RNAi/Measurements';
 input(8).zslice = 1;
 input(8).actual_z = 6;
 input(8).tref = 1;
@@ -159,7 +159,7 @@ input(8).yref = 0;
 input(8).embryoID = 8;
 input(8).last_segmented = 50;
 
-input(9).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/01-15-2014 twi RNAi SqhGap 7/Measurements';
+input(9).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/01-15-2014 twi RNAi SqhGap 7/Measurements';
 input(9).zslice = 2;
 input(9).actual_z = 5;
 input(9).tref = 1;
@@ -175,7 +175,7 @@ input(9).embryoID = 9;
 input(9).fixed = 0;
 input(9).last_segmented = 80;
 
-input(10).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/01-24-2014 twi RNAi SqhGap 5/Measurements';
+input(10).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/01-24-2014 twi RNAi SqhGap 5/Measurements';
 input(10).zslice = 2;
 input(10).actual_z = 7;
 input(10).tref = 1;
@@ -193,7 +193,7 @@ input(10).last_segmented = 90;
 
 % control injection
 
-input(11).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/02-12-2014 Control SqhGap 1/Measurements';
+input(11).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/02-12-2014 Control SqhGap 1/Measurements';
 input(11).zslice = 2;
 input(11).actual_z = 7;
 input(11).tref = 30;
@@ -209,7 +209,7 @@ input(11).embryoID = 11;
 input(11).fixed = 0;
 input(11).last_segmented = 70;
 
-input(12).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/02-12-2014 Control SqhGap 4/Measurements';
+input(12).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/02-12-2014 Control SqhGap 4/Measurements';
 input(12).zslice = 2;
 input(12).actual_z = 7;
 input(12).tref = 15;
@@ -225,7 +225,7 @@ input(12).embryoID = 12;
 input(12).fixed = 0;
 input(12).last_segmented = 59;
 
-input(13).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/02-12-2014 Control SqhGap 2/Measurements';
+input(13).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/02-12-2014 Control SqhGap 2/Measurements';
 input(13).zslice = 1;
 input(13).actual_z = 8;
 input(13).tref = 15;
@@ -244,7 +244,7 @@ input(13).last_segmented = 80;
 
 % % cta
 
-input(14).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_11_10_12/Measurements';
+input(14).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/cta_11_10_12/Measurements';
 input(14).zslice = 1;
 input(14).actual_z = 5;
 input(14).tref = 40;
@@ -260,7 +260,7 @@ input(14).embryoID = 14;
 input(14).fixed = 0;
 input(14).last_segmented = 95;
 % 
-% input(12).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/cta_1_29_13_3/Measurements';
+% input(12).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/cta_1_29_13_3/Measurements';
 % input(12).zslice = 1;
 % input(12).actual_z = 6;
 % input(12).tref = 15;
@@ -277,7 +277,7 @@ input(14).last_segmented = 95;
 % input(12).last_segmented = 45;
 
 % princeton dataset
-input_princeton(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series006/Measurements';
+input_princeton(1).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/Twist RNAi Series006/Measurements';
 input_princeton(1).zslice = 1;
 input_princeton(1).actual_z = 7;
 input_princeton(1).tref = 50;
@@ -293,7 +293,7 @@ input_princeton(1).embryoID = 1;
 input_princeton(1).fixed = 0;
 input_princeton(1).last_segmented = 100;
 
-input_princeton(2).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Twist RNAi Series022/Measurements';
+input_princeton(2).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/Twist RNAi Series022/Measurements';
 input_princeton(2).zslice = 1;
 input_princeton(2).actual_z = 7;
 input_princeton(2).tref = 50;
@@ -309,7 +309,7 @@ input_princeton(2).embryoID = 2;
 input_princeton(2).fixed = 0;
 input_princeton(2).last_segmented = 70;
 
-input_princeton(3).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Control Inject Series001/Measurements';
+input_princeton(3).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/Control Inject Series001/Measurements';
 input_princeton(3).zslice = 1;
 input_princeton(3).actual_z = 8;
 input_princeton(3).tref = 25;
@@ -325,7 +325,7 @@ input_princeton(3).embryoID = 3;
 input_princeton(3).fixed = 0;
 input_princeton(3).last_segmented = 90;
 
-input_princeton(4).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/Control Inject Series002/Measurements';
+input_princeton(4).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/Control Inject Series002/Measurements';
 input_princeton(4).zslice = 1;
 input_princeton(4).actual_z = 8;
 input_princeton(4).tref = 25;
@@ -341,7 +341,7 @@ input_princeton(4).embryoID = 4;
 input_princeton(4).fixed = 0;
 input_princeton(4).last_segmented = 55;
 
-% input_rok(1).folder2load = '~/Documents/MATLAB/EDGE/DATA_GUI/080213 RokGap 1/Measurements';
+% input_rok(1).folder2load = '~/Documents/MATLAB/EDGE-1.06/DATA_GUI/080213 RokGap 1/Measurements';
 % input_rok(1).zslice = 2;
 % input_rok(1).actual_z = 4;
 % input_rok(1).tref = 50;
@@ -422,8 +422,8 @@ stack2load = EDGEstack;
 num_embryos = numel(in);
 
 [areas,IDs,dev_time] = extract_msmt_data(stack2load,'area','on',in);
-% centroids_x = extract_msmt_data(stack2load,'centroid-x','on',in);
-% centroids_y = extract_msmt_data(stack2load,'centroid-y','on',in);
+centroids_x = extract_msmt_data(stack2load,'centroid-x','on',in);
+centroids_y = extract_msmt_data(stack2load,'centroid-y','on',in);
 neighborID = extract_msmt_data(stack2load,'identity of neighbors-all','off',in);
 vertices_x = extract_msmt_data(stack2load,'vertex-x','off',in);
 vertices_y = extract_msmt_data(stack2load,'vertex-y','off',in);
