@@ -66,8 +66,8 @@ for i = 1:num_clusters
     
     Nrc = hist(flat(RC_num_near(idx == i,window,:)),bins);
     Nemp = hist(MC.empirical.num_near(idx == i,window),bins);
-    plot(bins,cat(1,cumsum(Nrc)/sum(Nrc),cumsum(Nemp)/sum(Nemp))')
-    xlim([-1 8])
+    plot(bins,cat(1,(Nrc)/sum(Nrc),(Nemp)/sum(Nemp))')
+    xlim([-1 10])
     title(behaviors{i})
     
 end
